@@ -1,141 +1,258 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101513">
-  <meta name="description" content="Hidden in Plain Sight — a dark-comedy platform management game.">
-  <title>Hidden in Plain Sight — Trust & Safety Console</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hidden in Plain Sight</title>
+  <meta name="description" content="Dark-comedy data-harvesting management game." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#" aria-label="Hidden in Plain Sight home">
-        <span class="brand-mark">H<span>·</span>P</span>
-        <span class="brand-name">PLAIN SIGHT <small>PLATFORM OPERATIONS</small></span>
-      </a>
-      <div class="header-right">
-        <span class="live-state"><i></i> SYSTEM LIVE</span>
-        <span class="run-clock" id="clock">08:00</span>
-        <button class="icon-button" id="pause-button" aria-label="Pause game" title="Pause">Ⅱ</button>
+  <div id="game">
+    <div id="intro-screen" class="screen active">
+      <div class="intro-panel">
+        <div class="intro-kicker">BOARD BRIEFING // QUARTERLY OPERATIONS</div>
+        <h1>Hidden in Plain Sight</h1>
+        <p class="subtitle">A dark-comedy management sim about building a social platform and turning attention into certainty.</p>
+
+        <div class="intro-box">
+          <div class="mini-label">OBJECTIVE</div>
+          <div class="objective-line"><span class="big">$100B</span> valuation before public awareness reaches <span class="hot">100</span></div>
+        </div>
+
+        <div class="intro-grid">
+          <div class="intro-card">
+            <div class="mini-label">WHO</div>
+            <strong>Maya Quinn</strong>
+            <small>34 · Portland OR</small>
+          </div>
+          <div class="intro-card">
+            <div class="mini-label">HOW</div>
+            <strong>Harvest signal</strong>
+            <small>then sell certainty</small>
+          </div>
+          <div class="intro-card">
+            <div class="mini-label">RULE</div>
+            <strong>Stay hidden</strong>
+            <small>don’t get noticed</small>
+          </div>
+        </div>
+
+        <button id="start-button" class="primary-button">Start the quarter</button>
       </div>
-    </header>
+    </div>
 
-    <main>
-      <section class="metrics" aria-label="Company metrics">
-        <article class="metric-card users-card">
-          <div class="metric-label"><span class="metric-icon">◎</span> ACTIVE USERS <span class="trend">↗ 12.8%</span></div>
-          <div class="metric-value" id="users">10,000</div>
-          <div class="metric-caption">Monthly active · <span id="user-growth">+0 / sec</span></div>
-        </article>
-        <article class="metric-card revenue-card">
-          <div class="metric-label"><span class="metric-icon">↗</span> IMPLIED VALUATION <span class="target">TARGET $100B</span></div>
-          <div class="metric-value" id="revenue">$0</div>
-          <div class="progress-track"><div class="progress-fill revenue-fill" id="revenue-bar"></div></div>
-          <div class="metric-caption"><span id="revenue-rate">+$0 / sec</span> · <span id="revenue-percent">0.0%</span> to target</div>
-        </article>
-        <article class="metric-card awareness-card">
-          <div class="metric-label"><span class="metric-icon">◉</span> PUBLIC AWARENESS <span class="metric-status" id="awareness-status">LOW</span></div>
-          <div class="metric-value"><span id="awareness">8</span><small> / 100</small></div>
-          <div class="progress-track"><div class="progress-fill awareness-fill" id="awareness-bar"></div></div>
-          <div class="metric-caption">Investigation threshold <b>60</b> · deletion at <b>100</b></div>
-        </article>
-      </section>
+    <div id="game-screen" class="screen">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-mark">H•P</div>
+          <div class="brand-copy">
+            <div class="brand-title">HIDDEN IN PLAIN SIGHT</div>
+            <div class="brand-sub">MAYA QUINN / QUARTERLY SIGNAL REVIEW</div>
+          </div>
+        </div>
 
-      <div class="workspace">
-        <section class="main-column">
-          <section class="panel lever-panel">
-            <div class="section-heading">
-              <div><p class="eyebrow">GROWTH SYSTEMS</p><h1>Product levers</h1></div>
-              <div class="heading-meta"><span class="tiny-live"></span><span id="active-count">0 ACTIVE</span><span class="divider">/</span><span>NO LIMIT</span></div>
+        <div class="topbar-actions">
+          <button id="mute-button" class="ghost-button" aria-label="Toggle sound">🔊</button>
+          <button id="pause-button" class="ghost-button" aria-label="Pause game">⏸</button>
+        </div>
+      </header>
+
+      <main class="hud">
+        <section class="stats-strip">
+          <div class="stat-card">
+            <div class="stat-label">Users</div>
+            <div class="stat-value" id="users-value">10,000</div>
+            <div class="stat-sub" id="users-rate">+0/sec</div>
+          </div>
+
+          <div class="stat-card emphasis">
+            <div class="stat-label">Valuation</div>
+            <div class="stat-value" id="revenue-value">$0</div>
+            <div class="stat-sub" id="revenue-rate">+$0/sec</div>
+            <div class="progress">
+              <div id="revenue-bar" class="progress-bar revenue"></div>
             </div>
-            <p class="section-intro">Deploy collection systems to turn attention into proprietary signal.</p>
-            <div class="lever-list" id="lever-list"></div>
-          </section>
+          </div>
 
-          <section class="panel data-panel">
-            <div class="section-heading compact-heading">
-              <div><p class="eyebrow">RAW MATERIAL</p><h2>Data inventory</h2></div>
-              <span class="subtle-label">STOCKPILE</span>
+          <div class="stat-card warning">
+            <div class="stat-label">Awareness</div>
+            <div class="stat-value" id="awareness-value">8</div>
+            <div class="stat-sub" id="awareness-status">LOW</div>
+            <div class="progress">
+              <div id="awareness-bar" class="progress-bar awareness"></div>
             </div>
-            <div class="data-grid" id="data-grid"></div>
-          </section>
-
-          <section class="panel inference-panel">
-            <div class="section-heading compact-heading">
-              <div><p class="eyebrow">SIGNAL PROCESSING</p><h2>Inference engine <span class="count-pill" id="inference-count">0 / 15</span></h2></div>
-              <span class="subtle-label">PERMANENT EFFECTS</span>
-            </div>
-            <p class="section-intro">Combine data to produce a marketable certainty.</p>
-            <div class="inference-grid" id="inference-grid"></div>
-          </section>
+          </div>
         </section>
 
-        <aside class="side-column">
-          <section class="panel dossier-panel">
-            <div class="section-heading dossier-heading">
-              <div><p class="eyebrow">SAMPLE ACCOUNT · #048291</p><h2>Customer profile</h2></div>
-              <span class="profile-lock" title="Personally identifiable information">▣</span>
-            </div>
-            <div class="profile-person">
-              <div class="portrait" aria-label="Grey silhouette illustration">
-                <svg viewBox="0 0 120 140" role="img" aria-label="A woman shown as a grey silhouette">
-                  <circle cx="60" cy="42" r="24"/>
-                  <path d="M15 140c2-35 17-57 45-57s43 22 45 57z"/>
-                  <path d="M38 43c1-23 13-34 25-32 19 2 24 19 22 39-2 17-11 29-25 31-17 2-24-20-22-38z" opacity=".55"/>
-                </svg>
+        <section class="game-grid">
+          <div class="left-column">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-kicker">BOARD INSTRUCTIONS</div>
+                  <h2>Product levers</h2>
+                </div>
+                <div class="panel-badge" id="active-count">0 ACTIVE</div>
               </div>
-              <div class="profile-details"><h3>Mara Ellison</h3><span>AGE 34 · PORTLAND, OR</span><p>“A person-shaped audience segment.”</p></div>
-            </div>
-            <div class="dossier-fields" id="dossier-fields"></div>
-            <div class="dossier-footer"><span class="status-dot"></span> PROFILE COMPLETION <b id="profile-percent">0%</b></div>
-          </section>
 
-          <section class="panel pressure-panel">
-            <div class="section-heading compact-heading"><div><p class="eyebrow">EXTERNALITIES</p><h2>Pressure</h2></div><span class="live-tag">LIVE</span></div>
-            <div class="pressure-item">
-              <div class="pressure-title"><span>◉ REGULATOR</span><span id="regulator-label">DORMANT</span></div>
-              <div class="mini-track"><div id="regulator-bar"></div></div>
-              <p id="regulator-copy">Investigation begins at 60 awareness.</p>
-            </div>
-            <div class="pressure-item">
-              <div class="pressure-title"><span>▤ PRESS INQUIRY</span><span id="press-label">QUIET</span></div>
-              <div class="mini-track press-track"><div id="press-bar"></div></div>
-              <p id="press-copy">A journalist is connecting the dots.</p>
-            </div>
-          </section>
+              <div id="tutorial-box" class="tutorial-box"></div>
 
-          <section class="panel counter-panel">
-            <div class="section-heading compact-heading"><div><p class="eyebrow">CAPITAL ALLOCATION</p><h2>Countermeasures</h2></div></div>
-            <div class="counter-list">
-              <button class="countermeasure" data-counter="lobbying"><span class="counter-icon">⌂</span><span class="counter-copy"><b>Lobbying</b><small>Slows regulator response</small></span><span class="counter-cost">$250M</span></button>
-              <button class="countermeasure" data-counter="rebrand"><span class="counter-icon">↻</span><span class="counter-copy"><b>Rebrand</b><small>Reset awareness by 25 · once</small></span><span class="counter-cost">$1B</span></button>
-              <button class="countermeasure" data-counter="privacy"><span class="counter-icon">◌</span><span class="counter-copy"><b>Privacy theater</b><small>Pause awareness growth · 20 sec</small></span><span class="counter-cost">$500M</span></button>
+              <div id="lever-list" class="lever-list"></div>
             </div>
-            <p class="counter-note" id="counter-note">Spend revenue to buy time. The market appreciates the gesture.</p>
-          </section>
 
-          <section class="panel event-panel"><p class="eyebrow">OPERATIONS FEED</p><div id="event-feed" aria-live="polite"></div></section>
-        </aside>
-      </div>
-    </main>
-    <footer><span>HIDDEN IN PLAIN SIGHT</span><span>VERSION 0.1 · INTERNAL PREVIEW</span><span>YOUR DATA IS OUR PRODUCT.</span></footer>
-  </div>
-  <div class="overlay hidden" id="overlay" role="dialog" aria-modal="true" aria-labelledby="result-title">
-    <div class="result-modal">
-      <div class="result-mark" id="result-mark">✓</div>
-      <p class="eyebrow" id="result-eyebrow">QUARTERLY REVIEW</p>
-      <h2 id="result-title">An excellent outcome.</h2>
-      <p class="result-lead" id="result-lead"></p>
-      <div class="result-dossier" id="result-dossier"></div>
-      <button class="primary-button" id="restart-button">START ANOTHER RUN <span>→</span></button>
+            <div class="panel">
+              <div class="panel-header compact">
+                <div>
+                  <div class="panel-kicker">RAW DATA</div>
+                  <h3>Stockpile</h3>
+                </div>
+              </div>
+              <div id="inventory" class="inventory-grid"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header compact">
+                <div>
+                  <div class="panel-kicker">INFERENCE ENGINE</div>
+                  <h3>Learnings</h3>
+                </div>
+                <div class="panel-badge" id="inference-count">0 / 15</div>
+              </div>
+              <div id="inference-list" class="inference-list"></div>
+            </div>
+          </div>
+
+          <aside class="right-column">
+            <div class="panel dossier">
+              <div class="panel-header compact">
+                <div>
+                  <div class="panel-kicker">PROFILE</div>
+                  <h3>Maya’s dossier</h3>
+                </div>
+                <div class="panel-badge subtle">CONFIDENTIAL</div>
+              </div>
+
+              <div class="person-box">
+                <div class="portrait-wrap">
+                  <div class="portrait">
+                    <div class="portrait-face" id="suspicion-face">◕</div>
+                  </div>
+                </div>
+                <div class="person-meta">
+                  <div class="person-name">Maya Quinn</div>
+                  <div class="person-meta-line">34 • Portland, OR</div>
+                </div>
+              </div>
+
+              <div id="dossier-fields" class="dossier-fields"></div>
+            </div>
+
+            <div class="panel pressure">
+              <div class="panel-header compact">
+                <div>
+                  <div class="panel-kicker">EXTERNAL PRESSURE</div>
+                  <h3>Risk</h3>
+                </div>
+              </div>
+
+              <div class="pressure-block">
+                <div class="pressure-head">
+                  <span>Regulator</span>
+                  <span id="regulator-state">DORMANT</span>
+                </div>
+                <div class="progress mini">
+                  <div id="regulator-bar" class="progress-bar regulator"></div>
+                </div>
+              </div>
+
+              <div class="pressure-block">
+                <div class="pressure-head">
+                  <span>Press</span>
+                  <span id="press-state">QUIET</span>
+                </div>
+                <div class="progress mini">
+                  <div id="press-bar" class="progress-bar press"></div>
+                </div>
+              </div>
+
+              <div id="headline-box" class="headline-box">
+                <div class="headline">No one is watching yet.</div>
+              </div>
+            </div>
+
+            <div class="panel countermeasures">
+              <div class="panel-header compact">
+                <div>
+                  <div class="panel-kicker">FIRE-EXTINGUISHER</div>
+                  <h3>Damage control</h3>
+                </div>
+              </div>
+
+              <div class="counter-buttons">
+                <button class="counter-button" data-type="lobbying">
+                  <span class="counter-icon">🏛️</span>
+                  <span class="counter-copy">
+                    <strong>Lobbying</strong>
+                    <small>Slow regulator</small>
+                  </span>
+                  <span class="counter-cost">$250M</span>
+                </button>
+
+                <button class="counter-button" data-type="rebrand">
+                  <span class="counter-icon">🧼</span>
+                  <span class="counter-copy">
+                    <strong>Rebrand</strong>
+                    <small>Reset awareness</small>
+                  </span>
+                  <span class="counter-cost">$1B</span>
+                </button>
+
+                <button class="counter-button" data-type="privacy">
+                  <span class="counter-icon">🧯</span>
+                  <span class="counter-copy">
+                    <strong>Privacy theater</strong>
+                    <small>Pause growth</small>
+                  </span>
+                  <span class="counter-cost">$500M</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="panel events">
+              <div class="panel-header compact">
+                <div>
+                  <div class="panel-kicker">OPERATIONS FEED</div>
+                  <h3>Signals</h3>
+                </div>
+              </div>
+              <div id="event-feed" class="event-feed"></div>
+            </div>
+          </aside>
+        </section>
+      </main>
     </div>
+
+    <div id="reveal-panel" class="reveal-panel hidden"></div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="end-screen" class="screen hidden">
+      <div class="end-card">
+        <div id="end-badge" class="end-badge">RESULT</div>
+        <h2 id="end-title">Quarter ended</h2>
+        <div id="end-summary" class="end-summary"></div>
+        <div id="end-dossier" class="end-dossier"></div>
+        <button id="restart-button" class="primary-button">Play again</button>
+      </div>
+    </div>
+
+    <div id="token-layer"></div>
   </div>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
   <script src="game.js"></script>
 </body>
 </html>
