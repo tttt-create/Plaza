@@ -3,254 +3,226 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1614" />
   <title>Hidden in Plain Sight</title>
-  <meta name="description" content="Dark-comedy data-harvesting management game." />
+  <meta name="description" content="Dark-comedy social platform management game." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="game">
-    <div id="intro-screen" class="screen active">
-      <div class="intro-panel">
-        <div class="intro-kicker">BOARD BRIEFING // QUARTERLY OPERATIONS</div>
-        <h1>Hidden in Plain Sight</h1>
-        <p class="subtitle">A dark-comedy management sim about building a social platform and turning attention into certainty.</p>
-
-        <div class="intro-box">
-          <div class="mini-label">OBJECTIVE</div>
-          <div class="objective-line"><span class="big">$100B</span> valuation before public awareness reaches <span class="hot">100</span></div>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">H·P</div>
+        <div class="brand-text">
+          <span>HIDDEN IN PLAIN SIGHT</span>
+          <small>MAYA QUINN • QUARTERLY SIGNAL REVIEW</small>
         </div>
-
-        <div class="intro-grid">
-          <div class="intro-card">
-            <div class="mini-label">WHO</div>
-            <strong>Maya Quinn</strong>
-            <small>34 · Portland OR</small>
-          </div>
-          <div class="intro-card">
-            <div class="mini-label">HOW</div>
-            <strong>Harvest signal</strong>
-            <small>then sell certainty</small>
-          </div>
-          <div class="intro-card">
-            <div class="mini-label">RULE</div>
-            <strong>Stay hidden</strong>
-            <small>don’t get noticed</small>
-          </div>
-        </div>
-
-        <button id="start-button" class="primary-button">Start the quarter</button>
       </div>
-    </div>
 
-    <div id="game-screen" class="screen">
-      <header class="topbar">
-        <div class="brand-wrap">
-          <div class="brand-mark">H•P</div>
-          <div class="brand-copy">
-            <div class="brand-title">HIDDEN IN PLAIN SIGHT</div>
-            <div class="brand-sub">MAYA QUINN / QUARTERLY SIGNAL REVIEW</div>
-          </div>
-        </div>
-
-        <div class="topbar-actions">
-          <button id="mute-button" class="ghost-button" aria-label="Toggle sound">🔊</button>
-          <button id="pause-button" class="ghost-button" aria-label="Pause game">⏸</button>
-        </div>
-      </header>
-
-      <main class="hud">
-        <section class="stats-strip">
-          <div class="stat-card">
-            <div class="stat-label">Users</div>
-            <div class="stat-value" id="users-value">10,000</div>
-            <div class="stat-sub" id="users-rate">+0/sec</div>
-          </div>
-
-          <div class="stat-card emphasis">
-            <div class="stat-label">Valuation</div>
-            <div class="stat-value" id="revenue-value">$0</div>
-            <div class="stat-sub" id="revenue-rate">+$0/sec</div>
-            <div class="progress">
-              <div id="revenue-bar" class="progress-bar revenue"></div>
-            </div>
-          </div>
-
-          <div class="stat-card warning">
-            <div class="stat-label">Awareness</div>
-            <div class="stat-value" id="awareness-value">8</div>
-            <div class="stat-sub" id="awareness-status">LOW</div>
-            <div class="progress">
-              <div id="awareness-bar" class="progress-bar awareness"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="game-grid">
-          <div class="left-column">
-            <div class="panel">
-              <div class="panel-header">
-                <div>
-                  <div class="panel-kicker">BOARD INSTRUCTIONS</div>
-                  <h2>Product levers</h2>
-                </div>
-                <div class="panel-badge" id="active-count">0 ACTIVE</div>
-              </div>
-
-              <div id="tutorial-box" class="tutorial-box"></div>
-
-              <div id="lever-list" class="lever-list"></div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-header compact">
-                <div>
-                  <div class="panel-kicker">RAW DATA</div>
-                  <h3>Stockpile</h3>
-                </div>
-              </div>
-              <div id="inventory" class="inventory-grid"></div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-header compact">
-                <div>
-                  <div class="panel-kicker">INFERENCE ENGINE</div>
-                  <h3>Learnings</h3>
-                </div>
-                <div class="panel-badge" id="inference-count">0 / 15</div>
-              </div>
-              <div id="inference-list" class="inference-list"></div>
-            </div>
-          </div>
-
-          <aside class="right-column">
-            <div class="panel dossier">
-              <div class="panel-header compact">
-                <div>
-                  <div class="panel-kicker">PROFILE</div>
-                  <h3>Maya’s dossier</h3>
-                </div>
-                <div class="panel-badge subtle">CONFIDENTIAL</div>
-              </div>
-
-              <div class="person-box">
-                <div class="portrait-wrap">
-                  <div class="portrait">
-                    <div class="portrait-face" id="suspicion-face">◕</div>
-                  </div>
-                </div>
-                <div class="person-meta">
-                  <div class="person-name">Maya Quinn</div>
-                  <div class="person-meta-line">34 • Portland, OR</div>
-                </div>
-              </div>
-
-              <div id="dossier-fields" class="dossier-fields"></div>
-            </div>
-
-            <div class="panel pressure">
-              <div class="panel-header compact">
-                <div>
-                  <div class="panel-kicker">EXTERNAL PRESSURE</div>
-                  <h3>Risk</h3>
-                </div>
-              </div>
-
-              <div class="pressure-block">
-                <div class="pressure-head">
-                  <span>Regulator</span>
-                  <span id="regulator-state">DORMANT</span>
-                </div>
-                <div class="progress mini">
-                  <div id="regulator-bar" class="progress-bar regulator"></div>
-                </div>
-              </div>
-
-              <div class="pressure-block">
-                <div class="pressure-head">
-                  <span>Press</span>
-                  <span id="press-state">QUIET</span>
-                </div>
-                <div class="progress mini">
-                  <div id="press-bar" class="progress-bar press"></div>
-                </div>
-              </div>
-
-              <div id="headline-box" class="headline-box">
-                <div class="headline">No one is watching yet.</div>
-              </div>
-            </div>
-
-            <div class="panel countermeasures">
-              <div class="panel-header compact">
-                <div>
-                  <div class="panel-kicker">FIRE-EXTINGUISHER</div>
-                  <h3>Damage control</h3>
-                </div>
-              </div>
-
-              <div class="counter-buttons">
-                <button class="counter-button" data-type="lobbying">
-                  <span class="counter-icon">🏛️</span>
-                  <span class="counter-copy">
-                    <strong>Lobbying</strong>
-                    <small>Slow regulator</small>
-                  </span>
-                  <span class="counter-cost">$250M</span>
-                </button>
-
-                <button class="counter-button" data-type="rebrand">
-                  <span class="counter-icon">🧼</span>
-                  <span class="counter-copy">
-                    <strong>Rebrand</strong>
-                    <small>Reset awareness</small>
-                  </span>
-                  <span class="counter-cost">$1B</span>
-                </button>
-
-                <button class="counter-button" data-type="privacy">
-                  <span class="counter-icon">🧯</span>
-                  <span class="counter-copy">
-                    <strong>Privacy theater</strong>
-                    <small>Pause growth</small>
-                  </span>
-                  <span class="counter-cost">$500M</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="panel events">
-              <div class="panel-header compact">
-                <div>
-                  <div class="panel-kicker">OPERATIONS FEED</div>
-                  <h3>Signals</h3>
-                </div>
-              </div>
-              <div id="event-feed" class="event-feed"></div>
-            </div>
-          </aside>
-        </section>
-      </main>
-    </div>
-
-    <div id="reveal-panel" class="reveal-panel hidden"></div>
-
-    <div id="toast" class="toast"></div>
-
-    <div id="end-screen" class="screen hidden">
-      <div class="end-card">
-        <div id="end-badge" class="end-badge">RESULT</div>
-        <h2 id="end-title">Quarter ended</h2>
-        <div id="end-summary" class="end-summary"></div>
-        <div id="end-dossier" class="end-dossier"></div>
-        <button id="restart-button" class="primary-button">Play again</button>
+      <div class="topbar-actions">
+        <span class="live-chip"><i></i> LIVE</span>
+        <span class="run-clock" id="clock">08:00</span>
+        <button class="icon-button" id="pause-button" aria-label="Pause game">II</button>
       </div>
-    </div>
+    </header>
 
-    <div id="token-layer"></div>
+    <section class="metrics">
+      <article class="metric-card">
+        <div class="metric-head">
+          <span>Users</span>
+          <span class="trend">+0/sec</span>
+        </div>
+        <div class="metric-value" id="users-value">10,000</div>
+        <div class="metric-sub" id="users-rate">+0/sec</div>
+      </article>
+
+      <article class="metric-card alt">
+        <div class="metric-head">
+          <span>Valuation</span>
+          <span class="goal">Target $100B</span>
+        </div>
+        <div class="metric-value" id="revenue-value">$0</div>
+        <div class="metric-sub" id="revenue-rate">+$0/sec</div>
+        <div class="progress">
+          <div id="revenue-bar" class="progress-bar revenue"></div>
+        </div>
+      </article>
+
+      <article class="metric-card warn">
+        <div class="metric-head">
+          <span>Awareness</span>
+          <span class="status" id="awareness-status">LOW</span>
+        </div>
+        <div class="metric-value"><span id="awareness-value">8</span><small> / 100</small></div>
+        <div class="metric-sub">Investigation at 60 • deletion at 100</div>
+        <div class="progress">
+          <div id="awareness-bar" class="progress-bar awareness"></div>
+        </div>
+      </article>
+    </section>
+
+    <main class="layout">
+      <section class="left-column">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">Board instructions</div>
+              <h2>Product levers</h2>
+            </div>
+            <div class="pill" id="active-count">0 active</div>
+          </div>
+
+          <div class="board-note" id="board-note">
+            Turn on a lever to start harvesting data. Your first move should be the neighborhood feed.
+          </div>
+
+          <div id="lever-list" class="lever-list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">Raw material</div>
+              <h3>Stockpile</h3>
+            </div>
+            <div class="pill muted">10K users • 5 files</div>
+          </div>
+
+          <div id="inventory" class="inventory-grid"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">Signal processing</div>
+              <h3>Inference engine</h3>
+            </div>
+            <div class="pill" id="inference-count">0 / 15</div>
+          </div>
+
+          <div id="inference-list" class="inference-list"></div>
+        </div>
+      </section>
+
+      <aside class="right-column">
+        <div class="panel dossier-panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">Private profile</div>
+              <h3>Maya’s dossier</h3>
+            </div>
+            <div class="pill muted">CONFIDENTIAL</div>
+          </div>
+
+          <div class="profile-top">
+            <div class="profile-avatar">
+              <div class="avatar-face">◕</div>
+            </div>
+            <div>
+              <div class="profile-name">Maya Quinn</div>
+              <div class="profile-meta">34 • Portland, OR</div>
+            </div>
+          </div>
+
+          <div id="dossier-fields" class="dossier-fields"></div>
+          <div class="completion-row">
+            <span>Profile completion</span>
+            <strong id="profile-percent">0%</strong>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">Attention</div>
+              <h3>Hot spots</h3>
+            </div>
+            <div class="pill" id="attention-label">LOW</div>
+          </div>
+
+          <div class="attention-meter">
+            <div class="attention-track">
+              <div id="attention-bar" class="attention-fill"></div>
+            </div>
+          </div>
+
+          <div class="hotspot-box">
+            <div class="hotspot-label">Current target</div>
+            <div id="hotspot-name" class="hotspot-name">No major attention spike</div>
+            <div id="hotspot-desc" class="hotspot-desc">The platform is quiet.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">Distraction</div>
+              <h3>Response tools</h3>
+            </div>
+            <div class="pill muted" id="distraction-pill">Ready</div>
+          </div>
+
+          <div id="distraction-list" class="distraction-list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">External pressure</div>
+              <h3>Risk</h3>
+            </div>
+          </div>
+
+          <div class="pressure-row">
+            <div class="pressure-label">Regulator</div>
+            <div class="pressure-state" id="regulator-state">DORMANT</div>
+          </div>
+          <div class="mini-track">
+            <div id="regulator-bar" class="mini-fill regulator"></div>
+          </div>
+
+          <div class="pressure-row">
+            <div class="pressure-label">Press</div>
+            <div class="pressure-state" id="press-state">QUIET</div>
+          </div>
+          <div class="mini-track">
+            <div id="press-bar" class="mini-fill press"></div>
+          </div>
+
+          <div id="pressure-summary" class="pressure-summary">
+            No one is watching yet.
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">Operations feed</div>
+              <h3>Signals</h3>
+            </div>
+          </div>
+          <div id="event-feed" class="event-feed"></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+  <div id="token-layer" aria-hidden="true"></div>
+
+  <div id="result-panel" class="result-panel hidden" role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="result-card">
+      <div class="result-badge" id="result-badge">Outcome</div>
+      <h2 id="result-title">Quarter ended</h2>
+      <p id="result-summary" class="result-summary"></p>
+
+      <div id="result-dossier" class="result-dossier"></div>
+
+      <button id="restart-button" class="primary-button">Play again</button>
+    </div>
   </div>
 
   <script src="game.js"></script>
