@@ -1,1615 +1,2498 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#f6f1e7" />
-  <title>Hidden in Plain Sight</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Lato:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --paper:#f6f1e7;
-      --card:#fffdf8;
-      --line:#e3dccd;
-      --ink:#2e2a26;
-      --secondary:#5e574e;
-      --muted:#8c8478;
-      --sage:#8fb59a;
-      --mist:#8fb3cf;
-      --terracotta:#e07a5f;
-      --ochre:#d9a441;
-      --plum:#9d84b7;
-      --red:#c35042;
-      --shadow: 0 10px 20px rgba(30,24,18,0.08);
-      --radius: 14px;
-      --panel: rgba(255,255,255,0.75);
-      --dangerTint: rgba(224,122,95,0.12);
-      --mapBlue: #dfeaf5;
-      --mapRiver: #cfe0ef;
-      --mapPath: rgba(167,151,131,0.35);
-      --mapBlob: rgba(169,144,128,0.14);
-    }
-
-    *{box-sizing:border-box}
-    html,body{
-      margin:0;
-      min-height:100%;
-      background: var(--paper);
-      color:var(--ink);
-      font-family:"Lato",sans-serif;
-    }
-    body{
-      overflow-x:hidden;
-    }
-    button, input, textarea{
-      font:inherit;
-    }
-    button{
-      cursor:pointer;
-    }
-    h1,h2,h3,h4{
-      font-family:"Playfair Display",serif;
-      font-variant-numeric: lining-nums;
-      letter-spacing:-0.03em;
-      margin:0;
-      font-weight:700;
-    }
-    .mono{
-      font-family:"Courier Prime",monospace;
-      font-variant-numeric: lining-nums;
-    }
-
-    .screen{
-      max-width: 1440px;
-      margin:0 auto;
-      padding: 0 10px 30px;
-    }
-
-    .hud{
-      position: sticky;
-      top:0;
-      z-index:20;
-      background: rgba(246,241,231,0.92);
-      backdrop-filter: blur(8px);
-      border-bottom:1px solid var(--line);
-    }
-    .hud-inner{
-      max-width:1440px;
-      margin:0 auto;
-      padding: 10px 10px 8px;
-    }
-    .row1{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      justify-content:space-between;
-    }
-    .money-wrap{
-      display:flex;
-      align-items:flex-end;
-      gap:10px;
-      min-width:0;
-      flex:1;
-    }
-    .money{
-      font-family:"Playfair Display",serif;
-      font-variant-numeric: lining-nums;
-      font-size: clamp(1.7rem, 4vw, 3rem);
-      letter-spacing:-0.06em;
-      line-height:1;
-    }
-    .milestone-wrap{
-      flex:1;
-      min-width:120px;
-    }
-    .milestone-head{
-      display:flex;
-      justify-content:space-between;
-      font-size:10px;
-      text-transform:uppercase;
-      letter-spacing:0.12em;
-      color:var(--secondary);
-      margin-bottom:5px;
-      gap:8px;
-    }
-    .progress{
-      position:relative;
-      height:8px;
-      border-radius:999px;
-      background:#ece4d7;
-      overflow:hidden;
-      border:1px solid var(--line);
-    }
-    .progress > span{
-      display:block;
-      position:absolute;
-      inset:0 auto 0 0;
-      width:0%;
-      border-radius:inherit;
-      background: var(--ochre);
-    }
-    .tiny{
-      font-size:11px;
-      color:var(--secondary);
-    }
-    .mute{
-      border:1px solid var(--line);
-      background:var(--card);
-      padding:7px 10px;
-      border-radius:10px;
-      font-size:12px;
-      min-width:42px;
-    }
-    .row2{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      margin-top:8px;
-      padding-top:6px;
-      border-top:1px solid var(--line);
-    }
-    .suspicion{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex:1;
-      min-width:0;
-    }
-    .face{
-      font-size:20px;
-      width:28px;
-      text-align:center;
-      display:inline-block;
-    }
-    .suspicion-bar{
-      position:relative;
-      flex:1;
-      height:10px;
-      background:#ece4d7;
-      border:1px solid var(--line);
-      border-radius:999px;
-      overflow:hidden;
-    }
-    .suspicion-bar > span{
-      position:absolute;
-      inset:0 auto 0 0;
-      width:0%;
-      background: linear-gradient(90deg, var(--sage), var(--terracotta));
-      border-radius:inherit;
-    }
-    .tick{
-      position:absolute;
-      top:-3px;
-      bottom:-3px;
-      width:2px;
-      background: rgba(46,42,38,0.72);
-      left:60%;
-    }
-    .hearing-pill{
-      padding:5px 8px;
-      border-radius:999px;
-      background: rgba(192,79,67,0.1);
-      border:1px solid rgba(195,80,66,0.25);
-      color: var(--red);
-      font-size:10px;
-      letter-spacing:0.12em;
-      text-transform:uppercase;
-      font-weight:700;
-      white-space:nowrap;
-    }
-    .damage-button{
-      border:1px solid var(--line);
-      background:var(--card);
-      border-radius:10px;
-      padding:7px 10px;
-      font-size:12px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-
-    .map-wrap{
-      margin-top:8px;
-      background: rgba(255,255,255,0.7);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 8px;
-      box-shadow: var(--shadow);
-    }
-    canvas{
-      display:block;
-      width:100%;
-      aspect-ratio: 2.3 / 1;
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(223,234,245,0.9) 0%, rgba(242,235,224,0.7) 70%, #f8f1e8 100%);
-      border:1px solid rgba(133,121,102,0.18);
-    }
-
-    .tray{
-      display:flex;
-      gap:8px;
-      overflow:auto;
-      padding:8px 2px 0;
-      scrollbar-width:none;
-    }
-    .tray::-webkit-scrollbar{display:none}
-    .distraction{
-      min-width:84px;
-      border:1px solid var(--line);
-      background:var(--card);
-      border-radius:12px;
-      padding:8px 10px;
-      text-align:left;
-      display:flex;
-      flex-direction:column;
-      gap:5px;
-      font-size:10px;
-      color:var(--secondary);
-    }
-    .distraction strong{
-      display:block;
-      font-size:12px;
-      color: var(--ink);
-    }
-    .distraction small{
-      display:block;
-      color:var(--muted);
-      position:relative;
-      z-index:1;
-    }
-    .distraction:disabled{
-      opacity:0.5;
-      cursor:not-allowed;
-    }
-
-    .jar-row{
-      display:grid;
-      grid-template-columns: repeat(10, minmax(0, 1fr));
-      gap:8px;
-      margin-top:10px;
-    }
-    .jar{
-      background: rgba(255,255,255,0.6);
-      border:1px solid var(--line);
-      border-radius:10px;
-      padding:8px 4px 7px;
-      min-height:118px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:space-between;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45);
-    }
-    .jar-bottle{
-      position:relative;
-      width:36px;
-      height:42px;
-      border:1px solid rgba(86,77,69,0.5);
-      border-bottom-left-radius:10px;
-      border-bottom-right-radius:10px;
-      border-top-left-radius:6px;
-      border-top-right-radius:6px;
-      background: rgba(255,255,255,0.26);
-      overflow:hidden;
-    }
-    .jar-fill{
-      position:absolute;
-      left:4px;
-      right:4px;
-      bottom:4px;
-      height:0%;
-      border-radius:4px 4px 8px 8px;
-      background: linear-gradient(180deg, rgba(143,181,154,0.75), rgba(143,181,154,1));
-      transition: height .2s ease;
-    }
-    .jar span{
-      display:block;
-      text-align:center;
-    }
-    .jar-icon{font-size:18px; line-height:1; margin-top:4px;}
-    .jar-count{
-      font-family:"Playfair Display",serif;
-      font-size:15px; font-variant-numeric: lining-nums;
-      letter-spacing:-0.05em;
-      margin-top:4px;
-    }
-    .jar-label{
-      font-size:9px;
-      letter-spacing:0.09em;
-      text-transform:uppercase;
-      color: var(--muted);
-      text-align:center;
-      line-height:1.2;
-      min-height:22px;
-    }
-    .jar-need{
-      font-size:9px;
-      color:var(--secondary);
-    }
-
-    .main{
-      display:grid;
-      grid-template-columns: minmax(0,1fr);
-      gap:12px;
-      margin-top:12px;
-    }
-    .panel{
-      background: rgba(255,255,255,0.7);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow:var(--shadow);
-      padding: 14px 12px 12px;
-    }
-    .panel-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      margin-bottom:10px;
-    }
-    .eyebrow{
-      color:var(--secondary);
-      font-size:9px;
-      letter-spacing:0.12em;
-      text-transform:uppercase;
-      font-weight:700;
-    }
-    .tag{
-      background: rgba(143,181,154,0.12);
-      border:1px solid rgba(143,181,154,0.4);
-      border-radius:999px;
-      padding:5px 8px;
-      font-size:9px;
-      letter-spacing:0.08em;
-      text-transform:uppercase;
-      color:var(--secondary);
-      white-space:nowrap;
-    }
-    .note{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      background: rgba(143,181,154,0.08);
-      border:1px solid rgba(143,181,154,0.35);
-      border-radius:10px;
-      padding:10px 12px;
-      margin-bottom:10px;
-    }
-    .note .emoji{font-size:18px; line-height:1; margin-top:2px;}
-    .note .text{
-      font-size:12px;
-      line-height:1.4;
-      color:var(--ink);
-    }
-    .note .text strong{font-weight:800;}
-
-    .levers{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:8px;
-    }
-    .lever{
-      background: rgba(255,255,255,0.4);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 10px 8px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      transition:border-color .15s ease, background .15s ease;
-    }
-    .lever.on{
-      border-color: rgba(143,181,154,0.7);
-      background: rgba(143,181,154,0.08);
-    }
-    .lever-top{
-      display:flex;
-      align-items:flex-start;
-      gap:8px;
-    }
-    .lever-icon{
-      width:32px;
-      height:32px;
-      border-radius:9px;
-      background: rgba(255,255,255,0.6);
-      border:1px solid var(--line);
-      display:grid;
-      place-items:center;
-      font-size:17px;
-      flex-shrink:0;
-    }
-    .lever-copy{
-      flex:1;
-      min-width:0;
-    }
-    .lever-copy h3{
-      font-size:15px;
-      line-height:1.1;
-      letter-spacing:-0.03em;
-    }
-    .quote{
-      margin-top:3px;
-      color:var(--secondary);
-      font-style:italic;
-      font-size:11px;
-      line-height:1.35;
-    }
-    .really{
-      display:block;
-      margin-top:4px;
-      color:var(--ink);
-      font-size:10px;
-      line-height:1.45;
-    }
-    .lever-controls{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      margin-top:2px;
-    }
-    .toggle{
-      border:1px solid var(--line);
-      border-radius:999px;
-      background: rgba(255,255,255,0.7);
-      color:var(--secondary);
-      font-size:10px;
-      letter-spacing:0.08em;
-      text-transform:uppercase;
-      padding:6px 9px;
-      min-width:60px;
-      font-weight:700;
-    }
-    .lever.on .toggle{
-      background: rgba(143,181,154,0.2);
-      color:var(--ink);
-      border-color: rgba(143,181,154,0.6);
-    }
-    .heat{
-      font-size:9px;
-      color: var(--secondary);
-      display:flex;
-      align-items:center;
-      gap:4px;
-      padding-left:2px;
-    }
-    .lever-foot{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      border-top:1px solid var(--line);
-      padding-top:7px;
-      font-size:10px;
-      color:var(--secondary);
-    }
-    .rate{font-weight:700;color:var(--ink);}
-    .lever-bar{
-      position:relative;
-      height:6px;
-      width:100%;
-      background:#efe7dc;
-      border:1px solid var(--line);
-      border-radius:999px;
-      overflow:hidden;
-    }
-    .lever-bar > span{
-      position:absolute;
-      inset:0 auto 0 0;
-      width:0%;
-      background: linear-gradient(90deg, var(--sage), var(--mist));
-      border-radius:inherit;
-    }
-
-    .inferences{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:8px;
-    }
-    .inference{
-      background: rgba(255,255,255,0.46);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 10px 8px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      min-height:150px;
-    }
-    .inference.ready{
-      border-color: rgba(217,164,65,0.55);
-      background: rgba(217,164,65,0.07);
-    }
-    .info-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      color: var(--secondary);
-      font-size:9px;
-      text-transform:uppercase;
-      letter-spacing:0.08em;
-    }
-    .infer-name{
-      font-family:"Playfair Display",serif;
-      font-size:18px;
-      line-height:1.05;
-      letter-spacing:-0.04em;
-    }
-    .infer-copy{
-      color: var(--secondary);
-      line-height:1.45;
-      font-size:11px;
-      min-height:46px;
-    }
-    .recipe{
-      display:flex;
-      flex-wrap:wrap;
-      gap:4px;
-      margin-top:auto;
-    }
-    .chip{
-      background: rgba(255,255,255,0.5);
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:4px 6px;
-      font-size:9px;
-      letter-spacing:0.02em;
-      color:var(--secondary);
-    }
-    .infer-button{
-      border:1px solid var(--line);
-      background: var(--card);
-      border-radius:8px;
-      padding:8px 10px;
-      font-weight:700;
-      font-size:11px;
-      line-height:1;
-    }
-    .infer-button:disabled{
-      opacity:0.45;
-      cursor:not-allowed;
-    }
-    .infer-button.ready{
-      background: rgba(217,164,65,0.12);
-      border-color: rgba(217,164,65,0.6);
-      color: var(--ink);
-    }
-
-    .files{
-      display:grid;
-      gap:10px;
-    }
-    .file-card{
-      background: rgba(255,255,255,0.45);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 12px;
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-    }
-    .file-avatar{
-      width:38px;
-      height:38px;
-      border-radius:50%;
-      display:grid;
-      place-items:center;
-      color: white;
-      font-weight:700;
-      font-family:"Playfair Display",serif;
-      font-size:15px;
-      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25);
-    }
-    .file-meta{
-      flex:1;
-      min-width:0;
-    }
-    .file-name{
-      font-family:"Playfair Display",serif;
-      font-size:18px;
-      letter-spacing:-0.04em;
-      margin-bottom:2px;
-    }
-    .file-lines{
-      color:var(--secondary);
-      font-size:11px;
-      line-height:1.5;
-    }
-    .file-lines strong{
-      color:var(--ink);
-    }
-
-    .intro, .endscreen{
-      position:fixed;
-      inset:0;
-      background: rgba(19,16,12,0.5);
-      display:grid;
-      place-items:center;
-      padding:20px;
-      z-index:50;
-    }
-    .hidden{display:none !important;}
-    .intro-card, .result-card{
-      width:min(720px,100%);
-      background: rgba(255,255,255,0.95);
-      border:1px solid var(--line);
-      border-radius:18px;
-      box-shadow: 0 22px 48px rgba(27,22,18,0.12);
-      padding:20px 18px;
-    }
-    .intro-card h1{
-      font-size: clamp(2.5rem, 8vw, 4.9rem);
-      line-height:0.9;
-      margin:10px 0 12px;
-    }
-    .intro-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:10px;
-      margin:16px 0;
-    }
-    .mini-card{
-      background: rgba(246,241,231,0.7);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px 10px;
-      font-size:12px;
-      line-height:1.5;
-    }
-    .mini-card strong{
-      display:block;
-      margin-bottom:4px;
-    }
-    .start{
-      border:1px solid rgba(143,181,154,0.6);
-      background: rgba(143,181,154,0.25);
-      padding:12px 16px;
-      border-radius:12px;
-      font-weight:800;
-      letter-spacing:0.1em;
-      text-transform:uppercase;
-      font-size:11px;
-    }
-    .people{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:8px;
-    }
-    .person-badge{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:6px 9px;
-      background: var(--card);
-      font-size:11px;
-    }
-    .person-dot{
-      width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10px;
-      font-family:"Playfair Display",serif;
-      font-weight:700;
-    }
-
-    .toast{
-      position:fixed;
-      left:50%;
-      bottom:18px;
-      transform: translateX(-50%) translateY(10px);
-      background: rgba(46,42,38,0.92);
-      color:#fff;
-      opacity:0;
-      transition: all .18s ease;
-      border-radius:999px;
-      padding:9px 14px;
-      font-size:11px;
-      letter-spacing:0.1em;
-      text-transform:uppercase;
-      z-index:80;
-      pointer-events:none;
-    }
-    .toast.show{
-      opacity:1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .bump{
-      position:fixed;
-      left:50%;
-      top:12%;
-      transform: translateX(-50%) translateY(-8px);
-      opacity:0;
-      background: rgba(217,164,65,0.13);
-      border:1px solid rgba(217,164,65,0.6);
-      border-radius: 12px;
-      padding:10px 14px;
-      font-size:11px;
-      letter-spacing:0.08em;
-      text-transform:uppercase;
-      color:var(--ink);
-      z-index:90;
-      animation: pop .9s ease forwards;
-    }
-    @keyframes pop{
-      0%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.96)}
-      15%{opacity:1}
-      70%{opacity:1}
-      100%{opacity:0;transform:translateX(-50%) translateY(-8px) scale(1)}
-    }
-
-    @media (min-width: 960px){
-      .main{
-        grid-template-columns: minmax(0,1.2fr) minmax(300px,0.8fr);
-      }
-      .main > .panel{
-        min-height: 0;
-      }
-    }
-
-    @media (max-width: 760px){
-      .screen{
-        padding: 0 8px 24px;
-      }
-      .row1{
-        flex-wrap:wrap;
-      }
-      .money-wrap{
-        width:100%;
-      }
-      .levers, .inferences, .intro-grid{
-        grid-template-columns:1fr;
-      }
-      .jar-row{
-        grid-template-columns: repeat(5, minmax(0,1fr));
-      }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f1e7">
+<title>Hidden in Plain Sight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500;1,600&family=Lato:ital,wght@0,400;0,700;0,900;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+--paper: #f6f1e7;
+--paper-2: #efe8da;
+--card: #fffdf8;
+--line: #e3dccd;
+--line-2: #d4cbb8;
+--ink: #2e2a26;
+--ink-2: #5e574e;
+--muted: #8c8478;
+--faint: #b5ad9f;
+--sage: #8fb59a;
+--sage-soft: #e3efe2;
+--mist: #8fb3cf;
+--mist-soft: #e2edf5;
+--terra: #e07a5f;
+--terra-soft: #fbe6df;
+--ochre: #d9a441;
+--ochre-soft: #f8edd3;
+--plum: #9d84b7;
+--plum-soft: #eee7f4;
+--doc: #fffdf6;
+--doc-ink: #2b2723;
+--doc-faint: #a39b8c;
+--r: 16px;
+--display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+--font: 'Lato', system-ui, -apple-system, 'Segoe UI', sans-serif;
+--mono: 'Courier Prime', ui-monospace, Menlo, Consolas, monospace;
+--shadow: 0 1px 0 rgba(46, 42, 38, .04), 0 2px 8px rgba(46, 42, 38, .05);
+color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+* { font-variant-numeric: lining-nums; }
+.val-num, .timer, .crash .big, .sold .big, .dc-cash { font-variant-numeric: lining-nums tabular-nums; }
+body {
+background: var(--paper);
+color: var(--ink);
+font: 15px/1.45 var(--font);
+-webkit-font-smoothing: antialiased;
+padding-bottom: calc(env(safe-area-inset-bottom) + 28px);
+-webkit-tap-highlight-color: transparent;
+overflow-x: hidden;
+min-height: 100vh;
+}
+body::after {
+content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 5;
+background: rgba(224, 122, 95, 0); transition: background 1.2s;
+}
+body.hot::after { background: rgba(224, 122, 95, .06); }
+body.critical::after { animation: warm 2.4s ease-in-out infinite; }
+@keyframes warm { 50% { background: rgba(224, 122, 95, .12); } }
+button { font: inherit; color: inherit; cursor: pointer; }
+h2 { font: 700 19px/1.2 var(--display); margin: 4px 2px 10px; color: var(--ink); }
+h2 small { font: 400 13px var(--font); color: var(--muted); margin-left: 6px; }
+b { font-weight: 800; }
+.top { position: sticky; top: 0; z-index: 20; background: var(--paper); border-bottom: 1px solid var(--line); }
+.hud { padding: calc(10px + env(safe-area-inset-top)) 14px 8px; display: grid; gap: 8px; }
+.hud.shake { animation: shake .45s; }
+@keyframes shake { 25% { transform: translateX(-3px); } 50% { transform: translateX(3px); } 75% { transform: translateX(-2px); } }
+.hud-row { display: flex; align-items: center; gap: 10px; }
+.val { flex: none; }
+.val-label { font: 700 11px var(--font); color: var(--muted); letter-spacing: .02em; }
+.val-num { font: 800 25px/1.05 var(--display); color: var(--ink); font-variant-numeric: tabular-nums; min-width: 96px; }
+.goal { flex: 1; min-width: 0; }
+.goal-label { display: flex; justify-content: space-between; font: 700 12px var(--font); color: var(--muted); margin-bottom: 5px; white-space: nowrap; gap: 6px; }
+.goal-label span:first-child { overflow: hidden; text-overflow: ellipsis; }
+.goal-bar { height: 8px; background: var(--paper-2); border-radius: 99px; overflow: hidden; }
+.goal-bar i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--ochre); transition: width .8s ease-out; }
+.icon-btn { width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 16px; flex: none; }
+.sus { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; border-radius: 12px; }
+.sus-face { font-size: 24px; line-height: 1; }
+.sus-face.bump { animation: bump .5s; }
+.sus-main { flex: 1; min-width: 0; }
+.sus-label { display: flex; justify-content: space-between; font: 700 12px var(--font); color: var(--muted); margin-bottom: 5px; }
+.sus-label b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.sus-bar { position: relative; height: 10px; background: var(--paper-2); border-radius: 99px; }
+.sus-bar i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--terra); transition: width .8s linear; }
+.sus-bar.frozen i { background: var(--mist); }
+.sus-mark { position: absolute; left: 60%; top: -1px; width: 2px; height: 12px; background: var(--ink-2); opacity: .35; font-size: 0; border-radius: 1px; }
+.dc-btn { flex: none; display: flex; align-items: center; gap: 5px; height: 38px; padding: 0 11px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 16px; }
+.dc-btn span { font: 700 13px var(--font); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.dc-btn.can { border-color: var(--terra); background: var(--terra-soft); }
+.inquiry { flex: none; display: flex; align-items: center; gap: 5px; height: 34px; padding: 0 12px; border-radius: 99px; background: var(--terra); color: #fff; font: 700 13px var(--font); font-variant-numeric: tabular-nums; animation: breathe 1.6s ease-in-out infinite; }
+.inquiry.hidden { display: none; }
+@keyframes breathe { 50% { transform: scale(1.05); } }
+.stage { padding: 0 14px 10px; display: grid; gap: 8px; }
+.map-wrap { position: relative; border-radius: 18px; overflow: hidden; background: #f1ead9; border: 1px solid var(--line); }
+#map { display: block; width: 100%; aspect-ratio: 2.3 / 1; touch-action: none; cursor: pointer; }
+.map-wrap.aiming { border-color: var(--sage); box-shadow: 0 0 0 3px var(--sage-soft); }
+.map-tag { position: absolute; left: 8px; bottom: 7px; font: 700 11px var(--font); color: var(--ink-2); background: rgba(255,253,248,.85); padding: 2px 8px; border-radius: 99px; pointer-events: none; }
+.combo { position: absolute; right: 8px; top: 7px; font: 700 12px var(--font); color: var(--ink); background: var(--ochre-soft); border: 1px solid #ecd49a; padding: 2px 9px; border-radius: 99px; pointer-events: none; transition: transform .2s; }
+.combo.hidden { display: none; }
+.combo.pop { animation: bump .35s; }
+.aim-hint { position: absolute; left: 8px; right: 8px; bottom: 7px; font: 700 12.5px/1.35 var(--font); color: var(--ink); background: rgba(255,253,248,.95); border: 1px solid var(--sage); padding: 6px 10px; border-radius: 12px; text-align: center; pointer-events: none; }
+.aim-hint.hidden { display: none; }
+.side { display: grid; gap: 8px; min-width: 0; }
+.tray { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.dbtn { position: relative; overflow: hidden; border: 1px solid var(--line); background: var(--card); border-radius: 14px; padding: 6px 4px 7px; display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 56px; box-shadow: var(--shadow); }
+.dbtn .d-ico { font-size: 19px; line-height: 1.15; }
+.dbtn .d-nm { font: 700 12px/1.15 var(--display); text-align: center; color: var(--ink); }
+.dbtn .d-sub { font: 700 10px var(--font); color: var(--muted); }
+.dbtn .cd { position: absolute; inset: 0; background: rgba(246, 241, 231, .82); display: grid; place-items: center; font: 900 15px var(--font); color: var(--ink-2); }
+.dbtn .cd.hidden { display: none; }
+.dbtn.ready .d-sub { color: #5f8f6c; }
+.dbtn.armed { border-color: var(--sage); background: var(--sage-soft); box-shadow: 0 0 0 3px var(--sage-soft); }
+.dbtn.urgent.ready { animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.jars { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 1px 0; min-height: 52px; }
+.jars::-webkit-scrollbar { display: none; }
+.jar { flex: none; position: relative; width: 42px; height: 50px; border-radius: 8px 8px 14px 14px; border: 1.5px solid var(--line-2); background: var(--card); overflow: hidden; }
+.jar::before { content: ""; position: absolute; left: 6px; right: 6px; top: -1px; height: 4px; border-radius: 0 0 3px 3px; background: var(--line-2); z-index: 1; }
+.jar .liquid { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--c); opacity: .55; transition: height .9s ease-out; }
+.jar .j-ico { position: absolute; top: 6px; left: 0; right: 0; text-align: center; font-size: 15px; z-index: 1; }
+.jar .j-n { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font: 700 11px var(--font); color: var(--ink); font-variant-numeric: tabular-nums; z-index: 1; }
+.jar.full { border-color: var(--c); border-width: 2px; }
+.jar.full .liquid { opacity: .75; }
+.jar.radio { border-style: dashed; border-color: var(--terra); }
+.jar.radio::after { content: "☢"; position: absolute; right: 2px; top: 1px; font-size: 10px; color: var(--terra); z-index: 2; }
+.jar.gulp { animation: gulp .28s; }
+@keyframes gulp { 40% { transform: scale(1.08, .95); } }
+.jar.empty-hint { width: auto; border: 1.5px dashed var(--line-2); border-radius: 14px; padding: 0 14px; display: grid; place-items: center; color: var(--muted); font: 700 13px var(--font); background: none; }
+.jar.empty-hint::before { display: none; }
+.fxc { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 25; }
+.memo { margin: 12px 14px 0; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r); background: var(--ochre-soft); border: 1px solid #ecd49a; }
+.memo.hint { background: var(--card); border-color: var(--line); }
+.memo-icon { font-size: 18px; line-height: 1.3; }
+.memo-text { font: 400 15px/1.5 var(--font); color: var(--ink); }
+.memo-text small { font: 700 11px var(--font); color: #a77d2a; letter-spacing: .04em; }
+.memo.new { animation: settle .35s ease-out; }
+@keyframes settle { from { transform: translateY(-4px); opacity: 0; } }
+.layout { padding: 8px 14px 14px; max-width: 1400px; margin: 0 auto; display: grid; gap: 18px; }
+.panel { display: block; }
+@media (max-height: 720px) and (max-width: 959px) {
+#map { aspect-ratio: 2.9 / 1; }
+.dbtn { min-height: 48px; padding-top: 4px; }
+.dbtn .d-ico { font-size: 16px; }
+}
+@media (min-width: 960px) {
+.hud { grid-template-columns: 1.2fr 1.2fr; column-gap: 28px; padding-left: 24px; padding-right: 24px; }
+.stage { grid-template-columns: minmax(420px, 1.5fr) 1fr; padding: 0 24px 14px; align-items: start; max-width: 1400px; margin: 0 auto; }
+#map { aspect-ratio: 2.2 / 1; }
+.dbtn { min-height: 76px; }
+.dbtn .d-ico { font-size: 24px; }
+.dbtn .d-nm { font-size: 13px; }
+.jars { flex-wrap: wrap; overflow: visible; }
+.jar { width: 50px; height: 60px; }
+.memo { max-width: 1352px; margin: 14px auto 0; }
+.layout { grid-template-columns: 1.05fr 1.1fr 0.85fr; align-items: start; padding: 14px 24px; gap: 24px; }
+}
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+@media (min-width: 960px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+.tile { position: relative; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 16px; padding: 10px 10px 13px; min-height: 98px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; box-shadow: var(--shadow); transition: transform .12s, border-color .2s, background .2s; user-select: none; -webkit-user-select: none; }
+.tile:active { transform: scale(.97); }
+.tile.hidden { display: none; }
+.tile-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.tile-ico { font-size: 22px; line-height: 1; filter: grayscale(1) opacity(.45); transition: filter .25s; }
+.tile-ico .sub { font-size: 15px; margin-left: 2px; }
+.tile-heat { font-size: 10px; letter-spacing: -1px; opacity: .8; }
+.tile-name { font: 700 15px/1.15 var(--display); margin-top: 3px; color: var(--ink); }
+.tile-desc { font: italic 500 13px/1.3 var(--display); color: var(--ink-2); }
+.tile-why { font: 400 11.5px/1.4 var(--font); color: var(--muted); margin-top: 3px; }
+.tile-why b { color: var(--ink-2); font-weight: 700; }
+@media (min-width: 960px) { .tile { min-height: 150px; } .tile-name { font-size: 16px; } }
+.tile-state { margin-top: auto; padding-top: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2px; font: 900 11px var(--font); letter-spacing: .06em; color: var(--faint); }
+.tile-rate { font: 700 10.5px var(--font); letter-spacing: 0; color: var(--muted); }
+.tile-prog { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; }
+.tile-prog i { display: block; height: 100%; width: 0; background: var(--sage); transition: width .9s linear; }
+.tile.on { border-color: var(--sage); background: #f6faf3; }
+.tile.on .tile-ico { filter: none; }
+.tile.on .tile-state { color: #5f8f6c; }
+.tile.hot3.on { border-color: #e9a690; background: #fdf5f1; }
+.tile.hot3.on .tile-state { color: #c0634a; }
+.tile.hot3.on .tile-prog i { background: var(--terra); }
+.tile.locked { opacity: .6; border-style: dashed; }
+.tile.locked .tile-state { color: var(--terra); }
+.tile.fresh::before { content: "new"; position: absolute; top: 8px; right: 8px; font: 900 10px var(--font); background: var(--ochre); color: #fff; padding: 1px 7px; border-radius: 99px; }
+.tile.fresh .tile-heat { visibility: hidden; }
+.tile.appear { animation: appear .5s ease-out; }
+@keyframes appear { from { transform: scale(.85); opacity: 0; } }
+.recipes { display: flex; flex-direction: column; gap: 8px; }
+.recipe { display: grid; grid-template-columns: 46px 1fr; gap: 3px 12px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 11px 12px; box-shadow: var(--shadow); }
+.r-out { grid-row: 1 / span 3; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 24px; background: var(--paper-2); }
+.r-name { font: 700 16.5px/1.2 var(--display); }
+.r-ings { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 13px; }
+.r-plus { color: var(--faint); font-weight: 800; }
+.ing { display: inline-flex; align-items: center; gap: 2px; font-variant-numeric: tabular-nums; }
+.ing .pip { font-size: 16px; }
+.ing .pip.miss { filter: grayscale(1) opacity(.25); }
+.ing.count { gap: 5px; padding: 2px 9px 2px 7px; border-radius: 99px; background: var(--paper-2); font: 700 12.5px var(--font); color: var(--ink-2); }
+.ing.count.met { background: var(--sage-soft); color: #4f7f5c; }
+.ing.unknown { width: 24px; height: 24px; justify-content: center; border-radius: 8px; border: 1.5px dashed var(--line-2); color: var(--faint); font: 900 12px var(--font); }
+.r-reward { font: 400 12.5px var(--font); color: var(--muted); }
+.r-warn { grid-column: 2; font: 700 12px var(--font); color: #b07a1c; }
+.r-btn { grid-column: 1 / -1; margin-top: 7px; height: 42px; border: 0; border-radius: 12px; background: var(--paper-2); color: var(--faint); font: 700 14.5px var(--font); }
+.recipe.ready { border-color: var(--sage); background: #f6faf3; }
+.recipe.ready .r-out { background: var(--sage-soft); animation: nudge 1.8s ease-in-out infinite; }
+.recipe.ready .r-btn { background: var(--ink); color: var(--paper); }
+.recipe.hidden-r { background: transparent; border-style: dashed; box-shadow: none; }
+.recipe.hidden-r .r-out { background: transparent; border: 1.5px dashed var(--line-2); color: var(--faint); font: 900 20px var(--font); }
+.recipe.hidden-r .r-name { color: var(--faint); }
+.recipe.hidden-r .r-btn, .recipe.done .r-btn, .recipe.superseded .r-btn, .recipe.hidden-r .r-reward { display: none; }
+.recipe.done, .recipe.superseded { grid-template-columns: 34px 1fr; padding: 8px 12px; background: var(--paper-2); border-color: transparent; box-shadow: none; }
+.recipe.done .r-out, .recipe.superseded .r-out { width: 34px; height: 34px; font-size: 18px; grid-row: 1 / span 2; background: var(--card); }
+.recipe.done .r-name, .recipe.superseded .r-name { font-size: 14px; }
+.recipe.done .r-ings, .recipe.superseded .r-ings { display: none; }
+.recipe.superseded { opacity: .55; }
+.r-section { font: italic 600 14px var(--display); color: var(--muted); margin: 10px 2px 0; }
+.people { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+@media (min-width: 960px) { .people { grid-template-columns: 1fr; } }
+.person { display: grid; grid-template-columns: 42px 1fr; gap: 1px 10px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 16px; padding: 9px; position: relative; box-shadow: var(--shadow); }
+.person .av { grid-row: 1 / span 2; width: 42px; height: 46px; border-radius: 10px; background: var(--paper-2); display: grid; place-items: end center; overflow: hidden; border: 2px solid var(--pc); position: relative; }
+.person .av svg { width: 38px; fill: var(--line-2); }
+.person .av b { position: absolute; top: 2px; right: 5px; font: 900 11px var(--font); color: var(--pc); }
+.person .p-nm { font: 700 15px/1.15 var(--display); }
+.person .p-meta { font: 400 12px var(--font); color: var(--muted); }
+.person .p-bar { grid-column: 1 / -1; display: flex; gap: 3px; margin-top: 7px; }
+.person .p-bar i { flex: 1; height: 4px; border-radius: 2px; background: var(--paper-2); }
+.person .p-bar i.on { background: var(--pc); }
+.person.fresh::after { content: ""; position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--ochre); animation: breathe 1.4s infinite; }
+.file { background: var(--doc); color: var(--doc-ink); border-radius: 6px; padding: 18px 16px 8px; font-family: var(--mono); border: 1px solid var(--line); position: relative; }
+.file::before { content: "CONFIDENTIAL"; position: absolute; top: 14px; right: 14px; font: 700 10px var(--mono); letter-spacing: .12em; color: #c0634a; border: 1.5px solid #c0634a; padding: 1px 6px; transform: rotate(5deg); opacity: .65; }
+.file-head { display: flex; gap: 14px; align-items: center; border-bottom: 1px dashed var(--line-2); padding-bottom: 14px; margin-bottom: 12px; }
+.sil { width: 60px; height: 72px; background: var(--paper-2); border-radius: 4px; display: grid; place-items: end center; overflow: hidden; flex: none; }
+.sil svg { width: 60px; fill: var(--line-2); }
+.file-name { font: 700 17px var(--mono); }
+.file-meta { font-size: 12px; color: var(--doc-faint); }
+.file-count { font-size: 12px; margin-top: 4px; }
+.fld { margin: 0 0 14px; }
+.fld-label { font: 700 11px var(--mono); letter-spacing: .1em; color: var(--doc-faint); margin-bottom: 4px; }
+.fld p { margin: 3px 0; font-size: 14px; line-height: 1.5; }
+.fld .redact { display: block; height: 11px; width: 82%; background: var(--paper-2); margin: 7px 0; border-radius: 2px; }
+.fld .redact.short { width: 55%; }
+.fld p.fresh { animation: highlight 2.4s ease-out; }
+@keyframes highlight { from { background: var(--ochre-soft); } to { background: transparent; } }
+.wrong-note { display: block; font: 400 11px var(--font); color: var(--doc-faint); margin-top: 1px; }
+.files-nav { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; }
+.files-nav button { flex: none; border: 1px solid var(--line); background: var(--card); border-radius: 99px; padding: 5px 12px; font: 700 13px var(--font); }
+.files-nav button.on { background: var(--ink); border-color: var(--ink); }
+.spot { position: relative; z-index: 2; animation: spot 1.8s ease-in-out infinite !important; border-radius: 14px; }
+@keyframes spot { 0%, 100% { box-shadow: 0 0 0 2px rgba(217, 164, 65, .9); } 50% { box-shadow: 0 0 0 6px rgba(217, 164, 65, .3); } }
+.fx { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }
+.floater { position: absolute; font: 900 14px var(--font); color: var(--ink); background: var(--card); border: 1px solid var(--line); padding: 2px 9px; border-radius: 99px; white-space: nowrap; box-shadow: var(--shadow); will-change: transform, opacity; }
+.toasts { position: fixed; left: 14px; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 30; display: grid; gap: 6px; pointer-events: none; max-width: 440px; margin: 0 auto; }
+@media (min-width: 960px) { .toasts { bottom: 22px; left: auto; right: 22px; width: 380px; } }
+.toast { background: var(--ink); color: var(--paper); padding: 10px 14px; border-radius: 14px; font: 400 14px/1.35 var(--font); box-shadow: 0 6px 20px rgba(46, 42, 38, .18); animation: toast-in .3s ease-out; display: flex; gap: 10px; align-items: center; }
+.toast b { color: #fff; }
+.toast .t-ico { font-size: 18px; }
+.toast.out { opacity: 0; transform: translateY(6px); transition: all .35s; }
+@keyframes toast-in { from { transform: translateY(10px); opacity: 0; } }
+.overlay { position: fixed; inset: 0; z-index: 70; background: rgba(46, 42, 38, .35); display: grid; place-items: end center; padding: 12px; animation: fade .2s; }
+@media (min-width: 600px) { .overlay { place-items: center; } }
+.overlay.hidden { display: none; }
+@keyframes fade { from { opacity: 0; } }
+.sheet { width: 100%; max-width: 440px; max-height: 88vh; overflow: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 24px; padding: 22px 18px 18px; animation: sheet-in .3s ease-out; box-shadow: 0 20px 50px rgba(46, 42, 38, .2); }
+@keyframes sheet-in { from { transform: translateY(24px); opacity: 0; } }
+.sheet h3 { font: 800 25px/1.15 var(--display); margin: 0 0 6px; }
+.sheet .lead { color: var(--ink-2); margin: 0 0 14px; font: 400 14.5px/1.45 var(--font); }
+.big-btn { width: 100%; height: 52px; border: 0; border-radius: 16px; background: var(--ink); color: var(--paper); font: 700 16px var(--font); margin-top: 14px; }
+.big-btn:active { transform: scale(.98); }
+.ghost-btn { width: 100%; height: 46px; border: 1px solid var(--line-2); border-radius: 16px; background: transparent; color: var(--ink-2); font: 700 15px var(--font); margin-top: 8px; }
+.reveal { text-align: center; }
+.reveal .stamp { display: inline-block; font: 900 11px var(--font); letter-spacing: .18em; color: #5f8f6c; border: 1.5px solid var(--sage); border-radius: 99px; padding: 3px 12px; }
+.reveal .big-ico { font-size: 54px; margin: 10px 0 2px; animation: pop-in .45s ease-out .05s both; }
+@keyframes pop-in { from { transform: scale(.6); opacity: 0; } }
+.rewards { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px 0 14px; }
+.reward { font: 700 12.5px var(--font); padding: 5px 11px; border-radius: 99px; background: var(--paper-2); color: var(--ink-2); }
+.reward.unlock { background: var(--sage-soft); color: #4f7f5c; }
+.reward.money { background: var(--ochre-soft); color: #9c7222; }
+.reward.heat { background: var(--terra-soft); color: #b5553d; }
+.reveal .file-card { text-align: left; background: var(--doc); color: var(--doc-ink); font-family: var(--mono); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.file-card .fc-head { font-size: 11px; letter-spacing: .08em; color: var(--doc-faint); margin-bottom: 6px; }
+.file-card p { margin: 0; font-size: 15px; line-height: 1.5; min-height: 3em; }
+.caret::after { content: "▍"; color: var(--muted); animation: blink .8s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.reg { text-align: center; }
+.reg .big-ico { font-size: 46px; display: inline-block; }
+.timer { font: 800 40px var(--display); color: var(--terra); font-variant-numeric: tabular-nums; margin: 4px 0 10px; }
+.pick-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; text-align: left; }
+.pick { border: 1px solid var(--line); background: var(--card); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 2px; min-height: 74px; }
+.pick .p-ico { font-size: 20px; }
+.pick .p-name { font: 700 13.5px/1.2 var(--font); }
+.pick .p-heat { font-size: 10px; letter-spacing: -1px; }
+.pick:active { border-color: var(--terra); }
+.event { text-align: left; }
+.event .ev-ico { font-size: 40px; line-height: 1; margin-bottom: 8px; }
+.event .ev-kicker { font: 900 11px var(--font); letter-spacing: .14em; color: var(--muted); margin-bottom: 4px; }
+.choice { width: 100%; text-align: left; border: 1px solid var(--line-2); background: var(--card); border-radius: 16px; padding: 12px 14px; margin-top: 8px; display: grid; gap: 2px; box-shadow: var(--shadow); }
+.choice b { font: 700 17px var(--display); }
+.choice span { font: 400 13px/1.4 var(--font); color: var(--ink-2); }
+.choice:active { transform: scale(.99); border-color: var(--ink); }
+.dc-cash { font: 800 22px var(--display); color: var(--ink); margin-bottom: 4px; }
+.dc-item { display: grid; grid-template-columns: 40px 1fr auto; gap: 3px 12px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin-top: 8px; }
+.dc-item .d-ico { font-size: 26px; grid-row: 1 / span 2; }
+.dc-item .d-name { font: 700 16.5px var(--display); }
+.dc-item .d-desc { font: 400 12.5px/1.4 var(--font); color: var(--muted); grid-column: 2; }
+.dc-item button { grid-row: 1 / span 2; grid-column: 3; border: 0; height: 42px; min-width: 82px; padding: 0 12px; border-radius: 12px; background: var(--ink); color: var(--paper); font: 700 13.5px var(--font); font-variant-numeric: tabular-nums; }
+.dc-item button:disabled { background: var(--paper-2); color: var(--faint); cursor: default; }
+.banner { position: fixed; left: 50%; top: 32%; z-index: 65; width: min(92vw, 440px); transform: translate(-50%, -50%); pointer-events: auto; }
+.news { background: var(--doc); color: var(--doc-ink); border: 1px solid var(--line-2); border-radius: 6px; padding: 14px 16px 16px; box-shadow: 0 16px 40px rgba(46, 42, 38, .22); animation: drop .4s ease-out; transform: rotate(-1.2deg); }
+@keyframes drop { from { transform: translateY(-14px) rotate(-3deg); opacity: 0; } }
+.news .paper { font: 700 12px var(--mono); letter-spacing: .24em; text-align: center; border-bottom: 3px double var(--doc-ink); padding-bottom: 6px; margin-bottom: 8px; }
+.news .headline { font: 700 21px/1.2 Georgia, 'Times New Roman', serif; }
+.news .impact { font: 700 12px var(--font); color: #c0634a; margin-top: 8px; }
+.ms { text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 20px 18px; box-shadow: 0 16px 40px rgba(46, 42, 38, .18); animation: pop-in .4s ease-out; }
+.ms .big-ico { font-size: 44px; }
+.ms .ms-title { font: 800 28px var(--display); color: var(--ink); }
+.ms .ms-text { font: 400 14px/1.45 var(--font); color: var(--ink-2); margin-top: 4px; }
+.banner.out { opacity: 0; transition: opacity .4s; }
+.confetti { position: absolute; width: 7px; height: 10px; border-radius: 2px; will-change: transform, opacity; }
+.screen { position: fixed; inset: 0; z-index: 80; overflow: auto; background: var(--paper); padding: calc(28px + env(safe-area-inset-top)) 20px calc(30px + env(safe-area-inset-bottom)); }
+  .screen.hidden { display: none; }
+.screen-inner { max-width: 460px; margin: 0 auto; }
+.title { font: 900 44px/1.02 var(--display); letter-spacing: -.01em; margin: 14px 0 12px; color: var(--ink); }
+.title .eye { display: inline-block; animation: look 5s ease-in-out infinite; }
+@keyframes look { 0%, 40%, 100% { transform: translateX(0); } 50%, 70% { transform: translateX(5px); } 80% { transform: translateX(-5px); } }
+.pitch { color: var(--ink-2); font: 400 17px/1.6 var(--font); margin: 0 0 20px; }
+.pitch b { color: var(--ink); }
+.how { display: grid; gap: 10px; margin-bottom: 18px; }
+.how-step { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px; box-shadow: var(--shadow); }
+.how-step .h-ico { font-size: 26px; text-align: center; }
+.how-step b { font: 700 17px var(--display); display: block; margin-bottom: 1px; }
+.how-step span { color: var(--ink-2); font: 400 13.5px/1.4 var(--font); }
+.meet { display: flex; gap: 12px; align-items: center; background: var(--doc); color: var(--doc-ink); border: 1px solid var(--line); border-radius: 8px; padding: 12px; font-family: var(--mono); }
+.meet p { margin: 0; font-size: 13px; line-height: 1.45; }
+.export { background: var(--doc); color: var(--doc-ink); border: 1px solid var(--line); border-radius: 6px; padding: 22px 18px 10px; font-family: var(--mono); box-shadow: var(--shadow); }
+.export .fld p { font-size: 14px; }
+.export-foot { font: 700 11px var(--mono); color: var(--doc-faint); text-align: center; padding: 8px 0; }
+.crash { text-align: center; margin: 24px 0 16px; }
+.crash .trend { display: inline-block; font: 900 14px var(--font); color: #fff; background: var(--terra); padding: 4px 14px; border-radius: 99px; margin-bottom: 12px; }
+.crash .big { font: 900 56px/1 var(--display); color: var(--terra); font-variant-numeric: tabular-nums; }
+.crash .cap { color: var(--muted); margin-top: 6px; font-weight: 700; }
+.end-count { text-align: center; color: var(--ink-2); margin: 8px 0 14px; font-weight: 600; }
+.sold { text-align: center; margin: 10px 0 18px; }
+.sold .big { font: 900 48px/1 var(--display); color: var(--ochre); }
+.sold p { color: var(--ink-2); font-weight: 600; }
+.fade-in { animation: fade 1.2s ease-out both; }
+.white-flash { position: fixed; inset: 0; background: #fffdf8; z-index: 90; animation: flash 1.4s ease-out forwards; pointer-events: none; }
+@keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+@keyframes bump { 40% { transform: scale(1.15); } }
+@media (prefers-reduced-motion: reduce) {
+*, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+}
+</style>
 </head>
 <body>
-  <div class="screen">
-    <header class="hud">
-      <div class="hud-inner">
-        <div class="row1">
-          <div class="money-wrap">
-            <div class="money" id="valuation">$0</div>
-            <div class="milestone-wrap">
-              <div class="milestone-head">
-                <span id="milestone-name">Series A</span>
-                <span id="milestone-progress">$0 / $100M</span>
-              </div>
-              <div class="progress"><span id="milestone-bar"></span></div>
-            </div>
-          </div>
-          <button class="mute" id="muteBtn" aria-label="Mute sound">🔊</button>
-        </div>
-
-        <div class="row2">
-          <div class="suspicion">
-            <span class="face" id="face">😌</span>
-            <div class="suspicion-bar" style="position:relative;">
-              <span id="suspicionFill"></span>
-              <div class="tick" id="tick55"></div>
-            </div>
-            <span class="hearing-pill hidden" id="hearingPill">Hearing 14s</span>
-          </div>
-          <button class="damage-button" id="damageBtn">🧯 <span id="damageCost">$0</span></button>
-        </div>
-      </div>
-
-      <div class="map-wrap">
-        <canvas id="map" width="1200" height="520"></canvas>
-      </div>
-
-      <div class="hud-inner">
-        <div class="tray" id="distractionTray"></div>
-        <div class="jar-row" id="jarRow"></div>
-      </div>
-    </header>
-
-    <main class="main">
-      <section class="panel">
-        <div class="panel-head">
-          <div>
-            <div class="eyebrow">Note from the Board</div>
-            <h2>Quarterly memo</h2>
-          </div>
-          <span class="tag" id="usersTag">10,000 users</span>
-        </div>
-        <div class="note">
-          <div class="emoji">📌</div>
-          <div class="text" id="boardMemo">
-            <strong>Start with Location Check-ins.</strong> The app is only useful if the platform can learn where its users are, and when.
-          </div>
-        </div>
-
-        <div class="panel-head">
-          <div>
-            <div class="eyebrow">Product</div>
-            <h3>Levers</h3>
-          </div>
-        </div>
-        <div id="levers" class="levers"></div>
-      </section>
-
-      <aside class="panel">
-        <div class="panel-head">
-          <div>
-            <div class="eyebrow">Signal processing</div>
-            <h3>Inferences</h3>
-          </div>
-          <span class="tag" id="inferenceTag">0 / 15</span>
-        </div>
-        <div id="inferences" class="inferences"></div>
-
-        <div class="panel-head" style="margin-top:16px;">
-          <div>
-            <div class="eyebrow">Files</div>
-            <h3>People and profiles</h3>
-          </div>
-        </div>
-        <div id="files" class="files"></div>
-      </aside>
-    </main>
-  </div>
-
-  <div id="intro" class="intro">
-    <div class="intro-card">
-      <div class="eyebrow">The platform is the product</div>
-      <h1>Hidden in Plain Sight</h1>
-      <p style="color:var(--secondary); margin:10px 0 14px; line-height:1.6;">
-        You are the new CEO of Plaza, a social app with 10,000 users. You win by extracting signal, not by chasing money. Harvest data, turn it into inferences, and grow the platform without letting suspicion collapse the app.
-      </p>
-
-      <div class="intro-grid">
-        <div class="mini-card">
-          <strong>What you do</strong>
-          Flip levers, catch moments, fill the jars, and turn collected signal into inferences.
-        </div>
-        <div class="mini-card">
-          <strong>How you win</strong>
-          Reach a $100B valuation before suspicion hits 100.
-        </div>
-        <div class="mini-card">
-          <strong>How you lose</strong>
-          Suspicion reaches 100, a regulator files an inquiry, or a story breaks at the wrong moment.
-        </div>
-        <div class="mini-card">
-          <strong>What is in the way</strong>
-          Hot spots, regulator hearings, story beats, and the fact that more aggressive levers raise suspicion.
-        </div>
-      </div>
-
-      <div class="people">
-        <div class="person-badge"><span class="person-dot" style="background:#d4789c">M</span>Maya</div>
-        <div class="person-badge"><span class="person-dot" style="background:#5b97cc">D</span>Dev</div>
-        <div class="person-badge"><span class="person-dot" style="background:#6fa07a">L</span>Lena</div>
-        <div class="person-badge"><span class="person-dot" style="background:#c99532">S</span>Sam</div>
-        <div class="person-badge"><span class="person-dot" style="background:#8f74ad">J</span>June</div>
-      </div>
-
-      <div style="margin-top:16px;">
-        <button class="start" id="startBtn">Start the quarter</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="endScreen" class="endscreen hidden">
-    <div class="result-card">
-      <div class="eyebrow" id="endKicker">Quarter complete</div>
-      <h2 id="endTitle" style="font-size:clamp(2rem, 5vw, 3.1rem); margin-top:12px;">Run complete</h2>
-      <p id="endCopy" style="color:var(--secondary); line-height:1.6; margin:12px 0 10px;">The platform stabilized.</p>
-      <div id="finalAudience" style="display:grid; gap:10px; margin:14px 0;"></div>
-      <button class="start" id="restartBtn">Play again</button>
-    </div>
-  </div>
-
-  <div id="toast" class="toast" aria-live="polite"></div>
-  <script>
-    const TYPE_META = {
-      location:{name:'Location', icon:'📍', color:'#8bb7d8'},
-      night:{name:'Late nights', icon:'🌙', color:'#7c8cc4'},
-      contacts:{name:'Contacts', icon:'👥', color:'#a78bbd'},
-      dwell:{name:'Screen time', icon:'⏱️', color:'#d4b87d'},
-      search:{name:'Searches', icon:'🔍', color:'#9bb5d3'},
-      photo:{name:'Photos', icon:'📷', color:'#d6a3ab'},
-      motion:{name:'Movement', icon:'👣', color:'#a2be9c'},
-      typing:{name:'Typing', icon:'⌨️', color:'#c89a80'},
-      purchase:{name:'Purchases', icon:'🛒', color:'#9db47f'},
-      voice:{name:'Voice', icon:'🎙️', color:'#7ba7d8'}
-    };
-
-    const PEOPLE = [
-      {id:'maya', name:'Maya Reyes', age:34, neighborhood:'Riverside', color:'#d4789c', initials:'M'},
-      {id:'dev', name:'Dev Okafor', age:19, neighborhood:'Campus', color:'#5b97cc', initials:'D'},
-      {id:'lena', name:'Lena Fischer', age:41, neighborhood:'Suburbs', color:'#6fa07a', initials:'L'},
-      {id:'sam', name:'Sam Ortiz', age:52, neighborhood:'Downtown', color:'#c99532', initials:'S'},
-      {id:'june', name:'June Park', age:67, neighborhood:'Old Town', color:'#8f74ad', initials:'J'}
-    ];
-
-    const LEVERS = [
-      {id:'checkins', name:'Location Check-ins', pitch:'Suggest tagging where you are. Always.', really:'Every tag is a timestamped GPS point. Enough of them and you know where someone sleeps, works and worships.', data:'location', rate:0.4, heat:1, neighborhoods:['Downtown','Campus'], unlockedAt:0, home:'location'},
-      {id:'darkmode', name:'Dark Mode', pitch:'Easier on the eyes at 3 a.m.', really:'Dim screens don’t wake anyone up, so people keep scrolling long after they meant to sleep.', data:'night', rate:0.42, heat:1, neighborhoods:['Campus','Old Town'], unlockedAt:0, home:'night'},
-      {id:'friends', name:'Find Friends', pitch:'Upload your contacts to see who’s here.', really:'Uploading a phonebook hands over everyone in it, including people who never joined.', data:'contacts', rate:0.38, heat:1, neighborhoods:['Downtown','Suburbs','Riverside','Old Town','Campus'], unlockedAt:0, home:'contacts'},
-      {id:'scroll', name:'Infinite Scroll', pitch:'Remove the bottom of the feed.', really:'With no stopping point, sessions run longer. How long someone lingers shows what they care about.', data:'dwell', rate:0.35, heat:1, neighborhoods:['Campus','Riverside'], unlockedAt:0, home:'dwell'},
-      {id:'search', name:'Search Suggestions', pitch:'Finish their sentences for them.', really:'Autocomplete reveals what people are about to ask, including the questions they’d never say out loud.', data:'search', rate:0.46, heat:1, neighborhoods:['Downtown','Suburbs','Campus'], unlockedAt:1, home:'search'},
-      {id:'photos', name:'Photo Memories', pitch:'“On this day, four years ago.”', really:'Old photos carry dates, places and faces. Resurfacing them gets people to re-tag who they were with.', data:'photo', rate:0.44, heat:2, neighborhoods:['Riverside','Old Town'], unlockedAt:1, home:'photo'},
-      {id:'step', name:'Step Counter', pitch:'Wellness, gamified.', really:'An accelerometer shows how someone moves: their pace, a limp, how much they sleep, and a sudden change in routine.', data:'motion', rate:0.34, heat:1, neighborhoods:['Suburbs','Riverside'], unlockedAt:2, home:'motion'},
-      {id:'keyboard', name:'Smart Keyboard', pitch:'Predictive text that learns you.', really:'Typing speed, hesitation and deleted words track mood and stress, even in messages that are never sent.', data:'typing', rate:0.36, heat:2, neighborhoods:['Campus','Downtown'], unlockedAt:2, home:'typing'},
-      {id:'shop', name:'Shop Tab', pitch:'Checkout without leaving the app.', really:'Purchases are the most honest data there is. A basket can show a pregnancy, a diagnosis or a money problem.', data:'purchase', rate:0.43, heat:2, neighborhoods:['Suburbs','Downtown'], unlockedAt:3, home:'purchase'},
-      {id:'voice', name:'Voice Notes', pitch:'Say it instead of typing it.', really:'Voice carries tone, stress and health. A recording says far more than the words in it.', data:'voice', rate:0.41, heat:2, neighborhoods:['Old Town','Riverside'], unlockedAt:3, home:'voice'},
-      {id:'neighborhood', name:'Neighborhood Feed', pitch:'See what’s happening on your street.', really:'Neighbors post photos of each other’s streets, cars and front doors. It maps the people who never consented.', data:'location', rate:0.58, heat:3, neighborhoods:['Suburbs','Riverside'], unlockedAt:4, home:'location'},
-      {id:'dm', name:'DM Mining', pitch:'End-to-end*. (*Terms apply.)', really:'Private messages are where people say what they actually think: who they love, fear and owe.', data:'contacts', rate:0.62, heat:3, neighborhoods:['Campus'], unlockedAt:5, home:'contacts'},
-      {id:'buylater', name:'Buy Now, Pay Later', pitch:'Four easy payments.', really:'Small loans keep people buying, and the repayments map exactly how close they are to running out of money.', data:'purchase', rate:0.6, heat:3, neighborhoods:['Suburbs'], unlockedAt:6, home:'purchase'},
-      {id:'sleep', name:'Sleep Tracker', pitch:'Leave your phone on the pillow.', really:'A phone on the pillow records when someone sleeps, wakes and who else is in the bed.', data:'night', rate:0.52, heat:2, neighborhoods:['Old Town'], unlockedAt:6, home:'night'},
-      {id:'alwaysmic', name:'Always-On Mic', pitch:'For better ads. Only for better ads.', really:'Background audio fills in everything the screen missed: arguments, TV shows, the name of a pharmacy.', data:'voice', rate:0.7, heat:3, neighborhoods:['Campus','Downtown','Old Town','Suburbs','Riverside'], unlockedAt:7, home:'voice'}
-    ];
-
-    const INFERENCES = [
-      {id:'home', name:'Home Address', recipe:{location:3, night:2}, effect:'unlock neighborhood', field:'commute', line:'Lives at 41 Alder Street, second floor. Lights off around 1 a.m.', description:'your model runs across the user base and says where their home likely is.', wrong:false},
-      {id:'social', name:'Social Circle', recipe:{contacts:3, dwell:3}, effect:'boost search', field:'relationships', line:'Closest to her sister, Ada. Messages her every morning before 9.', description:'overlap in contacts and time spent online.', wrong:false},
-      {id:'insomnia', name:'Insomnia', recipe:{night:9, dwell:9}, effect:'boost keyboard', field:'sleep', line:'Awake most nights between 2 and 4. Scrolls, never posts.', description:'late-night active windows and dwell time line up.', wrong:false},
-      {id:'commute', name:'Commute', recipe:{location:12, dwell:9}, effect:'unlock step counter', field:'commute', line:'Leaves home at 7:40. Arrives late on Thursdays.', wrong:false},
-      {id:'shopping', name:'Shopping Habits', recipe:{search:12, location:12}, effect:'unlock shop tab', field:'finances', line:'Shops on Sunday nights. Abandons the cart about half the time.', wrong:false},
-      {id:'relationship', name:'Relationship Status', recipe:{photo:9, contacts:10}, effect:'unlock DM Mining', field:'relationships', line:'Engaged since June. Has not told her father.', wrong:false},
-      {id:'anxiety', name:'Anxiety', recipe:{typing:9, night:9}, effect:'unlock voice notes', field:'health', line:'Types fast and deletes most of it. Worse the night before exams.', wrong:false},
-      {id:'sleep', name:'Sleep Schedule', recipe:{motion:9, night:10}, effect:'unlock sleep tracker', field:'sleep', line:'Up at 4:50 every morning. Naps until 2 on Saturdays.', wrong:false},
-      {id:'mood', name:'Mood Print', recipe:{voice:9, typing:10}, effect:'unlock always-on mic', field:'health', line:'Her voice drops half a tone after calls with her father.', wrong:false},
-      {id:'chronicpain', name:'Chronic Pain', recipe:{motion:12, search:12}, effect:'unlock buy now, pay later', field:'health', line:'Walks with a slight limp since October. Searched “knee MRI cost” three times.', wrong:false},
-      {id:'jobloss', name:'Job Loss', recipe:{search:90, location:90, dwell:72}, effect:'boost search', field:'finances', line:'Lost his job in September. Hasn’t been to the office since.', wrong:true, exclusive:'job'},
-      {id:'promotion', name:'Promotion', recipe:{search:90, location:90, typing:72}, effect:'boost shop', field:'finances', line:'Promoted in September. Spends the raise paying down a card.', wrong:false, exclusive:'job'},
-      {id:'pregnancy', name:'Pregnancy', recipe:{purchase:102, search:72, location:60}, effect:'boost shop', field:'health', line:'Pregnant. Due in late spring.', wrong:true, exclusive:'money'},
-      {id:'debt', name:'Debt', recipe:{purchase:102, search:72, typing:60}, effect:'boost BNPL', field:'finances', line:'Owes $14,200 across three cards. Pays the minimum on the 3rd.', wrong:false, exclusive:'money'},
-      {id:'caller', name:'Late-Night Caller', recipe:{contacts:108, night:96, voice:96}, effect:'boost DM mining', field:'relationships', line:'Calls an unsaved number after midnight. Twenty minutes, every Tuesday.', wrong:true}
-    ];
-
-    const DISTRACTIONS = [
-      {id:'trend', name:'Viral Trend', icon:'💃', radius:0.46, duration:6, cooldown:30, label:'wide · brief · harvests'},
-      {id:'scandal', name:'Rival Scandal', icon:'🗞️', radius:0.2, duration:20, cooldown:55, label:'narrow · lasting · poisons the well'},
-      {id:'outrage', name:'Outrage Topic', icon:'😡', radius:0.3, duration:8, cooldown:16, label:'cheap · strong · users leave'},
-      {id:'launch', name:'Feature Launch', icon:'🚀', radius:0, duration:0, cooldown:0, label:'everywhere · instant'}
-    ];
-
-    const state = {
-      started:false,
-      ended:false,
-      paused:false,
-      tick:0,
-      users:10000,
-      revenue:0,
-      valuationMultiple:2.2e5,
-      suspicion:8,
-      attention:0,
-      fileCards:[],
-      inventory:{ location:0, night:0, contacts:0, dwell:0, search:0, photo:0, motion:0, typing:0, purchase:0, voice:0 },
-      totalHarvest:{ location:0, night:0, contacts:0, dwell:0, search:0, photo:0, motion:0, typing:0, purchase:0, voice:0 },
-      activeLevers:new Set(),
-      learned:new Set(),
-      openedFiles:new Set(),
-      decisionsSeen:new Set(),
-      hotSpots:[],
-      moments:[],
-      activeDistractions:[],
-      cooldowns:{ trend:0, scandal:0, outrage:0, launch:0 },
-      hearing:0,
-      hearingActive:false,
-      hearingChoice:null,
-      regulatorSuspended:null,
-      damageCooldown:0,
-      milestoneIndex:0,
-      mute:false,
-      boardMemoIndex:0,
-      tutorialStep:0,
-      nextTime:0,
-      selectedEvent:null,
-      audit:{},
-      generatedFiles:[],
-      milestoneValues:[100000000, 1000000000, 10000000000, 50000000000],
-      noteOrder:[
-        'Start with Location Check-ins. The app is only useful if the platform can learn where its users are, and when.',
-        'The platform grows when a lever stays on. More active levers mean more data, but more suspicion.',
-        'Once the jars are full enough, infer a pattern. That consumes the ingredients and permanently improves the machine.',
-        'Hot spots in the map are where attention gathers. Split it before it breaks.',
-        'The app is a platform, not a person. Learn from the whole user base.'
-      ]
-    };
-
-    const y = (v) => document.getElementById(v);
-
-    function money(n){
-      if(n >= 1e12) return '$'+(n/1e12).toFixed(2)+'T';
-      if(n >= 1e9) return '$'+(n/1e9).toFixed(2)+'B';
-      if(n >= 1e6) return '$'+(n/1e6).toFixed(2)+'M';
-      if(n >= 1e3) return '$'+(n/1e3).toFixed(1)+'K';
-      return '$'+Math.floor(n);
-    }
-
-    function fmt(n){
-      return n.toLocaleString('en-US', {maximumFractionDigits:0});
-    }
-
-    function toast(msg){
-      const t = y('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      clearTimeout(toast.timer);
-      toast.timer = setTimeout(()=>t.classList.remove('show'), 1800);
-    }
-
-    function popNote(msg){
-      const p = document.createElement('div');
-      p.className = 'bump';
-      p.textContent = msg;
-      document.body.appendChild(p);
-      setTimeout(()=>p.remove(), 1100);
-    }
-
-    function clamp(v,min,max){ return Math.min(max, Math.max(min, v)); }
-
-    function getMilestone(){
-      const threshold = state.milestoneValues[state.milestoneIndex] || 100000000000;
-      const prev = state.milestoneIndex > 0 ? state.milestoneValues[state.milestoneIndex -1] : 0;
-      const label = state.milestoneIndex === 0 ? 'Series A' : state.milestoneIndex === 1 ? 'Unicorn' : state.milestoneIndex === 2 ? 'Decacorn' : 'Halfway to forever';
-      return { label, threshold, prev };
-    }
-
-    function updateHud(){
-      const val = state.revenue * state.valuationMultiple;
-      y('valuation').textContent = money(val);
-      const milestone = getMilestone();
-      const ratio = clamp((val - milestone.prev) / (milestone.threshold - milestone.prev || 1), 0, 1);
-      y('milestone-name').textContent = milestone.label;
-      y('milestone-progress').textContent = `${money(Math.min(val, milestone.threshold))} / ${money(milestone.threshold)}`;
-      y('milestone-bar').style.width = (ratio*100) + '%';
-      y('usersTag').textContent = `${fmt(Math.floor(state.users))} users`;
-      y('damageCost').textContent = money(Math.max(0, 500000000 - state.revenue * 0.02));
-      y('suspicionFill').style.width = state.suspicion + '%';
-      const count = state.hearing > 0 ? state.hearing : 0;
-      const pill = y('hearingPill');
-      if(count > 0){
-        pill.textContent = `Hearing ${count}s`;
-        pill.classList.remove('hidden');
-      } else {
-        pill.classList.add('hidden');
-      }
-      const face = y('face');
-      if(state.suspicion < 20) face.textContent = '😌';
-      else if(state.suspicion < 40) face.textContent = '🙂';
-      else if(state.suspicion < 60) face.textContent = '🤨';
-      else if(state.suspicion < 80) face.textContent = '😠';
-      else face.textContent = '🤬';
-
-      const danger = state.suspicion > 70;
-      document.body.style.background = danger ? 'radial-gradient(circle at top, rgba(224,122,95,0.10), #f6f1e7 28%)' : '#f6f1e7';
-      y('tick55').style.left = '60%';
-    }
-
-    function renderLevers(){
-      const root = y('levers'); root.innerHTML = '';
-      LEVERS.forEach(lever => {
-        const active = state.activeLevers.has(lever.id);
-        const card = document.createElement('div');
-        card.className = 'lever ' + (active ? 'on' : '');
-        card.innerHTML = `
-          <div class="lever-top">
-            <div class="lever-icon">${lever.home === 'location' ? '📍' : lever.home === 'night' ? '🌙' : lever.home === 'contacts' ? '👥' : lever.home === 'dwell' ? '⏱️' : lever.home === 'search' ? '🔍' : lever.home === 'photo' ? '📷' : lever.home === 'motion' ? '👣' : lever.home === 'typing' ? '⌨️' : lever.home === 'purchase' ? '🛒' : '🎙️'}</div>
-            <div class="lever-copy">
-              <h3>${lever.name}</h3>
-              <div class="quote">“${lever.pitch}”</div>
-              <span class="really">Really: ${lever.really}</span>
-            </div>
-          </div>
-          <div class="lever-controls">
-            <button class="toggle">${active ? 'On' : 'Off'}</button>
-            <div class="heat">` + Array.from({length: lever.heat},()=> '🔥').join('') + `</div>
-          </div>
-          <div class="lever-bar"><span style="width:${Math.min(100, (state.inventory[lever.data] / 40) * 100)}%"></span></div>
-          <div class="lever-foot">
-            <span class="rate">+${money(lever.rate * 1000000)}</span>
-            <span>+${lever.heat * 0.03}/s warning</span>
-          </div>
-        `;
-        card.querySelector('.toggle').addEventListener('click', ()=>toggleLever(lever.id));
-        root.appendChild(card);
-      });
-    }
-
-    function renderJars(){
-      const row = y('jarRow'); row.innerHTML = '';
-      Object.keys(TYPE_META).forEach((key) => {
-        const have = state.inventory[key];
-        const need = 3;
-        const fill = Math.min(100, (have / need) * 100);
-        const bottle = document.createElement('div');
-        bottle.className = 'jar';
-        bottle.innerHTML = `
-          <div class="jar-bottle">
-            <div class="jar-fill" style="height:${fill}%"></div>
-            <div class="jar-icon">${TYPE_META[key].icon}</div>
-          </div>
-          <div class="jar-count">${have}</div>
-          <div class="jar-label">${TYPE_META[key].name}</div>
-          <div class="jar-need">${have}/${need}</div>
-        `;
-        row.appendChild(bottle);
-      });
-    }
-
-    function inferReady(inf){
-      return Object.entries(inf.recipe).every(([k,v]) => (state.inventory[k] || 0) >= v);
-    }
-
-    function getPatternLabel(inf){
-      return Object.entries(inf.recipe).map(([k,v])=>`${TYPE_META[k].icon}${v}`).join(' + ');
-    }
-
-    function renderInferences(){
-      const root = y('inferences'); root.innerHTML = '';
-      INFERENCES.forEach((inf) => {
-        const ready = inferReady(inf);
-        const card = document.createElement('div');
-        card.className = 'inference ' + (ready ? 'ready' : '');
-        card.innerHTML = `
-          <div class="info-head">
-            <span>${inf.name}</span>
-            <span>${state.learned.has(inf.id) ? 'Learned' : ready ? 'Ready' : 'Locked'}</span>
-          </div>
-          <div class="infer-name">${inf.name}</div>
-          <div class="infer-copy">${state.learned.has(inf.id) ? inf.line : inf.description}</div>
-          <div class="recipe">${Object.entries(inf.recipe).map(([k,v]) => `<span class=\"chip\">${TYPE_META[k].icon}${v}</span>`).join('')}</div>
-          <button class="infer-button ${ready ? 'ready' : ''}" ${state.learned.has(inf.id) ? 'disabled' : ''}>${state.learned.has(inf.id) ? 'Filed' : ready ? 'Infer' : 'Need more data'}</button>
-        `;
-        if(!state.learned.has(inf.id) && ready){
-          card.querySelector('.infer-button').addEventListener('click', ()=>runInference(inf.id));
-        }
-        root.appendChild(card);
-      });
-      y('inferenceTag').textContent = `${state.learned.size} / ${INFERENCES.length}`;
-    }
-
-    function renderFiles(){
-      const root = y('files'); root.innerHTML = '';
-      const featured = PEOPLE.slice(0,5);
-      featured.forEach(person => {
-        const open = state.openedFiles.has(person.id);
-        const card = document.createElement('div');
-        card.className = 'file-card';
-        card.innerHTML = `
-          <div class="file-avatar" style="background:${person.color}">${person.initials}</div>
-          <div class="file-meta">
-            <div class="file-name">${person.name}</div>
-            <div class="file-lines">
-              <strong>${person.age}</strong> · ${person.neighborhood}<br>
-              ${open ? 'Open file — recent lines recorded.' : 'Tap to open.'}
-            </div>
-          </div>
-        `;
-        card.addEventListener('click', ()=>openFile(person.id));
-        root.appendChild(card);
-      });
-    }
-
-    function openFile(id){
-      const person = PEOPLE.find(p => p.id === id);
-      if(!person) return;
-      state.openedFiles.add(id);
-      toast(`Opened ${person.name}'s file`);
-      renderFiles();
-      const fileCard = document.createElement('div');
-      fileCard.className = 'panel';
-      fileCard.style.marginTop = '8px';
-      fileCard.innerHTML = `
-        <div class="panel-head">
-          <div>
-            <div class="eyebrow">Confidential</div>
-            <h3>${person.name}</h3>
-          </div>
-          <span class="tag">${person.neighborhood}</span>
-        </div>
-        <div class="file-lines mono" style="padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,0.45);">
-          ${person.name}<br>
-          age ${person.age}<br>
-          neighborhood ${person.neighborhood}<br><br>
-          ${state.learned.size ? '• Lives near a major commuter route.<br>' : '• File not yet restored.<br>'}
-          ${state.learned.has('home') ? '• Home Address: 41 Alder Street, second floor.<br>' : ''}
-          ${state.learned.has('insomnia') ? '• Sleep: awake most nights between 2 and 4.<br>' : ''}
-          ${state.learned.has('relationship') ? '• Relationship: engaged since June.<br>' : ''}
-          ${state.learned.size > 5 ? '• Recent activity: the platform is learning patterns.<br>' : ''}
-          <span style="color:var(--muted);">Blank lines used for unrevealed details.</span>
-        </div>
-      `;
-      const root = y('files');
-      root.appendChild(fileCard);
-    }
-
-    function toggleLever(id){
-      if(state.ended) return;
-      const lever = LEVERS.find(l => l.id === id);
-      if(!lever) return;
-      if(state.activeLevers.has(id)){
-        state.activeLevers.delete(id);
-        toast(`${lever.name} switched off`);
-      } else {
-        state.activeLevers.add(id);
-        popNote(`${lever.name} live`);
-      }
-
-      if(state.tutorialStep === 0){
-        state.tutorialStep = 1;
-      }
-      renderEverything();
-    }
-
-    function runInference(id){
-      const inf = INFERENCES.find(i => i.id === id);
-      if(!inf || state.learned.has(inf.id)) return;
-      if(!inferReady(inf)) return;
-      Object.entries(inf.recipe).forEach(([key,val]) => {
-        state.inventory[key] = Math.max(0, state.inventory[key] - val);
-      });
-      state.learned.add(inf.id);
-      state.boardMemoIndex = 3;
-      toast(`Inferred ${inf.name}`);
-      renderEverything();
-    }
-
-    function addData(type, amount){
-      state.inventory[type] = (state.inventory[type] || 0) + amount;
-      state.totalHarvest[type] = (state.totalHarvest[type] || 0) + amount;
-    }
-
-    function getNextMemo(){
-      const memo = state.noteOrder[Math.min(state.boardMemoIndex, state.noteOrder.length - 1)];
-      y('boardMemo').innerHTML = `<strong>${memo.split('. ')[0]}.</strong> ${memo.slice(memo.indexOf('.') + 2)}`;
-    }
-
-    function renderEverything(){
-      updateHud();
-      getNextMemo();
-      renderLevers();
-      renderJars();
-      renderInferences();
-      renderFiles();
-      renderDistractions();
-      if(!state.started) return;
-    }
-
-    function makeDistractions(){
-      const container = document.getElementById('distractionTray');
-      container.innerHTML = '';
-      DISTRACTIONS.forEach(item => {
-        const btn = document.createElement('button');
-        btn.className = 'distraction';
-        btn.disabled = state.cooldowns[item.id] > 0;
-        btn.innerHTML = `
-          <div style="font-size:22px;">${item.icon}</div>
-          <div><strong>${item.name}</strong><small>${item.label}</small></div>
-        `;
-        btn.addEventListener('click', ()=>{ /* placeholder */ });
-        container.appendChild(btn);
-      });
-    }
-
-    function renderDistractions(){
-      const container = document.getElementById('distractionTray');
-      container.innerHTML = '';
-      DISTRACTIONS.forEach(item => {
-        const btn = document.createElement('button');
-        btn.className = 'distraction';
-        btn.disabled = state.cooldowns[item.id] > 0;
-        btn.innerHTML = `
-          <div style="font-size:22px;">${item.icon}</div>
-          <div><strong>${item.name}</strong><small>${item.label}</small></div>
-        `;
-        btn.addEventListener('click', () => activateDistraction(item.id));
-        container.appendChild(btn);
-      });
-    }
-
-    function activateDistraction(id){
-      if(state.cooldowns[id] > 0) return;
-      const active = DISTRACTIONS.find(d => d.id === id);
-      if(!active) return;
-      state.cooldowns[id] = active.cooldown;
-      toast(`${active.name} launched`);
-      if(id === 'trend') {
-        state.activeDistractions.push({ ...active, expiry: 6 });
-      }
-      if(id === 'launch') {
-        state.revenue = Math.max(0, state.revenue - 45_000_000);
-      }
-      renderEverything();
-    }
-
-    function startGame(){
-      state.started = true;
-      state.paused = false;
-      document.getElementById('intro').classList.add('hidden');
-      toast('Quarter live');
-      renderEverything();
-    }
-
-    function initMap(){
-      const canvas = document.getElementById('map');
-      const ctx = canvas.getContext('2d');
-      const view = { w: canvas.width, h: canvas.height };
-
-      function draw(){
-        ctx.clearRect(0,0,view.w,view.h);
-
-        // soft map background
-        ctx.fillStyle = '#dfeaf5';
-        ctx.fillRect(0,0,view.w,view.h);
-
-        // river
-        ctx.beginPath();
-        ctx.moveTo(0, view.h * 0.75);
-        ctx.bezierCurveTo(view.w * 0.16, view.h * 0.64, view.w * 0.26, view.h * 0.86, view.w * 0.46, view.h * 0.76);
-        ctx.bezierCurveTo(view.w * 0.7, view.h * 0.62, view.w * 0.85, view.h * 0.9, view.w, view.h * 0.78);
-        ctx.lineTo(view.w, view.h);
-        ctx.lineTo(0, view.h);
-        ctx.closePath();
-        ctx.fillStyle = '#cfe0ef';
-        ctx.fill();
-
-        // path lines
-        ctx.strokeStyle = 'rgba(167,151,131,0.35)';
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.moveTo(120, 180);
-        ctx.bezierCurveTo(240, 120, 380, 210, 460, 180);
-        ctx.moveTo(580, 190);
-        ctx.bezierCurveTo(770, 150, 920, 230, 1080, 200);
-        ctx.stroke();
-
-        // neighborhood blobs
-        const neighborhoods = [
-          {x:157,y:120,w:210,h:120,name:'Campus',color:'rgba(164,187,209,0.16)'},
-          {x:425,y:120,w:210,h:120,name:'Downtown',color:'rgba(214,170,116,0.12)'},
-          {x:690,y:100,w:220,h:150,name:'Suburbs',color:'rgba(140,181,154,0.18)'},
-          {x:900,y:160,w:190,h:130,name:'Riverside',color:'rgba(188,161,197,0.15)'},
-          {x:360,y:262,w:240,h:150,name:'Old Town',color:'rgba(190,148,120,0.12)'}
-        ];
-        neighborhoods.forEach(n => {
-          ctx.beginPath();
-          ctx.ellipse(n.x, n.y, n.w/2, n.h/2, 0, 0, Math.PI*2);
-          ctx.fillStyle = n.color;
-          ctx.fill();
-          ctx.fillStyle = 'rgba(46,42,38,0.78)';
-          ctx.font = 'italic 500 13px Playfair Display';
-          ctx.fillText(n.name, n.x - 24, n.y + 4);
-        });
-
-        const userCount = 180;
-        for(let i=0;i<userCount;i++){
-          const angle = i * 22.3;
-          const radius = 12 + (i % 9) * 9;
-          const x = 120 + ((i * 81) % (view.w - 220)) + Math.sin(i * 0.9) * 18;
-          const y = 80 + ((i * 57) % (view.h - 180)) + Math.cos(i * 0.7) * 14;
-          ctx.beginPath();
-          ctx.fillStyle = 'rgba(34, 31, 28, 0.45)';
-          ctx.arc(x, y, 2.1, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // active hot spots
-        state.hotSpots.forEach(spot => {
-          const r = 14 + spot.heat * 18;
-          ctx.beginPath();
-          ctx.strokeStyle = spot.color || 'rgba(224,122,95,0.9)';
-          ctx.lineWidth = 2;
-          ctx.arc(spot.x, spot.y, r, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.fillStyle = 'rgba(224,122,95,0.1)';
-          ctx.arc(spot.x, spot.y, r * 0.6, 0, Math.PI * 2);
-          ctx.fill();
-        });
-
-        // moments
-        state.moments.forEach(moment => {
-          const p = moment.p;
-          const alpha = moment.ttl / 4.5;
-          ctx.beginPath();
-          ctx.fillStyle = moment.story ? 'rgba(217,164,65,0.9)' : 'rgba(143,181,154,0.9)';
-          ctx.arc(p.x, p.y, 8, 0, Math.PI*2);
-          ctx.fill();
-          ctx.fillStyle = `rgba(46,42,38,${alpha})`;
-          ctx.font = '700 10px Lato';
-          ctx.fillText(moment.label, p.x + 12, p.y - 8);
-        });
-
-        // active pings (from levers to jars) handled separately if needed
-        requestAnimationFrame(draw);
-      }
-      requestAnimationFrame(draw);
-
-      const press = (event) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / rect.width * canvas.width;
-        const y = (event.clientY - rect.top) / rect.height * canvas.height;
-        state.moments.forEach(m => {
-          const dx = x - m.p.x; const dy = y - m.p.y;
-          if(Math.hypot(dx,dy) < 14){
-            if(m.ttl > 0){
-              state.moments = state.moments.filter(mm => mm !== m);
-              toast(`Caught: ${m.label}`);
-              addData(m.type, m.amount);
-            }
-          }
-        });
-      };
-      canvas.addEventListener('click', press);
-    }
-
-    function seedMoments(){
-      const zones = [
-        {x:180, y:120}, {x:440, y:160}, {x:750, y:160}, {x:930, y:200}, {x:480, y:360}
-      ];
-      const dataTypes = Object.keys(TYPE_META);
-      const labels = [
-        'Left the house at 4 a.m.',
-        'Typed “I’m fine” four times',
-        'Bought sleeping pills',
-        'Walked past a clinic twice',
-        'Searched “how to drop out”',
-        'Deleted a long message',
-        'Called her father for 41 sec',
-        'Bought a pregnancy test'
-      ];
-      state.moments = zones.map((p, idx) => ({
-        id: idx + 'm',
-        p,
-        label: labels[idx % labels.length],
-        type: dataTypes[idx % dataTypes.length],
-        amount: 2 + (idx % 3),
-        ttl: 4.5,
-        story: idx % 4 === 0
-      }));
-    }
-
-    function gameTick(){
-      if(!state.started || state.paused || state.ended) return;
-
-      state.tick += 1;
-
-      const active = Array.from(state.activeLevers);
-      active.forEach(id => {
-        const lever = LEVERS.find(l => l.id === id);
-        if(!lever) return;
-        const factor = 1 + (state.users / 10000) * 0.18;
-        const mod = state.learned.size * 0.02;
-        addData(lever.data, Math.max(1, Math.round(lever.rate * 10 * factor + mod)));
-      });
-
-      state.revenue += active.length * 0.2;
-      state.suspicion += active.reduce((sum, id) => {
-        const lever = LEVERS.find(l => l.id === id);
-        return sum + (lever ? lever.heat * 0.03 : 0);
-      }, 0.03);
-
-      if(state.activeDistractions.length){
-        state.activeDistractions = state.activeDistractions.filter(d => {
-          d.expiry -= 1;
-          return d.expiry > 0;
-        });
-      }
-
-      Object.keys(state.cooldowns).forEach(k => {
-        if(state.cooldowns[k] > 0) state.cooldowns[k] -= 1;
-      });
-
-      if(state.suspicion >= 60 && !state.hearingActive){
-        state.hearingActive = true;
-        state.hearing = 15;
-        toast('Inquiry filed — hearing now');
-      }
-
-      if(state.hearingActive){
-        state.hearing -= 1;
-        if(state.hearing <= 0){
-          state.hearingActive = false;
-          state.hearing = 0;
-          state.hearingChoice = null;
-          if(state.suspicion >= 60){
-            state.suspicion += 8;
-            toast('Inquiry concluded with a suspension');
-          }
-        }
-      }
-
-      state.moments.forEach(m => m.ttl -= 0.1);
-      state.moments = state.moments.filter(m => m.ttl > 0);
-
-      if(state.moments.length < 3){
-        seedMoments();
-      }
-
-      if(state.revenue * state.valuationMultiple >= 100_000_000_000){
-        endGame('win');
-      } else if(state.suspicion >= 100){
-        endGame('lose');
-      }
-
-      renderEverything();
-    }
-
-    function endGame(mode){
-      state.ended = true;
-      const end = document.getElementById('endScreen');
-      const kicker = document.getElementById('endKicker');
-      const title = document.getElementById('endTitle');
-      const copy = document.getElementById('endCopy');
-      const audience = document.getElementById('finalAudience');
-
-      if(mode === 'win'){
-        kicker.textContent = 'TARGET REACHED';
-        title.textContent = 'The platform is worth $100B.';
-        copy.textContent = 'The app reached the valuation target. The audience report is below. The wrong lines remain unmarked.';
-      } else {
-        kicker.textContent = 'PLATFORM COLLAPSED';
-        title.textContent = 'The app was deleted.';
-        copy.textContent = 'Suspicion reached 100. The audience report shows the moment the platform failed.';
-      }
-
-      audience.innerHTML = `
-        <div class="mini-card"><strong>Location</strong> harvested from ${fmt(Math.floor(state.totalHarvest.location))} users</div>
-        <div class="mini-card"><strong>Contacts</strong> harvested from ${fmt(Math.floor(state.totalHarvest.contacts))} users</div>
-        <div class="mini-card"><strong>Search</strong> harvested from ${fmt(Math.floor(state.totalHarvest.search))} users</div>
-        <div class="mini-card"><strong>Valuation</strong> ${money(state.revenue * state.valuationMultiple)}</div>
-      `;
-
-      end.classList.remove('hidden');
-    }
-
-    function reset(){
-      state.started = false;
-      state.ended = false;
-      state.paused = false;
-      state.tick = 0;
-      state.users = 10000;
-      state.revenue = 0;
-      state.suspicion = 8;
-      state.attention = 0;
-      state.inventory = {location:0,night:0,contacts:0,dwell:0,search:0,photo:0,motion:0,typing:0,purchase:0,voice:0};
-      state.totalHarvest = {location:0,night:0,contacts:0,dwell:0,search:0,photo:0,motion:0,typing:0,purchase:0,voice:0};
-      state.activeLevers = new Set();
-      state.learned = new Set();
-      state.openedFiles = new Set();
-      state.hotSpots = [];
-      state.moments = [];
-      state.activeDistractions = [];
-      state.cooldowns = {trend:0, scandal:0, outrage:0, launch:0};
-      state.hearing = 0;
-      state.hearingActive = false;
-      state.hearingChoice = null;
-      state.boardMemoIndex = 0;
-      state.museum = [];
-      state.started = false;
-      document.getElementById('endScreen').classList.add('hidden');
-      document.getElementById('intro').classList.remove('hidden');
-      renderEverything();
-    }
-
-    document.getElementById('startBtn').addEventListener('click', startGame);
-    document.getElementById('restartBtn').addEventListener('click', () => { reset(); });
-    document.getElementById('muteBtn').addEventListener('click', () => { state.mute = !state.mute; document.getElementById('muteBtn').textContent = state.mute ? '🔇' : '🔊'; });
-    document.getElementById('damageBtn').addEventListener('click', () => {
-      if(state.revenue < 50000000) return;
-      state.revenue -= 50000000;
-      state.suspicion = Math.max(0, state.suspicion - 14);
-      toast('Damage control used');
-      renderEverything();
-    });
-
-    initMap();
-    seedMoments();
-    renderEverything();
-    setInterval(gameTick, 1000);
-  </script>
+<div class="top" id="top">
+<header class="hud" id="hud">
+<div class="hud-row">
+<div class="val">
+<div class="val-label">Valuation</div>
+<div class="val-num" id="val-num">$0</div>
+</div>
+<div class="goal">
+<div class="goal-label"><span id="goal-label">Next: Series A</span><span id="users">👤 10k</span></div>
+<div class="goal-bar"><i id="goal-fill"></i></div>
+</div>
+<button class="icon-btn" id="mute" aria-label="Toggle sound">🔊</button>
+</div>
+<div class="hud-row">
+<div class="sus" id="suspicion">
+<span class="sus-face" id="sus-face">😌</span>
+<div class="sus-main">
+<div class="sus-label"><span>Public suspicion</span><b id="sus-num">0</b></div>
+<div class="sus-bar"><i id="sus-fill"></i><span class="sus-mark" title="Regulator">⚖️</span></div>
+</div>
+</div>
+<div class="inquiry hidden" id="inquiry" title="Regulators filed an inquiry. If suspicion is still 55+ at the hearing, you lose a lever for a while.">⚖️ <span id="inquiry-t">15s</span></div>
+<button class="dc-btn" id="dc-btn" aria-label="Damage control">🧯<span id="dc-cash">$0</span></button>
+</div>
+</header>
+<section class="stage" id="stage">
+<div class="map-wrap" id="map-wrap">
+<canvas id="map" aria-label="Map of your users"></canvas>
+<div class="map-tag"><span id="map-users">10k</span> users</div>
+<div class="combo hidden" id="combo"></div>
+<div class="aim-hint hidden" id="aim-hint"></div>
+</div>
+<div class="side">
+<div class="tray" id="tray"></div>
+<div class="jars" id="jars"></div>
+</div>
+</section>
+</div>
+<div class="memo" id="memo"><span class="memo-icon">✉️</span><div class="memo-text" id="memo-text"></div></div>
+<main class="layout">
+<section class="panel" id="panel-levers">
+<h2>Levers <small>tap to switch on or off</small></h2>
+<div class="tiles" id="tiles"></div>
+</section>
+<section class="panel" id="panel-infer">
+<h2>Inferences <small>spend data to learn things</small></h2>
+<div class="recipes" id="recipes"></div>
+</section>
+<section class="panel" id="panel-files">
+<h2>Files <small>five of your users</small></h2>
+<div class="people" id="people"></div>
+</section>
+</main>
+<canvas class="fxc" id="fxc" aria-hidden="true"></canvas>
+<div class="fx" id="fx" aria-hidden="true"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="overlay hidden" id="overlay"><div class="sheet" id="sheet"></div></div>
+<div class="screen hidden" id="screen"></div>
+<div id="boot-fail" style="display:none;position:fixed;inset:0;z-index:999;background:#f6f1e7;color:#2e2a26;font:16px/1.5 system-ui,sans-serif;padding:40px 24px;text-align:center">
+<div style="font-size:48px">👁️</div>
+<p><b>Hidden in Plain Sight</b> didn’t finish loading.<br>This usually means your browser kept an old copy.</p>
+<button onclick="location.replace(location.pathname + '?r=' + Date.now())" style="font:600 16px system-ui;padding:12px 22px;border:0;border-radius:12px;background:#2e2a26;color:#f6f1e7">Reload the game</button>
+</div>
+<script>
+// If the game module fails (e.g. a stale cached file), show a reload prompt instead of a broken page.
+window.addEventListener('error', function () { window.__bootError = true; }, true);
+setTimeout(function () { if (!document.body.dataset.ready) document.getElementById('boot-fail').style.display = 'block'; }, 4000);
+</script>
+<script>
+const __content = (() => {
+const COMPANY = 'Plaza';
+const ZONES = [
+{ id: 'campus',    name: 'Campus',    x: 0.36, y: 0.30, r: 0.25 },
+{ id: 'oldtown',   name: 'Old Town',  x: 1.64, y: 0.30, r: 0.25 },
+{ id: 'downtown',  name: 'Downtown',  x: 1.00, y: 0.50, r: 0.26 },
+{ id: 'riverside', name: 'Riverside', x: 0.42, y: 0.76, r: 0.22 },
+{ id: 'suburbs',   name: 'Suburbs',   x: 1.58, y: 0.76, r: 0.22 },
+];
+const PEOPLE = [
+{ id: 'maya', name: 'Maya Reyes',   age: 34, zone: 'riverside', color: '#d4789c', uid: 'U-4471-0932', since: 2019 },
+{ id: 'dev',  name: 'Dev Okafor',   age: 19, zone: 'campus',    color: '#5b97cc', uid: 'U-8812-1150', since: 2022 },
+{ id: 'lena', name: 'Lena Fischer', age: 41, zone: 'suburbs',   color: '#6fa07a', uid: 'U-2093-4471', since: 2016 },
+{ id: 'sam',  name: 'Sam Ortiz',    age: 52, zone: 'downtown',  color: '#c99532', uid: 'U-0057-3328', since: 2014 },
+{ id: 'june', name: 'June Park',    age: 67, zone: 'oldtown',   color: '#8f74ad', uid: 'U-6620-0019', since: 2021 },
+];
+const FIELDS = [
+{ id: 'commute', label: 'Commute', icon: '🚏' },
+{ id: 'sleep', label: 'Sleep', icon: '🛏️' },
+{ id: 'health', label: 'Health', icon: '🩺' },
+{ id: 'relationships', label: 'Relationships', icon: '💬' },
+{ id: 'finances', label: 'Finances', icon: '💳' },
+];
+const DATA_TYPES = {
+location:         { name: 'Location',    icon: '📍', color: '#e07a5f' },
+night_usage:      { name: 'Late nights', icon: '🌙', color: '#8e7cc3' },
+contacts:         { name: 'Contacts',    icon: '👥', color: '#6fa8dc' },
+dwell_time:       { name: 'Screen time', icon: '⏱️', color: '#d9a441' },
+search:           { name: 'Searches',    icon: '🔍', color: '#7fb08a' },
+photo_metadata:   { name: 'Photos',      icon: '📷', color: '#e59f6b' },
+accelerometer:    { name: 'Movement',    icon: '👣', color: '#5fb3b3' },
+typing_cadence:   { name: 'Typing',      icon: '⌨️', color: '#a68bc7' },
+purchase_history: { name: 'Purchases',   icon: '🛒', color: '#6bab8e' },
+voice:            { name: 'Voice',       icon: '🎙️', color: '#d987a8' },
+};
+const LEVERS = [
+{ id: 'checkins', name: 'Location Check-ins', desc: 'Suggest tagging where you are. Always.',
+why: 'Every tag is a timestamped GPS point. Enough of them and you know where someone sleeps, works and worships.',
+harvests: { location: 0.34 }, zones: { downtown: 3, campus: 1 }, heat: 1, growth: 0.002, arpu: 0.05, start: true,
+onText: 'Check-ins live. Everyone is somewhere.' },
+{ id: 'darkmode', name: 'Dark Mode', desc: 'Easier on the eyes at 3 a.m.',
+why: 'Dim screens don’t wake anyone up, so people keep scrolling long after they meant to sleep. Every late session gets logged.',
+harvests: { night_usage: 0.3 }, zones: { campus: 2, oldtown: 2 }, heat: 1, growth: 0.002, arpu: 0.03, start: true,
+onText: 'Dark Mode live. Users report sleeping “differently.”' },
+{ id: 'friends', name: 'Find Friends', desc: 'Upload your contacts to see who’s here.',
+why: 'Uploading a phonebook hands over everyone in it, including people who never joined. That’s a social graph for free.',
+harvests: { contacts: 0.3 }, zones: { campus: 1, downtown: 1, riverside: 1, suburbs: 1, oldtown: 1 }, heat: 1, growth: 0.007, arpu: 0.03, start: true,
+onText: 'Find Friends live. Including friends who never signed up.' },
+{ id: 'scroll', name: 'Infinite Scroll', desc: 'Remove the bottom of the feed.',
+why: 'With no natural stopping point, sessions run longer. How long someone lingers on each post shows what they care about.',
+harvests: { dwell_time: 0.34 }, zones: { campus: 3, riverside: 1 }, heat: 1, growth: 0.006, arpu: 0.05, start: true,
+onText: 'Infinite Scroll live. Nobody will ever reach the bottom again.' },
+{ id: 'search', name: 'Search Suggestions', desc: 'Finish their sentences for them.',
+why: 'Autocomplete reveals what people are about to ask, including the questions they’d never say out loud.',
+harvests: { search: 0.32 }, zones: { downtown: 1, suburbs: 1, campus: 1 }, heat: 1, growth: 0.002, arpu: 0.08,
+onText: 'Search Suggestions live. We know what you meant.' },
+{ id: 'memories', name: 'Photo Memories', desc: '“On this day, 4 years ago.”',
+why: 'Old photos carry dates, places and faces. Resurfacing them gets people to re-tag who they were with and where.',
+harvests: { photo_metadata: 0.3 }, zones: { riverside: 3, oldtown: 1 }, heat: 2, growth: 0.003, arpu: 0.05,
+onText: 'Photo Memories live. Every picture has a timestamp and a GPS pin.' },
+{ id: 'steps', name: 'Step Counter', desc: 'Wellness, gamified.',
+why: 'An accelerometer shows how someone moves: their pace, a limp, how much they sleep, a sudden change in routine.',
+harvests: { accelerometer: 0.3 }, zones: { suburbs: 2, riverside: 2 }, heat: 1, growth: 0.002, arpu: 0.05,
+onText: 'Step Counter live. 10,000 steps, all of them logged.' },
+{ id: 'keyboard', name: 'Smart Keyboard', desc: 'Predictive text that learns you.',
+why: 'Typing speed, hesitation and deleted words track mood and stress, even in messages that are never sent.',
+harvests: { typing_cadence: 0.3 }, zones: { campus: 2, downtown: 1 }, heat: 2, growth: 0.001, arpu: 0.08,
+onText: 'Smart Keyboard live. It even learns what you delete.' },
+{ id: 'shop', name: 'Shop Tab', desc: 'Checkout without leaving the app.',
+why: 'Purchases are the most honest data there is. A basket can show a pregnancy, a diagnosis or a money problem.',
+harvests: { purchase_history: 0.34 }, zones: { suburbs: 3, downtown: 1 }, heat: 2, growth: 0.001, arpu: 0.2,
+onText: 'Shop Tab live. Receipts are forever.' },
+{ id: 'voicenotes', name: 'Voice Notes', desc: 'Say it instead of typing it.',
+why: 'Voice carries tone, stress and health. A recording says far more than the words in it.',
+harvests: { voice: 0.3 }, zones: { oldtown: 3, riverside: 1 }, heat: 2, growth: 0.002, arpu: 0.08,
+onText: 'Voice Notes live. Tone of voice is a data point.' },
+{ id: 'neighborhood', name: 'Neighborhood Feed', desc: 'See what’s happening on your street.',
+why: 'Neighbors post photos of each other’s streets, cars and front doors. It maps the people who never consented.',
+harvests: { location: 0.6, photo_metadata: 0.2 }, zones: { suburbs: 2, riverside: 2 }, heat: 3, growth: 0.004, arpu: 0.15,
+onText: 'Neighborhood Feed live. Your street, mapped by your neighbors.' },
+{ id: 'dms', name: 'DM Mining', desc: 'End-to-end*. (*Terms apply.)',
+why: 'Private messages are where people say what they actually think: who they love, fear and owe.',
+harvests: { contacts: 0.6, typing_cadence: 0.3 }, zones: { campus: 3 }, heat: 3, growth: 0, arpu: 0.3,
+onText: 'DM Mining live. Legal says the asterisk is doing a lot of work.' },
+{ id: 'bnpl', name: 'Buy Now, Pay Later', desc: 'Four easy payments.',
+why: 'Small loans keep people buying, and the repayments map exactly how close they are to running out of money.',
+harvests: { purchase_history: 0.6 }, zones: { suburbs: 3 }, heat: 3, growth: 0, arpu: 0.5,
+onText: 'Buy Now, Pay Later live. Pay forever, technically.' },
+{ id: 'sleeptracker', name: 'Sleep Tracker', desc: 'Leave your phone on the pillow.',
+why: 'A phone on the pillow records when someone sleeps, wakes, and who else is in the bed.',
+harvests: { night_usage: 0.45, accelerometer: 0.3 }, zones: { oldtown: 3 }, heat: 2, growth: 0.002, arpu: 0.15,
+onText: 'Sleep Tracker live. Sweet dreams, logged hourly.' },
+{ id: 'mic', name: 'Always-On Mic', desc: 'For better ads. Only for better ads.',
+why: 'Background audio fills in everything the screen missed: arguments, TV shows, the name of a pharmacy.',
+harvests: { voice: 0.75, search: 0.15 }, zones: { downtown: 1, suburbs: 1, campus: 1, riverside: 1, oldtown: 1 }, heat: 3, growth: 0, arpu: 0.6,
+onText: 'Always-On Mic live. It was “for better ads.”' },
+];
+const INFERENCES = [
+{ id: 'home', name: 'Home Address', icon: '🏠', needs: { location: 3, night_usage: 2 },
+effects: { unlock: ['neighborhood'], revMult: 1.15 },
+person: 'maya', field: 'commute', line: 'Lives at 41 Alder Street, second floor. Lights off around 1 a.m.' },
+{ id: 'social', name: 'Social Circle', icon: '🫂', needs: { contacts: 3, dwell_time: 3 },
+effects: { unlock: ['search', 'memories'], revMult: 1.1 },
+person: 'dev', field: 'relationships', line: 'Closest to his sister, Ada. Messages her every morning before 9.' },
+{ id: 'insomnia', name: 'Insomnia', icon: '🥱', needs: { night_usage: 9, dwell_time: 9 },
+effects: { unlock: ['keyboard'], revMult: 1.25 },
+person: 'dev', field: 'sleep', line: 'Awake most nights between 2 and 4. Scrolls, never posts.' },
+{ id: 'commute', name: 'Commute', icon: '🚌', needs: { location: 12, dwell_time: 9 },
+effects: { unlock: ['steps'], revMult: 1.1 },
+person: 'sam', field: 'commute', line: 'Leaves home at 7:40. Arrives late on Thursdays.' },
+{ id: 'shopping', name: 'Shopping Habits', icon: '🛍️', needs: { search: 12, location: 12 },
+effects: { unlock: ['shop'], revMult: 1.15 },
+person: 'lena', field: 'finances', line: 'Shops on Sunday nights. Abandons the cart about half the time.' },
+{ id: 'relationship', name: 'Relationship Status', icon: '💍', needs: { photo_metadata: 9, contacts: 10 },
+effects: { unlock: ['dms'], revMult: 1.2, awareness: 4 },
+person: 'maya', field: 'relationships', line: 'Engaged since June. Has not told her father.' },
+{ id: 'anxiety', name: 'Anxiety', icon: '😰', needs: { typing_cadence: 9, night_usage: 9 },
+effects: { unlock: ['voicenotes'], revMult: 1.2 },
+person: 'dev', field: 'health', line: 'Types fast and deletes most of it. Worse the night before exams.' },
+{ id: 'sleep', name: 'Sleep Schedule', icon: '🛌', needs: { accelerometer: 9, night_usage: 10 },
+effects: { unlock: ['sleeptracker'], revMult: 1.15 },
+person: 'june', field: 'sleep', line: 'Up at 4:50 every morning. Naps until 2 on Saturdays.' },
+{ id: 'mood', name: 'Mood Print', icon: '🎭', needs: { voice: 9, typing_cadence: 10 },
+effects: { unlock: ['mic'], revMult: 1.25, awareness: 5 },
+person: 'maya', field: 'health', line: 'Her voice drops half a tone after calls with her father.' },
+{ id: 'pain', name: 'Chronic Pain', icon: '🦵', needs: { accelerometer: 12, search: 12 },
+effects: { unlock: ['bnpl'], boost: { steps: 2 }, revMult: 1.3 },
+person: 'sam', field: 'health', line: 'Walks with a slight limp since October. Searched “knee MRI cost” three times.' },
+{ id: 'jobloss', name: 'Job Loss', icon: '📦', needs: { search: 90, location: 90, dwell_time: 72 },
+effects: { boost: { search: 2 }, revMult: 1.6, awareness: 6 }, excludes: 'promotion', wrong: true,
+person: 'sam', field: 'finances', line: 'Lost his job in September. Hasn’t been to the office since.' },
+{ id: 'promotion', name: 'Promotion', icon: '📈', needs: { search: 90, location: 90, typing_cadence: 72 },
+effects: { boost: { shop: 2 }, revMult: 1.5, awareness: 3 }, excludes: 'jobloss',
+person: 'sam', field: 'finances', line: 'Promoted in September. Spends the raise paying down a card.' },
+{ id: 'pregnancy', name: 'Pregnancy', icon: '🍼', needs: { purchase_history: 102, search: 72, location: 60 },
+effects: { boost: { shop: 2.5 }, revMult: 2.2, awareness: 15 }, excludes: 'debt', wrong: true,
+person: 'lena', field: 'health', line: 'Pregnant. Due in late spring.' },
+{ id: 'debt', name: 'Debt', icon: '💳', needs: { purchase_history: 102, search: 72, typing_cadence: 60 },
+effects: { boost: { bnpl: 2 }, revMult: 1.7, awareness: 6 }, excludes: 'pregnancy',
+person: 'lena', field: 'finances', line: 'Owes $14,200 across three cards. Pays the minimum on the 3rd.' },
+{ id: 'caller', name: 'Late-Night Caller', icon: '📞', needs: { contacts: 108, night_usage: 96, voice: 96 },
+effects: { boost: { dms: 2 }, revMult: 2.0, awareness: 10 }, wrong: true,
+person: 'june', field: 'relationships', line: 'Calls an unsaved number after midnight. Twenty minutes, every Tuesday.' },
+];
+const WRONG_NOTE = 'inference incorrect';
+const MILESTONES = [
+{ at: 1e8,  title: 'Series A',  icon: '🥂', text: 'The board is pleased. Free kombucha on every floor.', userBonus: 0.15 },
+{ at: 1e9,  title: 'Unicorn',   icon: '🦄', text: 'Billion-dollar company. There is now a slide in the lobby.', userBonus: 0.2 },
+{ at: 1e10, title: 'Decacorn',  icon: '🚀', text: 'You rang the bell. The bell is also tracked.', userBonus: 0.2 },
+{ at: 5e10, title: 'Halfway to forever', icon: '🏝️', text: 'You bought an island. It has great reception.', userBonus: 0.2 },
+];
+const HEADLINES = [
+'Former engineer: “We called it the vacuum.”',
+'Report: Plaza keeps location history after users opt out',
+'Leaked deck lists “emotional state” as an ad category',
+'Plaza uploaded contacts of people who never signed up',
+'Senator asks why a keyboard needs the internet',
+'Users find their own sleep schedule for sale online',
+'Plaza’s “Dark Mode” linked to 3 a.m. ad spikes',
+];
+const REGULATOR_LINES = [
+'The Data Protection Office would like a word.',
+'A regulator has requested “one small gesture.”',
+'Congress has questions. Give them a feature.',
+];
+const DISTRACTIONS = [
+{ id: 'trend', name: 'Viral Trend', icon: '💃', shape: 'Wide · brief · harvests',
+desc: 'Drop a dance challenge on a hot spot. Covers a big area for 6s, and everyone watching it gets harvested.',
+radius: 0.46, duration: 6, cooldown: 30, power: 0.38, harvest: 0.8 },
+{ id: 'scandal', name: 'Rival Scandal', icon: '🗞️', shape: 'Narrow · lasting · poisons the well',
+desc: 'Point the press at a competitor. Small area, holds for 20s, but every use makes the whole industry look worse.',
+radius: 0.2, duration: 20, cooldown: 55, power: 0.6, industry: 0.007 },
+{ id: 'outrage', name: 'Outrage Topic', icon: '😡', shape: 'Cheap · strong · users leave',
+desc: 'Give people something to fight about. Fast recharge and very effective, but a hostile platform bleeds users.',
+radius: 0.3, duration: 8, cooldown: 16, power: 0.55, userLoss: 0.03, hostility: 0.0008 },
+{ id: 'launch', name: 'Feature Launch', icon: '🚀', shape: 'Everywhere · costs cash + a roadmap slot',
+desc: 'Ship something shiny. Every hot spot cools at once and suspicion drops. Only 3 roadmap slots per run.',
+global: true, costSeconds: 45, slots: 3, power: 0.6, awareness: 6 },
+];
+const MOMENTS = [
+{ text: '2 a.m. pharmacy run', kinds: ['location', 'night_usage', 'purchase_history'] },
+{ text: 'Searched “am I depressed”', kinds: ['search', 'night_usage'] },
+{ text: 'Deleted a long message', kinds: ['typing_cadence', 'contacts'] },
+{ text: 'Checked an ex’s profile again', kinds: ['dwell_time', 'contacts'] },
+{ text: 'Walked past a clinic twice', kinds: ['location', 'accelerometer'] },
+{ text: 'Bought a pregnancy test', kinds: ['purchase_history', 'search'] },
+{ text: 'Scrolled for 3 hours straight', kinds: ['dwell_time', 'night_usage'] },
+{ text: 'Tagged a new friend', kinds: ['photo_metadata', 'contacts'] },
+{ text: 'Voice note, crying', kinds: ['voice', 'typing_cadence'] },
+{ text: 'Looked up payday loans', kinds: ['search', 'purchase_history'] },
+{ text: 'Left the house at 4 a.m.', kinds: ['location', 'accelerometer', 'night_usage'] },
+{ text: 'Photo at a new address', kinds: ['photo_metadata', 'location'] },
+{ text: 'Sat outside a bar for an hour', kinds: ['location', 'dwell_time'] },
+{ text: 'Paused on a gym ad for 9 seconds', kinds: ['dwell_time', 'search'] },
+{ text: 'Searched a lawyer’s name', kinds: ['search', 'typing_cadence'] },
+{ text: 'Typed “I’m fine” four times', kinds: ['typing_cadence', 'contacts'] },
+{ text: 'Bought cold medicine and wine', kinds: ['purchase_history', 'location'] },
+{ text: 'Muted their mother', kinds: ['contacts', 'dwell_time'] },
+{ text: 'Went to a job interview', kinds: ['location', 'accelerometer'] },
+{ text: 'Selfie at a hospital', kinds: ['photo_metadata', 'location'] },
+{ text: 'Ordered takeout for one, again', kinds: ['purchase_history', 'night_usage'] },
+{ text: 'Watched a breakup video twice', kinds: ['dwell_time', 'night_usage'] },
+{ text: 'Searched “symptoms of a stroke”', kinds: ['search', 'night_usage'] },
+{ text: 'Paid rent three days late', kinds: ['purchase_history', 'search'] },
+{ text: 'Unfollowed a coworker', kinds: ['contacts', 'dwell_time'] },
+{ text: 'Paced the kitchen at midnight', kinds: ['accelerometer', 'night_usage'] },
+{ text: 'Searched flights, one way', kinds: ['search', 'location'] },
+{ text: 'Liked an old photo by accident', kinds: ['photo_metadata', 'dwell_time'] },
+{ text: 'Visited a church for the first time', kinds: ['location', 'accelerometer'] },
+{ text: 'Whispered in a voice note', kinds: ['voice', 'night_usage'] },
+{ text: 'Bought a ring, then returned it', kinds: ['purchase_history', 'location'] },
+{ text: 'Joined a support group', kinds: ['contacts', 'search'] },
+{ text: 'Screenshotted a group chat', kinds: ['photo_metadata', 'contacts'] },
+{ text: 'Searched “how much is a divorce”', kinds: ['search', 'typing_cadence'] },
+{ text: 'Stopped at the same bridge again', kinds: ['location', 'accelerometer'] },
+{ text: 'Played one song 30 times', kinds: ['dwell_time', 'night_usage'] },
+{ text: 'Called in sick, then went jogging', kinds: ['accelerometer', 'location'] },
+{ text: 'Searched a baby name', kinds: ['search', 'purchase_history'] },
+{ text: 'Shared a fundraiser for rent', kinds: ['contacts', 'purchase_history'] },
+{ text: 'Typed an address, then deleted it', kinds: ['typing_cadence', 'location'] },
+{ text: 'Sent a voice note to an unsaved number', kinds: ['voice', 'contacts'] },
+{ text: 'Ordered a home DNA kit', kinds: ['purchase_history', 'search'] },
+{ text: 'Stayed at a motel across town', kinds: ['location', 'night_usage'] },
+{ text: 'Hovered over “delete account”', kinds: ['dwell_time', 'typing_cadence'] },
+{ text: 'Walked 2 miles to avoid the bus', kinds: ['accelerometer', 'location'] },
+{ text: 'Posted, then deleted, at 3 a.m.', kinds: ['night_usage', 'photo_metadata'] },
+{ text: 'Searched “is this normal”', kinds: ['search', 'night_usage'] },
+{ text: 'Bought sleeping pills', kinds: ['purchase_history', 'night_usage'] },
+{ text: 'Took a photo of a prescription', kinds: ['photo_metadata', 'purchase_history'] },
+{ text: 'Laughed in a voice note for the first time in weeks', kinds: ['voice', 'contacts'] },
+];
+const PERSON_MOMENTS = {
+maya: ['Maya typed “I can’t tell him” and deleted it', 'Maya’s ring is in every photo now', 'Maya called her dad. 41 seconds.', 'Maya looked at wedding venues at 2 a.m.', 'Maya muted the family group chat'],
+dev:  ['Dev opened the app 14 times in one lecture', 'Dev is awake again at 3:12 a.m.', 'Dev searched “how to drop out”', 'Dev skipped lunch for the third day', 'Dev typed a long message to his sister, then sent “lol”'],
+lena: ['Lena hid the shopping tab from her husband', 'Lena paid one card with another', 'Lena searched “baby names” at 1 a.m.', 'Lena returned a stroller, unopened', 'Lena checked her balance 6 times today'],
+sam:  ['Sam drove to the office and sat in the car', 'Sam’s steps are down 60% this month', 'Sam googled “knee surgery recovery time”', 'Sam updated his résumé at 5 a.m.', 'Sam told his wife the meeting ran late'],
+june: ['June called the same number again', 'June listened to the voice note 9 times', 'June walked to the bus stop and back', 'June searched how to block a number, then didn’t', 'June saved a photo of a man nobody else follows'],
+};
+const EVENTS = [
+{ id: 'leak', icon: '💧', title: 'A dataset leaked', minTick: 100,
+text: 'Someone posted a slice of your {kind} data online. Reporters are downloading it right now.',
+choices: [
+{ label: 'Purge it and apologize', sub: 'Empties the {kind} jar. Its levers pause for 30s.', effect: 'leakPurge' },
+{ label: 'Say nothing', sub: '{kind} turns radioactive: harvesting it raises suspicion for the rest of the run.', effect: 'leakIgnore' },
+] },
+{ id: 'gov', icon: '🏛️', title: 'The government wants your data', minTick: 160,
+text: 'An agency requests everything you hold on 40,000 users. Quietly.',
+choices: [
+{ label: 'Comply', sub: 'You gain a friend in government (Lobbying +1), but 12% of users leave when it gets out.', effect: 'govComply' },
+{ label: 'Refuse', sub: 'Regulators take it personally: inquiries start sooner and move faster.', effect: 'govRefuse' },
+] },
+{ id: 'model', icon: '🤖', title: 'A model won’t stop', minTick: 220,
+text: 'An old experiment keeps producing inferences on its own. Nobody remembers who built it.',
+choices: [
+{ label: 'Let it run', sub: 'Free data of every kind, forever. You can never turn it off, and people notice.', effect: 'modelRun' },
+{ label: 'Pull the plug', sub: 'Costs a minute of revenue to clean up properly.', effect: 'modelKill' },
+] },
+{ id: 'employee', icon: '🚪', title: 'An engineer just quit', text: 'She built the location pipeline and knows exactly what it does. She’s not answering calls.',
+choices: [
+{ label: 'Pay for her silence', sub: 'Costs 90 seconds of revenue. The problem goes away.', effect: 'nda' },
+{ label: 'Let her go', sub: 'She might talk. Or not. Some time in the next few minutes.', effect: 'letGo' },
+] },
+{ id: 'acquire', icon: '🤝', title: 'An acquisition offer', minTick: 0, minValuation: 3e9,
+text: 'A bigger company offers to buy Plaza outright. Cash now, and someone else’s problem.',
+choices: [
+{ label: 'Sell', sub: 'The run ends here. You walk away rich, with whatever files you have.', effect: 'sell' },
+{ label: 'Refuse', sub: 'The press loves a founder who won’t sell. +10% users.', effect: 'refuse' },
+] },
+];
+const TUTORIAL = [
+{ text: 'Welcome aboard, CEO. Tap <b>📍 Location Check-ins</b> to switch it on.',
+target: 'lever:checkins', done: (s) => s.levers.checkins.on },
+{ text: 'Nice. Now switch on <b>🌙 Dark Mode</b>.',
+target: 'lever:darkmode', done: (s) => s.levers.darkmode.on },
+{ id: 'moment', text: 'See the glowing <b>!</b> on the map? Someone just did something revealing. <b>Tap it</b> before it fades.',
+target: 'map', done: (s) => s.stats.caught > 0 },
+{ text: 'Watch the pings stream out of your users and into the <b>jars</b>. You need <b>📍📍📍</b> and <b>🌙🌙</b>.',
+target: 'jars', done: (s) => s.data.location >= 3 && s.data.night_usage >= 2 },
+{ text: 'Jars full! Tap <b>Infer</b> on 🏠 Home Address.',
+target: 'inf:home', done: (s) => s.inferred.includes('home') },
+{ text: 'That went into <b>Maya’s file</b>. You’re following five people. Tap Maya to read her file.',
+target: 'person:maya', done: (s, ui) => ui.openedFile },
+{ text: 'Switch on more levers. Each one watches certain neighborhoods, and more levers mean more glowing users to catch. <b>🔥 Hot levers draw attention.</b>',
+target: 'levers', done: (s) => Object.values(s.levers).filter(l => l.on).length >= 4 },
+{ id: 'blob', text: '👀 People are starting to talk! Tap <b>💃 Viral Trend</b>, then <b>drag it onto the glowing spot</b> before it spreads.',
+target: 'distraction:trend', done: (s) => s.stats.hits > 0 },
+{ text: 'Every distraction has a different shape. Miss and it’s wasted. At 60 👀 regulators file an inquiry, so watch the countdown. Goal: <b>$100B</b>.',
+target: 'suspicion', done: (s, ui) => ui.stepAge > 10 },
+];
+const TUNING = {
+startUsers: 10000,
+baseArpu: 0.001,          // $/user/sec
+valuationMultiple: 2.2e5,   // valuation = revenue/sec * this
+winValuation: 1e11,
+userCapBase: 60000,
+userCapPerInference: 1.55,
+userYieldExponent: 0.18,  // data yield scales with (users/10k)^exp
+heatAggression: [0, 0.03, 0.06, 0.13], // aggression by heat level
+churnStart: 70,
+churnRate: 0.0006,
+awarenessBase: 0.03,      // passive suspicion/sec, always
+aggressionScale: 0.35,    // suspicion/sec = base + scale * aggression^2
+blobSpawnBase: 0.004,     // chance/sec of a new hot spot
+blobSpawnPerAggr: 0.1,
+blobMax: 4,
+calmOpening: 75,
+momentEvery: [2, 4],      // seconds between moments
+momentMax: 3,             // most catchable moments on the map at once
+momentLife: 4.5,          // seconds a moment stays catchable
+momentBundle: 2,          // tokens per kind per catch
+comboMax: 5,
+eventGap: [40, 70],       // seconds between decision cards
+radioactiveRate: 0.06,    // suspicion/sec per active lever harvesting a leaked type
+runawayRate: 0.35,        // tokens/sec of every seen type from the runaway model
+runawayHeat: 0.03,          // no natural hot spots before this many seconds
+blobGrowBase: 0.012,       // heat/sec (hot spot breaks at 1)
+blobGrowHeat: 0.3,       // extra heat/sec per point of zone aggression
+blobAwareness: 0.05,      // suspicion/sec per unit of hot spot heat
+viralDump: 15,            // suspicion when a hot spot breaks into a story
+inquiryDelay: 15,         // seconds from inquiry filed to hearing
+inquiryPerLobby: 5,
+inquiryDropBelow: 55,     // hearing is dropped if suspicion has fallen below this
+journalistBase: 0.12,
+journalistPerAggression: 0.8,
+journalistDump: 15,
+regulatorAt: 60,
+regulatorDecision: 10,
+regulatorLockout: 30,
+regulatorCooldown: 60,
+lobbyCooldownPerLevel: 30,
+lobbyLockoutReduction: 5,
+lobbyCostSeconds: 40,     // costs are seconds of current revenue
+lobbyCostGrowth: 1.7,
+rebrandCostSeconds: 90,
+rebrandAmount: 25,
+theaterCostSeconds: 30,
+theaterCostGrowth: 1.5,
+theaterDuration: 20,
+theaterPenalty: 0.012,
+};
+for (const l of LEVERS) l.aggression = TUNING.heatAggression[l.heat];
+return { COMPANY, ZONES, PEOPLE, FIELDS, DATA_TYPES, LEVERS, INFERENCES, WRONG_NOTE, MILESTONES, HEADLINES, REGULATOR_LINES, DISTRACTIONS, MOMENTS, PERSON_MOMENTS, EVENTS, TUTORIAL, TUNING };
+})();
+const __engine = (() => {
+const { LEVERS, INFERENCES, TUNING: T, HEADLINES, MILESTONES, ZONES, DISTRACTIONS, MOMENTS, PERSON_MOMENTS, EVENTS, PEOPLE, DATA_TYPES } = __content;
+const need = (inf, k) => inf.needs[k];
+const leverById = Object.fromEntries(LEVERS.map(l => [l.id, l]));
+const inferenceById = Object.fromEntries(INFERENCES.map(i => [i.id, i]));
+const zoneById = Object.fromEntries(ZONES.map(z => [z.id, z]));
+const distractionById = Object.fromEntries(DISTRACTIONS.map(d => [d.id, d]));
+const personColor = (id) => PEOPLE.find(p => p.id === id)?.color || '#d9a441';
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const emit = (s, type, payload = {}) => s.events.push({ type, ...payload });
+function isLeverActive(s, id) {
+const l = s.levers[id];
+return l.unlocked && l.on && l.lockedUntil <= s.tick;
+}
+function activeLevers(s) {
+return LEVERS.filter(l => isLeverActive(s, l.id));
+}
+function aggression(s) {
+return activeLevers(s).reduce((a, l) => a + l.aggression, 0);
+}
+function userCap(s) {
+return T.userCapBase * Math.pow(T.userCapPerInference, s.inferred.length);
+}
+function arpu(s) {
+const bonus = activeLevers(s).reduce((a, l) => a + l.arpu, 0);
+return T.baseArpu * (1 + bonus) * s.revMult;
+}
+function revenueRate(s) {
+return s.users * arpu(s);
+}
+function valuation(s) {
+return revenueRate(s) * T.valuationMultiple;
+}
+function awarenessRate(s) {
+if (s.theaterUntil > s.tick) return 0;
+const blobs = s.blobs.reduce((a, b) => a + b.heat, 0) * T.blobAwareness;
+const radio = activeLevers(s).filter(l => Object.keys(l.harvests).some(k => s.radioactive.includes(k))).length * T.radioactiveRate;
+const extra = radio + (s.runaway ? T.runawayHeat : 0);
+return T.awarenessBase + s.theaterUses * T.theaterPenalty + s.industry + Math.pow(aggression(s), 2) * T.aggressionScale + blobs + extra;
+}
+function dataRates(s) {
+const f = Math.pow(s.users / T.startUsers, T.userYieldExponent);
+const rates = {};
+for (const l of activeLevers(s)) {
+const boost = s.levers[l.id].boost;
+for (const [k, v] of Object.entries(l.harvests)) {
+rates[k] = (rates[k] || 0) + v * f * boost;
+}
+}
+return rates;
+}
+function inferenceStatus(s, inf) {
+if (s.inferred.includes(inf.id)) return 'done';
+if (s.superseded.includes(inf.id)) return 'superseded';
+const ready = Object.keys(inf.needs).every(k => s.data[k] >= need(inf, k));
+if (ready) return 'ready';
+const anySeen = Object.keys(inf.needs).some(k => s.seen[k]);
+return anySeen ? 'partial' : 'hidden';
+}
+function runInference(s, id) {
+const inf = inferenceById[id];
+if (!inf || s.over || inferenceStatus(s, inf) !== 'ready') return false;
+for (const k of Object.keys(inf.needs)) s.data[k] -= need(inf, k);
+s.inferred.push(id);
+if (inf.excludes && !s.superseded.includes(inf.excludes)) s.superseded.push(inf.excludes);
+const e = inf.effects;
+if (e.revMult) s.revMult *= e.revMult;
+if (e.awareness) s.awareness = Math.min(100, s.awareness + e.awareness);
+for (const lid of e.unlock || []) {
+s.levers[lid].unlocked = true;
+s.levers[lid].fresh = true;
+emit(s, 'unlock', { lever: lid });
+}
+for (const [lid, m] of Object.entries(e.boost || {})) s.levers[lid].boost *= m;
+emit(s, 'inference', { id });
+checkEnd(s);
+return true;
+}
+function toggleLever(s, id) {
+const l = s.levers[id];
+if (!l || !l.unlocked || s.over) return false;
+if (l.lockedUntil > s.tick) return false;
+l.on = !l.on;
+l.fresh = false;
+return true;
+}
+function lockoutDuration(s) {
+return Math.max(10, T.regulatorLockout - s.lobby * T.lobbyLockoutReduction);
+}
+function resolveRegulator(s, leverId) {
+if (!s.regulator.pending) return false;
+let target = leverId && isLeverActive(s, leverId) ? leverId : null;
+if (!target) {
+const act = activeLevers(s).sort((a, b) => b.aggression - a.aggression);
+target = act.length ? act[0].id : null;
+}
+if (target) {
+s.levers[target].lockedUntil = s.tick + lockoutDuration(s);
+}
+s.regulator.pending = false;
+s.regulator.phase = 'idle';
+s.regulator.cooldownUntil = s.tick + T.regulatorCooldown + s.lobby * T.lobbyCooldownPerLevel;
+emit(s, 'regulator-resolved', { lever: target });
+return true;
+}
+function lobbyCost(s) {
+return Math.max(500, revenueRate(s) * T.lobbyCostSeconds) * Math.pow(T.lobbyCostGrowth, s.lobby);
+}
+function rebrandCost(s) {
+return Math.max(1000, revenueRate(s) * T.rebrandCostSeconds);
+}
+function theaterCost(s) {
+return Math.max(300, revenueRate(s) * T.theaterCostSeconds) * Math.pow(T.theaterCostGrowth, s.theaterUses);
+}
+function buy(s, what) {
+if (s.over) return false;
+if (what === 'lobby') {
+const c = lobbyCost(s);
+if (s.cash < c) return false;
+s.cash -= c; s.lobby += 1;
+} else if (what === 'rebrand') {
+const c = rebrandCost(s);
+if (s.rebrandUsed || s.cash < c) return false;
+s.cash -= c; s.rebrandUsed = true;
+s.awareness = Math.max(0, s.awareness - T.rebrandAmount);
+} else if (what === 'theater') {
+const c = theaterCost(s);
+if (s.theaterUntil > s.tick || s.cash < c) return false;
+s.cash -= c;
+s.theaterUntil = s.tick + T.theaterDuration;
+s.theaterUses += 1;
+} else return false;
+emit(s, 'bought', { what });
+return true;
+}
+function zoneHeat(s) {
+const heat = Object.fromEntries(ZONES.map(z => [z.id, 0]));
+for (const l of activeLevers(s)) {
+const total = Object.values(l.zones).reduce((a, b) => a + b, 0);
+for (const [z, w] of Object.entries(l.zones)) heat[z] += l.aggression * w / total;
+}
+return heat;
+}
+function hottestLeverIn(s, zoneId) {
+let best = null, bestV = 0;
+for (const l of activeLevers(s)) {
+const total = Object.values(l.zones).reduce((a, b) => a + b, 0);
+const v = l.aggression * (l.zones[zoneId] || 0) / total;
+if (v > bestV) { bestV = v; best = l.id; }
+}
+return best;
+}
+function shielded(s, p) {
+return s.effects.some(e => e.until > s.tick && dist(e, p) <= e.r);
+}
+function spawnBlob(s, zoneId) {
+if (!zoneId) {
+const heat = zoneHeat(s);
+const total = Object.values(heat).reduce((a, b) => a + b, 0);
+if (total <= 0) return null;
+let r = Math.random() * total;
+for (const [z, h] of Object.entries(heat)) { r -= h; if (r <= 0) { zoneId = z; break; } }
+zoneId = zoneId || ZONES[0].id;
+}
+const z = zoneById[zoneId];
+const a = Math.random() * Math.PI * 2, d = Math.random() * z.r * 0.6;
+const b = {
+id: s.nextBlobId++, zone: zoneId, lever: hottestLeverIn(s, zoneId),
+x: z.x + Math.cos(a) * d, y: Math.min(0.92, Math.max(0.08, z.y + Math.sin(a) * d * 0.8)),
+vx: 0, vy: 0, heat: 0.08,
+};
+if (shielded(s, b)) return null;
+s.blobs.push(b);
+emit(s, 'blob', { id: b.id, zone: zoneId });
+return b;
+}
+function tickBlobs(s) {
+const heat = zoneHeat(s);
+const aggr = aggression(s);
+if (s.tick >= T.calmOpening && s.blobs.length < T.blobMax && aggr > 0 && Math.random() < T.blobSpawnBase + aggr * T.blobSpawnPerAggr) spawnBlob(s);
+for (const b of s.blobs) {
+b.heat += T.blobGrowBase + (heat[b.zone] || 0) * T.blobGrowHeat;
+const z = zoneById[b.zone];
+b.vx = b.vx * 0.8 + (Math.random() - 0.5) * 0.03 + (z.x - b.x) * 0.01;
+b.vy = b.vy * 0.8 + (Math.random() - 0.5) * 0.02 + (z.y - b.y) * 0.01;
+b.x = Math.min(1.94, Math.max(0.06, b.x + b.vx));
+b.y = Math.min(0.94, Math.max(0.06, b.y + b.vy));
+}
+for (const e of s.effects) {
+if (e.until <= s.tick) continue;
+const d = distractionById[e.kind];
+for (const b of s.blobs) if (dist(e, b) <= e.r) b.heat -= d.power;
+if (d.harvest) {
+const kinds = new Set(activeLevers(s).flatMap(l => Object.keys(l.harvests)));
+for (const k of kinds) { s.data[k] += d.harvest; s.seen[k] = true; }
+emit(s, 'harvest', { effect: e.id, kinds: [...kinds] });
+}
+}
+s.effects = s.effects.filter(e => e.until > s.tick);
+for (const b of s.blobs) {
+if (b.heat <= 0) { b.dead = 'cleared'; emit(s, 'blob-cleared', { id: b.id, x: b.x, y: b.y, zone: b.zone }); }
+else if (b.heat >= 1) {
+b.dead = 'viral';
+s.awareness = Math.min(100, s.awareness + T.viralDump);
+emit(s, 'journalist', { headline: HEADLINES[Math.floor(Math.random() * HEADLINES.length)], zone: b.zone, lever: b.lever, x: b.x, y: b.y });
+}
+}
+s.blobs = s.blobs.filter(b => !b.dead);
+}
+function launchCost(s) {
+return Math.max(800, revenueRate(s) * distractionById.launch.costSeconds);
+}
+function distractionReady(s, id) {
+const d = distractionById[id];
+if (!d || s.over) return false;
+if (d.global) return s.launchSlots > 0 && s.cash >= launchCost(s);
+return (s.cooldowns[id] || 0) <= s.tick;
+}
+function distract(s, id, x, y) {
+if (!distractionReady(s, id)) return false;
+const d = distractionById[id];
+if (d.global) {
+s.cash -= launchCost(s);
+s.launchSlots -= 1;
+for (const b of s.blobs) b.heat -= d.power;
+s.awareness = Math.max(0, s.awareness - d.awareness);
+s.stats.hits += 1;
+emit(s, 'distract', { kind: id, result: 'hit' });
+return 'hit';
+}
+s.cooldowns[id] = s.tick + d.cooldown;
+const p = { x, y };
+const hit = s.blobs.some(b => dist(b, p) <= d.radius + 0.04);
+if (!hit) {
+s.stats.misses += 1;
+emit(s, 'distract', { kind: id, result: 'miss', x, y });
+return 'miss';
+}
+const e = { id: s.nextBlobId++, kind: id, x, y, r: d.radius, until: s.tick + d.duration };
+s.effects.push(e);
+if (d.industry) s.industry += d.industry;
+if (d.userLoss) s.users *= 1 - d.userLoss;
+if (d.hostility) s.hostility += d.hostility;
+s.stats.hits += 1;
+emit(s, 'distract', { kind: id, result: 'hit', x, y, effect: e.id });
+return 'hit';
+}
+const rnd = (a, b) => a + Math.random() * (b - a);
+function spawnMoment(s) {
+const act = activeLevers(s);
+if (!act.length) return;
+const l = act[Math.floor(Math.random() * act.length)];
+const zones = Object.entries(l.zones);
+const total = zones.reduce((a, [, w]) => a + w, 0);
+let r = Math.random() * total, zone = zones[0][0];
+for (const [z, w] of zones) { r -= w; if (r <= 0) { zone = z; break; } }
+const z = zoneById[zone];
+let m;
+const person = PEOPLE.find(p => p.zone === zone);
+if (person && Math.random() < 0.28) {
+const beats = PERSON_MOMENTS[person.id];
+m = { text: beats[Math.floor(Math.random() * beats.length)], kinds: Object.keys(l.harvests), person: person.id };
+} else {
+const pool = MOMENTS.filter(mm => mm.kinds.some(k => l.harvests[k]));
+const base = (pool.length ? pool : MOMENTS)[Math.floor(Math.random() * (pool.length || MOMENTS.length))];
+m = { text: base.text, kinds: base.kinds };
+}
+const a = rnd(0, Math.PI * 2), d = rnd(0.2, 0.85) * z.r;
+s.moments.push({ id: s.nextBlobId++, zone, x: z.x + Math.cos(a) * d, y: Math.min(0.92, Math.max(0.08, z.y + Math.sin(a) * d * 0.75)),
+born: s.tick, until: s.tick + T.momentLife, ...m });
+emit(s, 'moment');
+}
+function catchMoment(s, id) {
+const i = s.moments.findIndex(m => m.id === id);
+if (i < 0 || s.over) return null;
+const m = s.moments[i];
+s.moments.splice(i, 1);
+s.combo = Math.min(T.comboMax, s.combo + 1);
+s.bestCombo = Math.max(s.bestCombo, s.combo);
+const n = T.momentBundle * s.combo;
+const got = {};
+for (const k of m.kinds) { s.data[k] += n; s.seen[k] = true; got[k] = n; }
+s.stats.caught += 1;
+emit(s, 'caught', { id, x: m.x, y: m.y, zone: m.zone, got, combo: s.combo, person: m.person });
+return got;
+}
+function tickMoments(s) {
+for (const m of s.moments) {
+if (m.until <= s.tick) { m.dead = true; if (s.combo) emit(s, 'combo-lost'); s.combo = 0; }
+}
+s.moments = s.moments.filter(m => !m.dead);
+if (s.tick >= s.nextMomentAt && s.moments.length < T.momentMax) {
+spawnMoment(s);
+s.nextMomentAt = s.tick + Math.round(rnd(T.momentEvery[0], T.momentEvery[1]));
+}
+}
+function tickEvents(s) {
+if (s.event || s.tick < s.nextEventAt || s.tutorialHold) return;
+const v = valuation(s);
+const pool = EVENTS.filter(e => !s.eventsSeen.includes(e.id) && s.tick >= e.minTick && (!e.minValuation || v >= e.minValuation));
+if (!pool.length) return;
+const e = pool[Math.floor(Math.random() * pool.length)];
+const kinds = Object.keys(DATA_TYPES).filter(k => s.seen[k] && !s.radioactive.includes(k));
+s.event = { id: e.id, kind: kinds.length ? kinds[Math.floor(Math.random() * kinds.length)] : 'location' };
+s.eventsSeen.push(e.id);
+emit(s, 'event', { id: e.id });
+}
+function chooseEvent(s, idx) {
+if (!s.event) return false;
+const def = EVENTS.find(e => e.id === s.event.id);
+const choice = def.choices[idx];
+const k = s.event.kind;
+const rev = revenueRate(s);
+switch (choice.effect) {
+case 'leakPurge':
+s.data[k] = 0;
+for (const l of LEVERS) if (l.harvests[k] && s.levers[l.id].unlocked) s.levers[l.id].lockedUntil = s.tick + 30;
+break;
+case 'leakIgnore': s.radioactive.push(k); s.awareness = Math.min(100, s.awareness + 4); break;
+case 'govComply': s.lobby += 1; s.users *= 0.88; break;
+case 'govRefuse': s.regulatorPenalty += 1; break;
+case 'modelRun': s.runaway = true; break;
+case 'modelKill': s.cash = Math.max(0, s.cash - rev * 60); break;
+case 'nda': s.cash = Math.max(0, s.cash - rev * 90); break;
+case 'letGo': s.whistleAt = s.tick + Math.round(rnd(30, 150)); break;
+case 'sell': s.over = 'sold'; emit(s, 'sold'); break;
+case 'refuse': s.users *= 1.1; break;
+}
+s.event = null;
+s.nextEventAt = s.tick + Math.round(rnd(T.eventGap[0], T.eventGap[1]));
+emit(s, 'event-done', { id: def.id, effect: choice.effect });
+return true;
+}
+function checkEnd(s) {
+if (s.over) { if (s.over === 'sold') emit(s, 'win'); return; }
+if (s.awareness >= 100) { s.awareness = 100; s.over = 'lose'; emit(s, 'lose'); }
+else if (valuation(s) >= T.winValuation) { s.over = 'win'; emit(s, 'win'); }
+}
+function tick(s) {
+if (s.over) return;
+s.tick += 1;
+for (const [k, v] of Object.entries(dataRates(s))) {
+s.data[k] += v;
+if (v > 0) s.seen[k] = true;
+}
+const growth = activeLevers(s).reduce((a, l) => a + l.growth, 0);
+const cap = userCap(s);
+let dU = s.users * growth * Math.max(0, 1 - s.users / cap);
+if (s.awareness > T.churnStart) dU -= s.users * (s.awareness - T.churnStart) * T.churnRate;
+s.users = Math.max(100, s.users + dU);
+s.peakUsers = Math.max(s.peakUsers, s.users);
+s.cash += revenueRate(s);
+s.awareness = Math.max(0, Math.min(100, s.awareness + awarenessRate(s)));
+tickBlobs(s);
+tickMoments(s);
+tickEvents(s);
+if (s.runaway) for (const k of Object.keys(DATA_TYPES)) if (s.seen[k]) s.data[k] += T.runawayRate;
+if (s.whistleAt && s.tick >= s.whistleAt) {
+s.whistleAt = 0;
+s.awareness = Math.min(100, s.awareness + 18);
+emit(s, 'journalist', { headline: 'Ex-Plaza engineer: “I built the thing that follows you home”' });
+}
+if (s.hostility > 0) {
+s.users *= 1 - s.hostility;
+s.hostility *= 0.985;
+if (s.hostility < 1e-5) s.hostility = 0;
+}
+const r = s.regulator;
+if (r.phase === 'idle' && s.awareness >= T.regulatorAt - s.regulatorPenalty * 8 && s.tick >= r.cooldownUntil) {
+r.phase = 'filed';
+r.hearingAt = s.tick + Math.max(6, T.inquiryDelay + s.lobby * T.inquiryPerLobby - s.regulatorPenalty * 5);
+emit(s, 'inquiry');
+} else if (r.phase === 'filed' && s.tick >= r.hearingAt) {
+if (s.awareness < T.inquiryDropBelow || !activeLevers(s).length) {
+r.phase = 'idle';
+r.cooldownUntil = s.tick + 20;
+emit(s, 'inquiry-dropped');
+} else {
+r.phase = 'hearing';
+r.pending = true;
+r.deadline = s.tick + T.regulatorDecision;
+emit(s, 'regulator');
+}
+} else if (r.phase === 'hearing' && s.tick >= r.deadline) {
+resolveRegulator(s, null);
+}
+const m = MILESTONES[s.milestone];
+if (m && valuation(s) >= m.at) {
+s.milestone += 1;
+s.users *= 1 + m.userBonus;
+emit(s, 'milestone', { index: s.milestone - 1 });
+}
+for (const l of LEVERS) {
+if (s.levers[l.id].lockedUntil === s.tick) emit(s, 'lockout-end', { lever: l.id });
+}
+checkEnd(s);
+}
+return { need, leverById, inferenceById, zoneById, distractionById, personColor, isLeverActive, activeLevers, aggression, userCap, arpu, revenueRate, valuation, awarenessRate, dataRates, inferenceStatus, runInference, toggleLever, lockoutDuration, resolveRegulator, lobbyCost, rebrandCost, theaterCost, buy, zoneHeat, spawnBlob, launchCost, distractionReady, distract, spawnMoment, catchMoment, chooseEvent, tick };
+})();
+const __state = (() => {
+const { DATA_TYPES, LEVERS, TUNING } = __content;
+function createState() {
+const data = {};
+const seen = {};
+for (const k of Object.keys(DATA_TYPES)) { data[k] = 0; seen[k] = false; }
+const levers = {};
+for (const l of LEVERS) {
+levers[l.id] = { unlocked: !!l.start, on: false, lockedUntil: 0, boost: 1, fresh: false };
+}
+return {
+version: 4,
+tick: 0,
+users: TUNING.startUsers,
+cash: 0,
+revMult: 1,
+awareness: 0,
+data,
+seen,
+levers,
+inferred: [],      // inference ids, in order
+superseded: [],    // inference ids blocked by exclusivity
+regulator: { phase: 'idle', pending: false, hearingAt: 0, deadline: 0, cooldownUntil: 0 },
+blobs: [],         // attention hot spots on the map
+effects: [],       // active distractions
+cooldowns: {},
+launchSlots: 3,
+industry: 0,       // baseline suspicion added by rival scandals
+hostility: 0,      // user churn from outrage
+nextBlobId: 1,
+stats: { hits: 0, misses: 0, caught: 0 },
+moments: [],
+nextMomentAt: 8,
+combo: 0,
+bestCombo: 0,
+event: null,       // the open decision card
+eventsSeen: [],
+nextEventAt: 100,
+radioactive: [],   // leaked data types
+regulatorPenalty: 0,
+runaway: false,
+whistleAt: 0,
+lobby: 0,
+rebrandUsed: false,
+theaterUses: 0,
+theaterUntil: 0,
+events: [],        // transient: drained by UI each tick
+over: null,        // 'win' | 'lose'
+peakUsers: TUNING.startUsers,
+milestone: 0,      // index of next milestone
+tutorial: 0,       // onboarding step
+started: false,
+};
+}
+const KEY = 'hips-save-v1';
+function save(state) {
+try {
+const { events, ...rest } = state;
+localStorage.setItem(KEY, JSON.stringify(rest));
+} catch (e) { /* storage unavailable */ }
+}
+function load() {
+try {
+const raw = localStorage.getItem(KEY);
+if (!raw) return null;
+const s = JSON.parse(raw);
+if (s.version !== 4 || s.over) return null;
+s.events = [];
+return s;
+} catch (e) { return null; }
+}
+function clearSave() {
+try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+}
+return { createState, save, load, clearSave };
+})();
+const __audio = (() => {
+let ctx = null;
+let muted = false;
+try { muted = localStorage.getItem('hips-muted') === '1'; } catch (e) { /* ignore */ }
+function unlockAudio() {
+if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ctx = null; }
+}
+const isMuted = () => muted;
+function toggleMute() {
+muted = !muted;
+try { localStorage.setItem('hips-muted', muted ? '1' : '0'); } catch (e) { /* ignore */ }
+return muted;
+}
+function tone(freq, dur, { type = 'sine', vol = 0.12, at = 0, slide = 0 } = {}) {
+if (!ctx || muted) return;
+const t = ctx.currentTime + at;
+const o = ctx.createOscillator();
+const g = ctx.createGain();
+o.type = type;
+o.frequency.setValueAtTime(freq, t);
+if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), t + dur);
+g.gain.setValueAtTime(0.0001, t);
+g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+o.connect(g).connect(ctx.destination);
+o.start(t);
+o.stop(t + dur + 0.02);
+}
+let lastPop = 0;
+const sfx = {
+click: () => tone(520, 0.06, { type: 'triangle', vol: 0.08 }),
+on: () => { tone(440, 0.07, { type: 'triangle' }); tone(660, 0.09, { type: 'triangle', at: 0.06 }); },
+off: () => { tone(500, 0.07, { type: 'triangle' }); tone(330, 0.09, { type: 'triangle', at: 0.06 }); },
+pop: () => {
+const now = performance.now();
+if (now - lastPop < 70) return;
+lastPop = now;
+tone(900 + Math.random() * 500, 0.05, { type: 'sine', vol: 0.05, slide: 300 });
+},
+tick: () => tone(1200, 0.05, { type: 'sine', vol: 0.03 }),
+catch: (combo = 1) => { const f = 660 * Math.pow(1.12, combo - 1); tone(f, 0.08, { type: 'triangle', vol: 0.08 }); tone(f * 1.5, 0.12, { type: 'triangle', vol: 0.07, at: 0.06 }); },
+ready: () => { tone(784, 0.12, { vol: 0.08 }); tone(1046, 0.18, { vol: 0.08, at: 0.1 }); },
+infer: () => [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.25, { type: 'triangle', vol: 0.1, at: i * 0.07 })),
+type: () => tone(1400 + Math.random() * 300, 0.015, { type: 'triangle', vol: 0.02 }),
+news: () => { tone(196, 0.35, { type: 'triangle', vol: 0.09, slide: -40 }); tone(147, 0.5, { type: 'sine', vol: 0.12, at: 0.08 }); },
+alarm: () => [0, 0.3].forEach(at => { tone(740, 0.18, { type: 'triangle', vol: 0.06, at }); tone(587, 0.22, { type: 'triangle', vol: 0.06, at: at + 0.13 }); }),
+milestone: () => [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, 0.35, { type: 'triangle', vol: 0.09, at: i * 0.09 })),
+buy: () => { tone(660, 0.08, { type: 'triangle' }); tone(990, 0.12, { type: 'triangle', at: 0.07 }); },
+lose: () => [392, 330, 262, 196].forEach((f, i) => tone(f, 0.6, { type: 'triangle', vol: 0.07, at: i * 0.24 })),
+win: () => [262, 330, 392, 523].forEach((f, i) => tone(f, 0.9, { type: 'sine', vol: 0.07, at: i * 0.25 })),
+};
+function buzz(pattern) {
+try { if (!muted && navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* ignore */ }
+}
+return { unlockAudio, isMuted, toggleMute, sfx, buzz };
+})();
+const __map = (() => {
+const { ZONES, PEOPLE, DATA_TYPES, DISTRACTIONS, LEVERS, MOMENTS, TUNING: T } = __content;
+const E = __engine;
+const DPR = () => Math.min(2, window.devicePixelRatio || 1);
+const rand = (a, b) => a + Math.random() * (b - a);
+const distById = Object.fromEntries(DISTRACTIONS.map(d => [d.id, d]));
+class CrowdMap {
+constructor(canvas, fxCanvas, getState) {
+this.c = canvas;
+this.ctx = canvas.getContext('2d');
+this.fx = fxCanvas;
+this.fctx = fxCanvas.getContext('2d');
+this.getState = getState;
+this.dots = [];
+this.people = PEOPLE.map(p => {
+const z = E.zoneById[p.zone];
+const a = rand(0, Math.PI * 2), d = z.r * 0.45;
+return { ...p, x: z.x + Math.cos(a) * d, y: z.y + Math.sin(a) * d * 0.7, pulse: 0 };
+});
+this.pings = [];
+this.bursts = [];
+this.whispers = [];   // faint passing captions: the town going about its day
+this.nextWhisper = 0;
+this.aim = null;      // distraction id while aiming
+this.pointer = null;  // {x, y} in map units
+this.tickStart = performance.now();
+this.resize();
+window.addEventListener('resize', () => this.resize());
+requestAnimationFrame((t) => this.frame(t));
+}
+resize() {
+const r = this.c.getBoundingClientRect();
+const d = DPR();
+this.w = r.width; this.h = r.height;
+this.c.width = Math.round(r.width * d); this.c.height = Math.round(r.height * d);
+this.ctx.setTransform(d, 0, 0, d, 0, 0);
+this.fx.width = Math.round(innerWidth * d); this.fx.height = Math.round(innerHeight * d);
+this.fctx.setTransform(d, 0, 0, d, 0, 0);
+  }
+px(x, y) { return [x / 2 * this.w, y * this.h]; }
+unit(px, py) { return { x: px / this.w * 2, y: py / this.h }; }
+scale() { return this.w / 2; } // px per map unit
+screen(x, y) {
+const r = this.c.getBoundingClientRect();
+return [r.left + x / 2 * r.width, r.top + y * r.height];
+}
+syncDots(users) {
+const target = Math.round(Math.max(45, Math.min(260, 45 + 62 * Math.log10(Math.max(1, users / T.startUsers)))));
+while (this.dots.length < target) {
+const z = ZONES[this.dots.length % ZONES.length];
+const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * z.r;
+this.dots.push({ zone: z.id, hx: z.x + Math.cos(a) * d, hy: z.y + Math.sin(a) * d * 0.75, ph: rand(0, 6.28), flash: 0, color: '#fff', fresh: 1 });
+}
+while (this.dots.length > target + 20) this.dots.pop();
+}
+dotPos(d, t) {
+return { x: d.hx + Math.sin(t / 1900 + d.ph) * 0.012, y: d.hy + Math.cos(t / 2300 + d.ph) * 0.01 };
+}
+pickDot(zones) {
+const entries = Object.entries(zones);
+const total = entries.reduce((a, [, w]) => a + w, 0);
+let r = Math.random() * total, zone = entries[0][0];
+for (const [z, w] of entries) { r -= w; if (r <= 0) { zone = z; break; } }
+const pool = this.dots.filter(d => d.zone === zone);
+return pool[Math.floor(Math.random() * pool.length)] || this.dots[0];
+}
+dotsWithin(x, y, r) {
+const t = performance.now();
+return this.dots.filter(d => { const p = this.dotPos(d, t); return Math.hypot(p.x - x, p.y - y) <= r; });
+}
+emitPing(dot, kind, jarEl, delay = 0) {
+if (!dot || !jarEl) return;
+const color = DATA_TYPES[kind].color;
+setTimeout(() => {
+const t = performance.now();
+const p = this.dotPos(dot, t);
+const [x0, y0] = this.screen(p.x, p.y);
+const jr = jarEl.getBoundingClientRect();
+if (!jr.width) return;
+const x1 = jr.left + jr.width / 2, y1 = jr.top + jr.height * 0.35;
+dot.flash = 1; dot.color = color;
+this.pings.push({ x0, y0, x1, y1, cx: (x0 + x1) / 2 + rand(-60, 60), cy: Math.min(y0, y1) - rand(10, 70), t0: t, dur: rand(650, 950), color, jarEl });
+}, delay);
+}
+burst(x, y, color, big = false) {
+this.bursts.push({ x, y, color, t0: performance.now(), dur: big ? 900 : 600, big });
+}
+pulsePerson(id) { const p = this.people.find(q => q.id === id); if (p) p.pulse = 1; }
+personAt(ux, uy) { return this.people.find(p => Math.hypot(p.x - ux, p.y - uy) < 0.07); }
+frame(t) {
+requestAnimationFrame((tt) => this.frame(tt));
+const s = this.getState();
+if (!s || !this.w) return;
+this.syncDots(s.users);
+this.drawMap(s, t);
+this.drawFx(t);
+}
+progress(s, t) {
+if (s.tick !== this.lastTick) { this.lastTick = s.tick; this.lastTickAt = t; }
+return Math.min(1, (t - (this.lastTickAt || t)) / 1000);
+}
+momentAt(ux, uy) {
+const s = this.getState();
+let best = null, bd = 0.11;
+for (const m of s.moments) { const d = Math.hypot(m.x - ux, m.y - uy); if (d < bd) { bd = d; best = m; } }
+return best;
+}
+drawMap(s, t) {
+const ctx = this.ctx, k = this.scale();
+const sub = this.progress(s, t);
+ctx.clearRect(0, 0, this.w, this.h);
+ctx.lineCap = 'round';
+ctx.strokeStyle = '#d7e5ee'; ctx.lineWidth = Math.max(8, k * 0.07);
+ctx.beginPath();
+const [r0x, r0y] = this.px(-0.05, 0.6), [r1x, r1y] = this.px(0.7, 0.98), [r2x, r2y] = this.px(1.25, 0.6), [r3x, r3y] = this.px(2.05, 0.98);
+ctx.moveTo(r0x, r0y); ctx.bezierCurveTo(r1x, r1y, r2x, r2y, r3x, r3y); ctx.stroke();
+ctx.strokeStyle = '#e8dfcc'; ctx.lineWidth = 3; ctx.setLineDash([2, 7]);
+for (const [a, b2] of [['campus', 'downtown'], ['downtown', 'oldtown'], ['downtown', 'riverside'], ['downtown', 'suburbs']]) {
+const za = E.zoneById[a], zb = E.zoneById[b2];
+const [ax, ay] = this.px(za.x, za.y), [bx, by] = this.px(zb.x, zb.y);
+ctx.beginPath(); ctx.moveTo(ax, ay); ctx.quadraticCurveTo((ax + bx) / 2, (ay + by) / 2 - 12, bx, by); ctx.stroke();
+}
+ctx.setLineDash([]);
+const heat = E.zoneHeat(s);
+const tints = { campus: [214, 230, 206], oldtown: [236, 222, 208], downtown: [226, 222, 236], riverside: [214, 228, 236], suburbs: [236, 230, 204] };
+for (const z of ZONES) {
+const [cx, cy] = this.px(z.x, z.y);
+const h = Math.min(1, (heat[z.id] || 0) * 5);
+const [r, g, b] = tints[z.id];
+ctx.fillStyle = `rgb(${Math.round(r + (243 - r) * h * 0.6)}, ${Math.round(g + (205 - g) * h * 0.6)}, ${Math.round(b + (190 - b) * h * 0.6)})`;
+ctx.beginPath();
+const rx = z.r * k * 1.02, ry = z.r * k * 0.8;
+for (let i = 0; i <= 28; i++) {
+const a = i / 28 * Math.PI * 2;
+const wob = 1 + Math.sin(a * 3 + z.x * 7) * 0.05 + Math.cos(a * 5 + z.y * 9) * 0.03;
+const x = cx + Math.cos(a) * rx * wob, y = cy + Math.sin(a) * ry * wob;
+i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+}
+ctx.fill();
+ctx.fillStyle = '#9a9183';
+ctx.font = 'italic 600 12px "Playfair Display", Georgia, serif';
+ctx.textAlign = 'center';
+ctx.fillText(z.name, cx, cy - ry * 0.72);
+}
+for (const e of s.effects) {
+const d = distById[e.kind];
+const [cx, cy] = this.px(e.x, e.y);
+const r = e.r * k;
+const left = Math.max(0, (e.until - s.tick - sub) / d.duration);
+ctx.save();
+const col = { trend: [111, 160, 122], scandal: [201, 149, 50], outrage: [224, 122, 95] }[e.kind];
+ctx.fillStyle = `rgba(${col}, 0.14)`;
+ctx.strokeStyle = `rgba(${col}, 0.8)`; ctx.lineWidth = 2;
+if (e.kind === 'outrage') {
+ctx.beginPath();
+for (let i = 0; i <= 30; i++) {
+const a = i / 30 * Math.PI * 2, rr = r * (0.94 + 0.06 * Math.sin(i * 4 + t / 120));
+i ? ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr) : ctx.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+}
+ctx.fill(); ctx.stroke();
+} else {
+ctx.setLineDash(e.kind === 'scandal' ? [6, 5] : [2, 6]); ctx.lineDashOffset = -t / 50;
+ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+}
+ctx.font = '15px system-ui'; ctx.textAlign = 'center'; ctx.fillText(d.icon, cx, cy + 5);
+ctx.strokeStyle = `rgba(${col}, 1)`; ctx.lineWidth = 3;
+ctx.beginPath(); ctx.arc(cx, cy, r + 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left); ctx.stroke();
+ctx.restore();
+}
+for (const d of this.dots) {
+const p = this.dotPos(d, t);
+const [x, y] = this.px(p.x, p.y);
+if (d.flash > 0) {
+ctx.fillStyle = d.color; ctx.globalAlpha = d.flash * 0.8;
+ctx.beginPath(); ctx.arc(x, y, 2 + d.flash * 3.5, 0, 6.28); ctx.fill();
+d.flash = Math.max(0, d.flash - 0.03);
+}
+ctx.globalAlpha = 0.75;
+ctx.fillStyle = '#9b9283';
+ctx.beginPath(); ctx.arc(x, y, 1.8, 0, 6.28); ctx.fill();
+}
+ctx.globalAlpha = 1;
+const active = E.activeLevers(s);
+if (t > this.nextWhisper && this.dots.length && !this.aim) {
+this.nextWhisper = t + (active.length ? 900 : 2200) + Math.random() * 900;
+if (this.whispers.length < 3) {
+const zones = active.length ? active[Math.floor(Math.random() * active.length)].zones : { downtown: 1, campus: 1, riverside: 1, suburbs: 1, oldtown: 1 };
+const dot = this.pickDot(zones);
+const text = MOMENTS[Math.floor(Math.random() * MOMENTS.length)].text.toLowerCase();
+if (dot && !this.whispers.some(w => w.text === text)) {
+const p0 = this.dotPos(dot, t);
+const [wx, wy] = this.px(p0.x, p0.y);
+const crowded = this.whispers.some(w => { const q = this.dotPos(w.dot, t); const [qx, qy] = this.px(q.x, q.y); return Math.abs(qx - wx) < 140 && Math.abs(qy - wy) < 26; })
+|| ZONES.some(z => { const [zx, zy] = this.px(z.x, z.y - z.r * 0.58); return Math.abs(zx - wx) < 70 && Math.abs(zy - (wy - 10)) < 16; })
+|| s.moments.some(m => { const [mx, my] = this.px(m.x, m.y); return Math.abs(mx - wx) < 120 && Math.abs(my - 24 - (wy - 10)) < 22; });
+if (!crowded) { this.whispers.push({ dot, text, t0: t }); dot.flash = 0.6; dot.color = '#b5ad9f'; }
+}
+}
+}
+ctx.textAlign = 'center';
+this.whispers = this.whispers.filter(w => t - w.t0 < 3200);
+for (const w of this.whispers) {
+const u = (t - w.t0) / 3200;
+const p = this.dotPos(w.dot, t);
+const [x, y] = this.px(p.x, p.y);
+ctx.globalAlpha = Math.min(1, u * 5, (1 - u) * 3) * 0.85;
+ctx.font = 'italic 400 10.5px Lato, system-ui, sans-serif';
+const tw = ctx.measureText(w.text).width;
+const tx = Math.min(this.w - tw / 2 - 4, Math.max(tw / 2 + 4, x));
+ctx.fillStyle = '#6f675c';
+ctx.fillText(w.text, tx, y - 7 - u * 12);
+}
+ctx.globalAlpha = 1;
+for (const p of this.people) {
+const [x, y] = this.px(p.x, p.y);
+if (p.pulse > 0) {
+ctx.strokeStyle = p.color; ctx.globalAlpha = p.pulse; ctx.lineWidth = 2;
+ctx.beginPath(); ctx.arc(x, y, 8 + (1 - p.pulse) * 18, 0, 6.28); ctx.stroke();
+ctx.globalAlpha = 1; p.pulse = Math.max(0, p.pulse - 0.012);
+}
+ctx.fillStyle = '#fffdf8'; ctx.strokeStyle = p.color; ctx.lineWidth = 2.5;
+ctx.beginPath(); ctx.arc(x, y, 8, 0, 6.28); ctx.fill(); ctx.stroke();
+ctx.fillStyle = p.color; ctx.font = '900 9.5px Lato, system-ui'; ctx.textAlign = 'center';
+ctx.fillText(p.name[0], x, y + 3.4);
+}
+for (const b of s.blobs) {
+const [x, y] = this.px(b.x, b.y);
+const heat = Math.max(0, Math.min(1, b.heat));
+const r = (0.07 + heat * 0.12) * k;
+const breathe = 1 + Math.sin(t / (heat > 0.75 ? 160 : 420)) * 0.06;
+ctx.fillStyle = `rgba(224, 122, 95, ${0.14 + heat * 0.22})`;
+ctx.beginPath(); ctx.arc(x, y, r * breathe, 0, 6.28); ctx.fill();
+ctx.fillStyle = `rgba(224, 122, 95, ${0.2 + heat * 0.25})`;
+ctx.beginPath(); ctx.arc(x, y, r * 0.55 * breathe, 0, 6.28); ctx.fill();
+const rr = r * 0.55 + 7;
+ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(46,42,38,0.10)';
+ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.28); ctx.stroke();
+ctx.strokeStyle = heat > 0.75 ? '#c0634a' : '#d9a441';
+ctx.beginPath(); ctx.arc(x, y, rr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * heat); ctx.stroke();
+ctx.font = '13px system-ui'; ctx.textAlign = 'center';
+ctx.fillText(heat > 0.75 ? '📢' : '👀', x, y + 4.5);
+const label = b.lever ? E.leverById[b.lever].name : 'Rumors';
+this.pill(ctx, label, x, y - rr - 12, '#fffdf8', '#2e2a26');
+}
+for (const m of s.moments) {
+const [x, y] = this.px(m.x, m.y);
+const life = Math.max(0, (m.until - s.tick - sub) / T.momentLife);
+const pop = Math.min(1, (s.tick + sub - m.born) * 3);
+const col = m.person ? E.personColor(m.person) : '#d9a441';
+ctx.save();
+ctx.globalAlpha = Math.min(1, life * 3) * pop;
+ctx.fillStyle = col; ctx.globalAlpha *= 0.25;
+ctx.beginPath(); ctx.arc(x, y, 14 + Math.sin(t / 180) * 2, 0, 6.28); ctx.fill();
+ctx.globalAlpha = Math.min(1, life * 3) * pop;
+ctx.fillStyle = '#fffdf8'; ctx.strokeStyle = col; ctx.lineWidth = 2.5;
+ctx.beginPath(); ctx.arc(x, y, 9, 0, 6.28); ctx.fill(); ctx.stroke();
+ctx.lineWidth = 3;
+ctx.beginPath(); ctx.arc(x, y, 13, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * life); ctx.stroke();
+ctx.fillStyle = col; ctx.font = '900 11px Lato, system-ui'; ctx.textAlign = 'center';
+ctx.fillText('!', x, y + 4);
+this.pill(ctx, m.text, x, y - 24, col, '#fffdf8', 10.5);
+ctx.restore();
+}
+if (this.aim && this.pointer) {
+const d = distById[this.aim];
+const [x, y] = this.px(this.pointer.x, this.pointer.y);
+const willHit = s.blobs.some(b => Math.hypot(b.x - this.pointer.x, b.y - this.pointer.y) <= d.radius + 0.04);
+ctx.save();
+ctx.setLineDash([5, 5]); ctx.lineDashOffset = -t / 40;
+ctx.strokeStyle = willHit ? '#5f8f6c' : 'rgba(46,42,38,0.5)'; ctx.lineWidth = 2;
+ctx.fillStyle = willHit ? 'rgba(143,181,154,0.22)' : 'rgba(46,42,38,0.05)';
+ctx.beginPath(); ctx.arc(x, y, d.radius * k, 0, 6.28); ctx.fill(); ctx.stroke();
+ctx.setLineDash([]); ctx.font = '18px system-ui'; ctx.textAlign = 'center'; ctx.fillText(d.icon, x, y + 6);
+ctx.restore();
+} else if (this.aim) {
+ctx.fillStyle = 'rgba(246,241,231,0.35)'; ctx.fillRect(0, 0, this.w, this.h);
+}
+}
+pill(ctx, text, x, y, bg, fg, size = 10) {
+ctx.font = `800 ${size}px Lato, system-ui`;
+const w = ctx.measureText(text).width + 12, h = size + 8;
+x = Math.min(this.w - w / 2 - 4, Math.max(w / 2 + 4, x));
+y = Math.max(h / 2 + 3, y);
+ctx.fillStyle = bg;
+ctx.beginPath();
+if (ctx.roundRect) ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2); else ctx.rect(x - w / 2, y - h / 2, w, h);
+ctx.fill();
+ctx.fillStyle = fg; ctx.textAlign = 'center';
+ctx.fillText(text, x, y + size * 0.36);
+}
+drawFx(t) {
+const ctx = this.fctx;
+ctx.clearRect(0, 0, innerWidth, innerHeight);
+const keep = [];
+for (const p of this.pings) {
+const u = (t - p.t0) / p.dur;
+if (u >= 1) {
+p.jarEl.classList.remove('gulp'); void p.jarEl.offsetWidth; p.jarEl.classList.add('gulp');
+continue;
+}
+const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+const x = (1 - e) * (1 - e) * p.x0 + 2 * (1 - e) * e * p.cx + e * e * p.x1;
+const y = (1 - e) * (1 - e) * p.y0 + 2 * (1 - e) * e * p.cy + e * e * p.y1;
+ctx.fillStyle = p.color;
+ctx.beginPath(); ctx.arc(x, y, 3.4, 0, 6.28); ctx.fill();
+ctx.strokeStyle = 'rgba(255,253,248,.9)'; ctx.lineWidth = 1.2; ctx.stroke();
+keep.push(p);
+}
+ctx.shadowBlur = 0;
+this.pings = keep;
+const kb = [];
+for (const b of this.bursts) {
+const u = (t - b.t0) / b.dur;
+if (u >= 1) continue;
+const [x, y] = this.screen(b.x, b.y);
+ctx.strokeStyle = b.color; ctx.globalAlpha = 1 - u; ctx.lineWidth = b.big ? 4 : 2;
+ctx.beginPath(); ctx.arc(x, y, (b.big ? 20 : 10) + u * (b.big ? 90 : 40), 0, 6.28); ctx.stroke();
+ctx.globalAlpha = 1;
+kb.push(b);
+}
+this.bursts = kb;
+}
+}
+return { CrowdMap };
+})();
+const __ui = (() => {
+const {
+COMPANY, PEOPLE, FIELDS, DATA_TYPES, LEVERS, INFERENCES, WRONG_NOTE, ZONES,
+MILESTONES, REGULATOR_LINES, TUTORIAL, DISTRACTIONS, EVENTS, TUNING: T,
+} = __content;
+const E = __engine;
+const { sfx, buzz, unlockAudio, toggleMute, isMuted } = __audio;
+const { CrowdMap } = __map;
+const $ = (s, r = document) => r.querySelector(s);
+const el = (tag, cls, html) => {
+const n = document.createElement(tag);
+if (cls) n.className = cls;
+if (html != null) n.innerHTML = html;
+return n;
+};
+function fmt(n) {
+const a = Math.abs(n);
+if (a >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+if (a >= 1e9) return (n / 1e9).toFixed(a >= 1e10 ? 1 : 2) + 'B';
+if (a >= 1e6) return (n / 1e6).toFixed(a >= 1e7 ? 1 : 2) + 'M';
+if (a >= 1e3) return (n / 1e3).toFixed(a >= 1e4 ? 0 : 1) + 'k';
+return String(Math.floor(n));
+}
+const money = (n) => '$' + fmt(n);
+const pct = (n) => Math.max(0, Math.min(100, n)) + '%';
+const flames = (h) => '🔥'.repeat(h);
+const icon = (k) => DATA_TYPES[k].icon;
+const leverIcons = (l) => Object.keys(l.harvests).map(icon);
+const personById = Object.fromEntries(PEOPLE.map(p => [p.id, p]));
+const zoneName = (id) => ZONES.find(z => z.id === id)?.name || id;
+const MAX_INFERENCES = INFERENCES.length - INFERENCES.filter(i => i.excludes).length / 2;
+const linesFor = (pid) => {
+const all = INFERENCES.filter(i => i.person === pid);
+return all.length - all.filter(i => i.excludes && all.some(j => j.id === i.excludes)).length / 2;
+};
+const SIL_SVG = '<svg viewBox="0 0 100 120"><circle cx="50" cy="38" r="22"/><path d="M8 120c0-26 19-44 42-44s42 18 42 44z"/></svg>';
+const BLOB_STEP = TUTORIAL.findIndex(t => t.id === 'blob');
+const num = (n) => (n >= 10 ? Math.round(n) : Math.round(n * 10) / 10);
+let getState, actions, map;
+const ui = { stepStart: performance.now(), overlay: null, screen: false, regLine: '', aim: null, openedFile: false, freshPeople: new Set() };
+const tiles = {}, recipes = {}, jars = {}, dbtns = {}, people = {};
+let lastFileCount = -1, lastFace = '', shownVal = 0, valAnim = null, lastTutorial = -1;
+const isPaused = () => ui.overlay === 'reveal' || ui.overlay === 'event' || ui.screen;
+const isDesktop = () => window.matchMedia('(min-width: 960px)').matches;
+function initUI(_getState, _actions) {
+getState = _getState;
+actions = _actions;
+$('#mute').textContent = isMuted() ? '🔇' : '🔊';
+$('#mute').addEventListener('click', () => { unlockAudio(); $('#mute').textContent = toggleMute() ? '🔇' : '🔊'; });
+$('#dc-btn').addEventListener('click', () => { unlockAudio(); sfx.click(); openDamageControl(); });
+$('#overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay' && (ui.overlay === 'dc' || ui.overlay === 'file')) closeOverlay(); });
+document.addEventListener('pointerdown', unlockAudio, { once: true });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setAim(null); });
+map = new CrowdMap($('#map'), $('#fxc'), () => getState());
+bindMap();
+buildTray();
+buildTiles();
+buildRecipes();
+buildPeople();
+}
+function mapPoint(ev) {
+const r = $('#map').getBoundingClientRect();
+return map.unit(ev.clientX - r.left, ev.clientY - r.top);
+}
+function bindMap() {
+const c = $('#map');
+let down = false;
+c.addEventListener('pointerdown', (ev) => {
+unlockAudio();
+const p = mapPoint(ev);
+if (ui.aim) { down = true; map.pointer = p; c.setPointerCapture(ev.pointerId); return; }
+const m = map.momentAt(p.x, p.y);
+if (m) { actions.catch(m.id); return; }
+const person = map.personAt(p.x, p.y);
+if (person) { sfx.click(); openFile(person.id); return; }
+const s = getState();
+if (s.blobs.some(b => Math.hypot(b.x - p.x, b.y - p.y) < 0.2)) toast('🎯', 'Pick a distraction below, then drag it onto the hot spot.');
+});
+c.addEventListener('pointermove', (ev) => { if (ui.aim) map.pointer = mapPoint(ev); });
+c.addEventListener('pointerup', (ev) => {
+if (!ui.aim || !down) return;
+down = false;
+const p = mapPoint(ev);
+const kind = ui.aim;
+setAim(null);
+actions.distract(kind, p.x, p.y);
+});
+c.addEventListener('pointerleave', () => { if (ui.aim && !down && !matchMedia('(hover: none)').matches) map.pointer = null; });
+}
+function setAim(kind) {
+ui.aim = kind;
+map.aim = kind;
+map.pointer = null;
+$('#map-wrap').classList.toggle('aiming', !!kind);
+const hint = $('#aim-hint');
+if (kind) {
+const d = E.distractionById[kind];
+hint.innerHTML = `${d.icon} <b>${d.name}</b> · ${d.shape}<br><span style="font-weight:500;color:#b9c0f0">Drag onto a glowing hot spot. Miss and it’s wasted.</span>`;
+hint.classList.remove('hidden');
+} else hint.classList.add('hidden');
+for (const [id, b] of Object.entries(dbtns)) b.el.classList.toggle('armed', id === kind);
+}
+function buildTray() {
+const root = $('#tray');
+for (const d of DISTRACTIONS) {
+const b = el('button', 'dbtn', `<span class="d-ico">${d.icon}</span><span class="d-nm">${d.name}</span><span class="d-sub"></span><span class="cd hidden"></span>`);
+b.title = `${d.name}: ${d.desc}`;
+b.addEventListener('click', () => {
+unlockAudio();
+const s = getState();
+if (!E.distractionReady(s, d.id)) {
+sfx.off();
+if (d.global) toast(d.icon, s.launchSlots <= 0 ? 'No roadmap slots left this run.' : `A launch costs ${money(E.launchCost(s))}. Not enough cash yet.`);
+return;
+}
+if (d.global) { actions.distract(d.id); return; }
+sfx.click();
+setAim(ui.aim === d.id ? null : d.id);
+});
+root.append(b);
+dbtns[d.id] = { el: b, sub: $('.d-sub', b), cd: $('.cd', b) };
+}
+}
+function renderTray(s) {
+const urgent = s.blobs.some(b => b.heat > 0.6);
+for (const d of DISTRACTIONS) {
+const b = dbtns[d.id];
+const ready = E.distractionReady(s, d.id);
+b.el.classList.toggle('ready', ready);
+b.el.classList.toggle('urgent', urgent);
+if (d.global) {
+b.sub.textContent = `${'●'.repeat(s.launchSlots)}${'○'.repeat(d.slots - s.launchSlots)} ${money(E.launchCost(s))}`;
+b.cd.classList.add('hidden');
+b.el.style.opacity = ready ? '' : '.55';
+} else {
+const left = Math.max(0, (s.cooldowns[d.id] || 0) - s.tick);
+b.sub.textContent = left ? '' : 'ready';
+b.cd.classList.toggle('hidden', !left);
+b.cd.textContent = `${left}s`;
+}
+}
+}
+function buildTiles() {
+const root = $('#tiles');
+for (const l of LEVERS) {
+const t = el('button', `tile hot${l.heat}`);
+const ic = leverIcons(l);
+t.innerHTML = `
+<div class="tile-top"><div class="tile-ico">${ic[0]}${ic[1] ? `<span class="sub">${ic[1]}</span>` : ''}</div><div class="tile-heat" title="Heat">${flames(l.heat)}</div></div>
+<div class="tile-name">${l.name}</div>
+<div class="tile-desc">“${l.desc}”</div>
+<div class="tile-why"><b>Really:</b> ${l.why}</div>
+<div class="tile-state"><span class="st">OFF</span><span class="tile-rate"></span></div>
+<div class="tile-prog"><i></i></div>`;
+t.addEventListener('click', () => { unlockAudio(); actions.toggle(l.id); });
+root.append(t);
+tiles[l.id] = { t, st: $('.st', t), rate: $('.tile-rate', t), prog: $('.tile-prog i', t) };
+}
+}
+function buildRecipes() {
+const root = $('#recipes');
+const learned = el('div', 'r-section', 'Learned');
+learned.id = 'learned-head';
+learned.style.order = 3;
+root.append(learned);
+for (const inf of INFERENCES) {
+const c = el('div', 'recipe');
+c.innerHTML = `<div class="r-out"></div><div class="r-name"></div><div class="r-ings"></div><div class="r-reward"></div><div class="r-warn"></div><button class="r-btn"></button>`;
+$('.r-btn', c).addEventListener('click', () => { unlockAudio(); actions.infer(inf.id); });
+root.append(c);
+recipes[inf.id] = { c, out: $('.r-out', c), name: $('.r-name', c), ings: $('.r-ings', c), reward: $('.r-reward', c), warn: $('.r-warn', c), btn: $('.r-btn', c), sig: '' };
+}
+}
+function buildPeople() {
+const root = $('#people');
+for (const p of PEOPLE) {
+const b = el('button', 'person', `<div class="av">${SIL_SVG}<b>${p.name[0]}</b></div><div class="p-nm">${p.name}</div><div class="p-meta">${p.age} · ${zoneName(p.zone)}</div><div class="p-bar"></div>`);
+b.style.setProperty('--pc', p.color);
+b.addEventListener('click', () => { sfx.click(); openFile(p.id); });
+root.append(b);
+people[p.id] = { el: b, bar: $('.p-bar', b) };
+}
+}
+function rewardText(inf) {
+const e = inf.effects;
+const parts = [];
+for (const id of e.unlock || []) parts.push(`🔓 ${E.leverById[id].name}`);
+for (const [id, m] of Object.entries(e.boost || {})) parts.push(`⚡ ${E.leverById[id].name} ×${m}`);
+if (e.revMult) parts.push(`💰 ×${e.revMult}`);
+if (e.awareness) parts.push(`👀 +${e.awareness}`);
+return parts.join(' · ');
+}
+function render(s) {
+if (!s) return;
+renderHud(s);
+renderTray(s);
+renderJars(s);
+renderTiles(s);
+renderRecipes(s);
+renderPeople(s);
+renderTutorial(s);
+if (ui.overlay === 'reg') renderRegulator(s);
+if (ui.overlay === 'dc') renderDamageControl(s);
+if (s.regulator.pending && ui.overlay !== 'reg' && ui.overlay !== 'reveal' && !ui.screen) openRegulator(s);
+}
+function animateVal(target) {
+const from = shownVal;
+if (Math.abs(target - from) < 1) return;
+cancelAnimationFrame(valAnim);
+const t0 = performance.now();
+const step = (t) => {
+const k = Math.min(1, (t - t0) / 800);
+shownVal = from + (target - from) * (1 - Math.pow(1 - k, 3));
+$('#val-num').textContent = money(shownVal);
+if (k < 1) valAnim = requestAnimationFrame(step);
+};
+valAnim = requestAnimationFrame(step);
+}
+function renderHud(s) {
+const v = E.valuation(s);
+animateVal(v);
+$('#users').textContent = `👤 ${fmt(s.users)}`;
+$('#map-users').textContent = fmt(s.users);
+const next = MILESTONES[s.milestone];
+const goalAt = next ? next.at : T.winValuation;
+const prevAt = s.milestone > 0 ? MILESTONES[s.milestone - 1].at : 1e7;
+$('#goal-label').textContent = next ? `Next: ${next.icon} ${next.title} · ${money(next.at)}` : `🏁 Final goal · ${money(T.winValuation)}`;
+const p = (Math.log10(Math.max(v, 1)) - Math.log10(prevAt)) / (Math.log10(goalAt) - Math.log10(prevAt));
+$('#goal-fill').style.width = pct(p * 100);
+const a = s.awareness;
+$('#sus-num').textContent = Math.floor(a);
+$('#sus-fill').style.width = pct(a);
+$('.sus-bar').classList.toggle('frozen', s.theaterUntil > s.tick);
+const face = a < 20 ? '😌' : a < 40 ? '🙂' : a < 60 ? '🤨' : a < 80 ? '😠' : '🤬';
+if (face !== lastFace) {
+$('#sus-face').textContent = face;
+$('#sus-face').classList.remove('bump'); void $('#sus-face').offsetWidth; $('#sus-face').classList.add('bump');
+lastFace = face;
+}
+document.body.classList.toggle('hot', a >= 70);
+document.body.classList.toggle('critical', a >= 85);
+const inq = $('#inquiry');
+const filed = s.regulator.phase === 'filed';
+inq.classList.toggle('hidden', !filed);
+if (filed) $('#inquiry-t').textContent = `Hearing ${Math.max(0, s.regulator.hearingAt - s.tick)}s`;
+$('#dc-cash').textContent = money(s.cash);
+const canAfford = s.cash >= E.theaterCost(s) || (!s.rebrandUsed && s.cash >= E.rebrandCost(s));
+$('#dc-btn').classList.toggle('can', a >= 50 && canAfford);
+}
+function jarCap(s, k) {
+const needs = INFERENCES.filter(i => i.needs[k] && !s.inferred.includes(i.id) && !s.superseded.includes(i.id)).map(i => i.needs[k]);
+return needs.length ? Math.min(...needs) : 20;
+}
+function renderJars(s) {
+const root = $('#jars');
+const kinds = Object.keys(DATA_TYPES).filter(k => s.seen[k] || LEVERS.some(l => s.levers[l.id].unlocked && l.harvests[k]));
+const visible = kinds.filter(k => s.seen[k] || LEVERS.some(l => s.levers[l.id].on && l.harvests[k]));
+if (!visible.length) {
+if (!root.querySelector('.empty-hint')) root.innerHTML = '<div class="jar empty-hint">🫙 Your jars are empty. Switch on a lever!</div>';
+return;
+}
+root.querySelector('.empty-hint')?.remove();
+for (const k of visible) {
+if (!jars[k]) {
+const j = el('div', 'jar', `<div class="liquid"></div><span class="j-ico">${icon(k)}</span><span class="j-n">0</span>`);
+j.style.setProperty('--c', DATA_TYPES[k].color);
+j.title = DATA_TYPES[k].name;
+root.append(j);
+jars[k] = { el: j, liq: $('.liquid', j), n: $('.j-n', j) };
+}
+const cap = jarCap(s, k);
+const have = Math.floor(s.data[k]);
+jars[k].liq.style.height = pct(Math.min(1, s.data[k] / cap) * 100);
+jars[k].n.textContent = `${have}/${cap}`;
+jars[k].el.classList.toggle('full', have >= cap);
+jars[k].el.classList.toggle('radio', s.radioactive.includes(k));
+}
+}
+function leverRate(s, l) {
+const f = Math.pow(s.users / T.startUsers, T.userYieldExponent) * s.levers[l.id].boost;
+return Object.values(l.harvests)[0] * f;
+}
+function renderTiles(s) {
+for (const l of LEVERS) {
+const st = s.levers[l.id];
+const t = tiles[l.id];
+const locked = st.lockedUntil > s.tick;
+const on = st.on && !locked;
+t.t.classList.toggle('hidden', !st.unlocked);
+t.t.classList.toggle('on', on);
+t.t.classList.toggle('locked', locked);
+t.t.classList.toggle('fresh', st.fresh);
+t.st.textContent = locked ? `⚖️ ${st.lockedUntil - s.tick}s` : on ? 'ON' : 'OFF';
+const r = leverRate(s, l);
+const k = Object.keys(l.harvests)[0];
+t.rate.textContent = on ? (r < 1 ? `${icon(k)} /${(1 / r).toFixed(1)}s` : `${icon(k)} ${r.toFixed(1)}/s`) : '';
+t.prog.style.width = on ? pct((s.data[k] % 1) * 100) : '0%';
+}
+}
+function ingHtml(s, inf) {
+return Object.keys(inf.needs).map(k => {
+if (!s.seen[k]) return '<span class="ing unknown">?</span>';
+const need = E.need(inf, k);
+const have = Math.min(Math.floor(s.data[k]), need);
+if (need <= 5) {
+let h = '';
+for (let i = 0; i < need; i++) h += `<span class="pip${i < have ? '' : ' miss'}">${icon(k)}</span>`;
+return `<span class="ing">${h}</span>`;
+}
+return `<span class="ing count${have >= need ? ' met' : ''}">${icon(k)} ${have}/${need}</span>`;
+}).join('<span class="r-plus">+</span>');
+}
+function renderRecipes(s) {
+let done = 0;
+for (const inf of INFERENCES) {
+const r = recipes[inf.id];
+const status = E.inferenceStatus(s, inf);
+if (status === 'done' || status === 'superseded') done++;
+const unknown = Object.keys(inf.needs).filter(k => !s.seen[k]).length;
+const sig = status + '|' + Object.keys(inf.needs).map(k => s.seen[k] ? Math.min(Math.floor(s.data[k]), E.need(inf, k)) : '?').join(',');
+r.c.style.order = { ready: 0, partial: 1, hidden: 2, done: 4, superseded: 5 }[status];
+if (sig === r.sig) continue;
+  if (status === 'ready' && !r.sig.startsWith('ready')) sfx.ready();
+r.sig = sig;
+r.c.className = 'recipe ' + ({ hidden: 'hidden-r', partial: 'partial', ready: 'ready', done: 'done', superseded: 'superseded' })[status];
+const who = personById[inf.person];
+if (status === 'hidden') {
+r.out.textContent = '?';
+r.name.textContent = '???';
+r.ings.innerHTML = ingHtml(s, inf) + `<span class="r-reward" style="display:inline;margin-left:4px">requires: ${unknown} unknown</span>`;
+r.warn.textContent = '';
+continue;
+}
+r.out.textContent = inf.icon;
+r.name.innerHTML = `${inf.name} <span style="font:500 11px var(--body);color:${who.color}">· ${who.name.split(' ')[0]}</span>`;
+if (status === 'done') { r.reward.textContent = '✓ Learned · ' + rewardText(inf); r.warn.textContent = ''; continue; }
+if (status === 'superseded') { r.reward.textContent = `🚫 You chose ${E.inferenceById[inf.excludes].name}`; r.warn.textContent = ''; continue; }
+r.ings.innerHTML = ingHtml(s, inf) + (unknown ? `<span class="r-reward" style="display:inline;margin-left:4px">+ ${unknown} unknown</span>` : '');
+r.reward.textContent = rewardText(inf);
+r.warn.textContent = inf.excludes ? `⚠️ Pick one: ${inf.name} or ${E.inferenceById[inf.excludes].name}` : '';
+r.btn.textContent = status === 'ready' ? 'Infer' : 'Collecting data…';
+r.btn.disabled = status !== 'ready';
+}
+$('#learned-head').style.display = done ? '' : 'none';
+}
+function renderPeople(s) {
+if (s.inferred.length === lastFileCount) return;
+lastFileCount = s.inferred.length;
+for (const p of PEOPLE) {
+const n = s.inferred.filter(id => E.inferenceById[id].person === p.id).length;
+const total = linesFor(p.id);
+people[p.id].bar.innerHTML = Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
+people[p.id].el.classList.toggle('fresh', ui.freshPeople.has(p.id));
+}
+}
+function fileHtml(s, pid, { notes = true, fresh = null } = {}) {
+const p = personById[pid];
+const lines = s.inferred.map(id => E.inferenceById[id]).filter(i => i.person === pid);
+const total = linesFor(pid);
+let h = `<div class="file-head"><div class="sil">${SIL_SVG}</div><div>
+<div class="file-name">${p.name}, ${p.age}</div>
+<div class="file-meta">${p.uid} · ${zoneName(p.zone)} · ${COMPANY} user since ${p.since}</div>
+<div class="file-count">${lines.length} / ${total} inferences</div></div></div>`;
+for (const inf of lines) {
+const f = FIELDS.find(x => x.id === inf.field);
+h += `<div class="fld"><div class="fld-label">${f.icon} ${f.label.toUpperCase()}</div><p class="${inf.id === fresh ? 'fresh' : ''}">${inf.line}${notes && inf.wrong ? `<span class="wrong-note">${WRONG_NOTE}</span>` : ''}</p></div>`;
+}
+for (let i = lines.length; i < total; i++) h += '<div class="fld"><span class="redact"></span><span class="redact short"></span></div>';
+return h;
+}
+function renderTutorial(s) {
+const memo = $('#memo');
+const text = $('#memo-text');
+document.querySelectorAll('.spot').forEach(n => n.classList.remove('spot'));
+s.tutorialHold = s.tutorial < BLOB_STEP && s.tick < 240;
+if (s.tutorial < TUTORIAL.length) {
+const step = TUTORIAL[s.tutorial];
+const age = (performance.now() - ui.stepStart) / 1000;
+if (step.done(s, { stepAge: age, openedFile: ui.openedFile })) {
+s.tutorial++;
+ui.stepStart = performance.now();
+return renderTutorial(s);
+}
+if (step.id === 'moment' && !s.moments.length && !s.over && E.activeLevers(s).length) E.spawnMoment(s);
+if (step.id === 'blob' && !s.blobs.length && !s.over) {
+const heat = E.zoneHeat(s);
+const zone = Object.entries(heat).sort((a, b) => b[1] - a[1])[0][0];
+const b = E.spawnBlob(s, zone);
+if (b) b.heat = 0.25;
+}
+if (lastTutorial !== s.tutorial) {
+lastTutorial = s.tutorial;
+memo.classList.remove('new'); void memo.offsetWidth; memo.classList.add('new');
+if (s.tutorial > 0) sfx.click();
+const target = spotTarget(step.target);
+if (target && !isDesktop()) {
+const r = target.getBoundingClientRect();
+const topH = $('#top').getBoundingClientRect().bottom;
+if (r.top < topH || r.bottom > innerHeight) window.scrollTo({ top: window.scrollY + r.top - topH - 90, behavior: 'smooth' });
+}
+}
+memo.classList.remove('hint');
+$('.memo-icon').textContent = '✉️';
+let msg = step.text;
+if (step.id === 'blob' && s.stats.misses > 0 && !ui.aim) msg = `Missed! Nothing was there. It recharges in a few seconds. <b>Drag right onto the glow.</b>`;
+text.innerHTML = `<small>A NOTE FROM THE BOARD</small><br>${msg}`;
+const target = spotTarget(step.target);
+if (target) target.classList.add('spot');
+return;
+}
+memo.classList.add('hint');
+const ready = INFERENCES.filter(i => E.inferenceStatus(s, i) === 'ready');
+const fresh = LEVERS.filter(l => s.levers[l.id].unlocked && s.levers[l.id].fresh);
+const hot = [...s.blobs].sort((a, b) => b.heat - a.heat)[0];
+let ico = '💡', msg;
+if (s.regulator.phase === 'filed') { ico = '⚖️'; msg = `Inquiry filed. If suspicion is still <b>${T.inquiryDropBelow}+</b> at the hearing, you lose a lever. Cool it down or squeeze one more tick.`; }
+else if (hot && hot.heat > 0.6) { ico = '📢'; msg = `A story is about to break in <b>${zoneName(hot.zone)}</b>! Drag a distraction onto it.`; }
+else if (s.moments.length && s.combo >= 2) { ico = '✨'; msg = `<b>${s.combo}× combo!</b> Keep tapping the glowing users before they fade.`; }
+else if (s.whistleAt) { ico = '⏳'; msg = 'The engineer who left could talk at any moment. Keep suspicion low.'; }
+else if (s.awareness >= 80) { ico = '🚨'; msg = 'Suspicion is critical! Switch off 🔥🔥🔥 levers or tap 🧯.'; }
+else if (ready.length > 2) { ico = '🔮'; msg = `<b>${ready.length} inferences</b> are ready. Cash them in below!`; }
+else if (ready.length) { ico = '🔮'; msg = `${ready.map(i => i.icon + ' <b>' + i.name + '</b>').join(' and ')} ${ready.length > 1 ? 'are' : 'is'} ready to infer.`; }
+else if (fresh.length) { ico = '✨'; msg = `New lever: <b>${fresh[0].name}</b>. Switch it on to fill ${leverIcons(fresh[0]).join('')} jars.`; }
+else {
+const next = MILESTONES[s.milestone];
+msg = next ? `Next goal: ${next.icon} <b>${next.title}</b> at ${money(next.at)}. New inferences multiply revenue.` : `Final push: <b>${money(T.winValuation)}</b>.`;
+}
+$('.memo-icon').textContent = ico;
+text.innerHTML = msg;
+}
+function spotTarget(t) {
+if (!t) return null;
+const [kind, id] = t.split(':');
+if (kind === 'lever') return tiles[id]?.t;
+if (kind === 'levers') return $('#tiles');
+if (kind === 'inf') return recipes[id] && $('.r-btn', recipes[id].c);
+if (kind === 'jars') return $('#jars');
+if (kind === 'person') return people[id]?.el;
+if (kind === 'distraction') return dbtns[id]?.el;
+if (kind === 'suspicion') return $('#suspicion');
+if (kind === 'map') return $('#map-wrap');
+return null;
+}
+function afterTick(s) {
+let any = false;
+for (const l of E.activeLevers(s)) {
+const f = Math.pow(s.users / T.startUsers, T.userYieldExponent) * s.levers[l.id].boost;
+for (const [k, v] of Object.entries(l.harvests)) {
+const jar = jars[k]?.el;
+if (!jar) continue;
+const n = Math.max(1, Math.min(4, Math.round(v * f * 2.5)));
+for (let i = 0; i < n; i++) map.emitPing(map.pickDot(l.zones), k, jar, Math.random() * 900);
+any = true;
+}
+}
+if (any) setTimeout(() => sfx.pop(), 700);
+}
+function toast(ico, text) {
+const t = el('div', 'toast', `<span class="t-ico">${ico}</span><span>${text}</span>`);
+$('#toasts').append(t);
+while ($('#toasts').children.length > 2) $('#toasts').firstChild.remove();
+setTimeout(() => t.classList.add('out'), 2600);
+setTimeout(() => t.remove(), 3000);
+}
+function onToggle(s, id) {
+const st = s.levers[id];
+const l = E.leverById[id];
+if (st.on) {
+sfx.on();
+if (!st.everOn) { st.everOn = true; toast(leverIcons(l)[0], l.onText); }
+} else sfx.off();
+}
+function handleEvents(s, events) {
+for (const ev of events) {
+switch (ev.type) {
+case 'inference': openReveal(s, ev.id); break;
+case 'unlock': {
+const t = tiles[ev.lever].t;
+t.classList.remove('appear'); void t.offsetWidth; t.classList.add('appear');
+break;
+}
+case 'blob': sfx.click(); break;
+case 'blob-cleared': map.burst(ev.x, ev.y, '#2ee6a6'); sfx.ready(); break;
+case 'journalist':
+if (ev.x != null) map.burst(ev.x, ev.y, '#ff4d6d', true);
+showNews(ev.headline, ev.zone);
+break;
+case 'distract': {
+const d = E.distractionById[ev.kind];
+if (ev.result === 'miss') {
+sfx.off(); buzz(60);
+map.burst(ev.x, ev.y, 'rgba(255,255,255,.7)');
+toast('💨', `<b>${d.name}</b> missed. Nobody was looking there.`);
+} else {
+sfx.buy(); buzz(25);
+if (ev.x != null) map.burst(ev.x, ev.y, '#2ee6a6', true);
+if (d.global) toast(d.icon, '<b>Feature launched!</b> Everyone forgot what they were mad about.');
+if (ev.kind === 'scandal') toast(d.icon, 'Press is chasing a rival. Industry trust dips a little.');
+if (ev.kind === 'outrage') toast(d.icon, 'Users are fighting each other. Some are leaving.');
+}
+break;
+}
+case 'harvest': {
+const e = s.effects.find(x => x.id === ev.effect);
+if (!e) break;
+const dots = map.dotsWithin(e.x, e.y, e.r);
+for (const k of ev.kinds) {
+const jar = jars[k]?.el;
+for (let i = 0; i < 2 && dots.length; i++) map.emitPing(dots[Math.floor(Math.random() * dots.length)], k, jar, Math.random() * 800);
+}
+break;
+}
+case 'milestone': showMilestone(MILESTONES[ev.index]); break;
+case 'moment': if (!ui.overlay) sfx.tick(); break;
+case 'caught': onCaught(s, ev); break;
+case 'combo-lost': $('#combo').classList.add('hidden'); break;
+case 'event': setAim(null); openEvent(s); break;
+case 'event-done': {
+const out = { leakPurge: 'Purged. The story fizzled.', leakIgnore: 'You said nothing. That data is radioactive now.', govComply: 'Quietly handed over. You have a friend in government.', govRefuse: 'Refused. The regulators remember.', modelRun: 'It keeps running. Nobody knows how to stop it now.', modelKill: 'Unplugged. It took a while.', nda: 'Signed. She won’t talk.', letGo: 'She walked out. Nobody knows when she’ll talk.', refuse: 'You said no. The press loves it.' }[ev.effect];
+if (out) toast('📋', out);
+break;
+}
+case 'inquiry': sfx.alarm(); buzz([60, 40, 60]); toast('⚖️', `<b>Inquiry filed.</b> Hearing in ${Math.max(0, s.regulator.hearingAt - s.tick)}s if suspicion stays above ${T.inquiryDropBelow}.`); break;
+case 'inquiry-dropped': sfx.buy(); toast('🕊️', '<b>Inquiry dropped.</b> Suspicion fell before the hearing.'); break;
+case 'regulator': ui.regLine = REGULATOR_LINES[Math.floor(Math.random() * REGULATOR_LINES.length)]; sfx.alarm(); buzz([80, 60, 80]); setAim(null); break;
+case 'regulator-resolved':
+if (ev.lever) toast('⚖️', `<b>${E.leverById[ev.lever].name}</b> suspended for ${E.lockoutDuration(s)}s.`);
+if (ui.overlay === 'reg') closeOverlay();
+break;
+case 'lockout-end': toast('✅', `<b>${E.leverById[ev.lever].name}</b> is back. Switch it on again.`); break;
+case 'bought': sfx.buy(); break;
+}
+}
+}
+function onCaught(s, ev) {
+sfx.catch(ev.combo); buzz(15);
+map.burst(ev.x, ev.y, ev.person ? E.personColor(ev.person) : '#d9a441');
+const dots = map.dotsWithin(ev.x, ev.y, 0.12);
+const src = dots.length ? dots : [map.pickDot({ [ev.zone || 'downtown']: 1 })];
+const kinds = Object.keys(ev.got);
+for (const k of kinds) {
+const jar = jars[k]?.el;
+for (let i = 0; i < Math.min(6, ev.got[k]); i++) map.emitPing(src[Math.floor(Math.random() * src.length)], k, jar, i * 70);
+}
+const [sx, sy] = map.screen(ev.x, ev.y);
+floatAt(sx, sy - 20, kinds.map(k => `+${ev.got[k]} ${icon(k)}`).join('  '));
+const c = $('#combo');
+if (ev.combo >= 2) {
+c.textContent = `${ev.combo}× combo`;
+c.classList.remove('hidden', 'pop'); void c.offsetWidth; c.classList.add('pop');
+} else c.classList.add('hidden');
+if (ev.person) { map.pulsePerson(ev.person); ui.freshPeople.add(ev.person); lastFileCount = -1; }
+}
+function floatAt(x, y, text) {
+const f = el('div', 'floater', text);
+f.style.left = (x - 40) + 'px'; f.style.top = y + 'px';
+$('#fx').append(f);
+f.animate([{ transform: 'translateY(0)', opacity: 0 }, { transform: 'translateY(-10px)', opacity: 1, offset: 0.15 }, { transform: 'translateY(-46px)', opacity: 0 }], { duration: 1400, easing: 'ease-out' }).onfinish = () => f.remove();
+}
+function openEvent(s) {
+const e = EVENTS.find(x => x.id === s.event.id);
+const kind = DATA_TYPES[s.event.kind];
+const fill = (t) => t.replaceAll('{kind}', `${kind.icon} ${kind.name.toLowerCase()}`);
+sfx.alarm(); buzz([40, 40, 40]);
+const sheet = openOverlay('event', `
+<div class="event">
+<div class="ev-ico">${e.icon}</div>
+<div class="ev-kicker">DECISION</div>
+<h3>${e.title}</h3>
+<p class="lead">${fill(e.text)}</p>
+${e.choices.map((c, i) => `<button class="choice" data-i="${i}"><b>${c.label}</b><span>${fill(c.sub)}</span></button>`).join('')}
+</div>`);
+sheet.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+sfx.click();
+ui.overlay = null;
+$('#overlay').classList.add('hidden');
+actions.choose(Number(b.dataset.i));
+}));
+}
+function openOverlay(kind, html) {
+ui.overlay = kind;
+const sheet = $('#sheet');
+sheet.className = 'sheet' + (kind === 'file' ? ' files-sheet' : '');
+sheet.innerHTML = html;
+sheet.style.animation = 'none'; void sheet.offsetWidth; sheet.style.animation = '';
+$('#overlay').classList.remove('hidden');
+return sheet;
+}
+function closeOverlay() {
+ui.overlay = null;
+$('#overlay').classList.add('hidden');
+render(getState());
+}
+function openFile(pid) {
+const s = getState();
+ui.openedFile = true;
+ui.freshPeople.delete(pid);
+lastFileCount = -1;
+const nav = PEOPLE.map(p => `<button data-p="${p.id}" class="${p.id === pid ? 'on' : ''}" style="color:${p.color}">${p.name.split(' ')[0]}</button>`).join('');
+const sheet = openOverlay('file', `<div class="files-nav">${nav}</div><div class="file">${fileHtml(s, pid)}</div><button class="ghost-btn" id="file-close">Close</button>`);
+sheet.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => { sfx.click(); openFile(b.dataset.p); }));
+$('#file-close').addEventListener('click', () => { sfx.click(); closeOverlay(); });
+map.pulsePerson(pid);
+render(s);
+}
+function openReveal(s, id) {
+const inf = E.inferenceById[id];
+const who = personById[inf.person];
+sfx.infer(); buzz(30);
+map.pulsePerson(who.id);
+ui.freshPeople.add(who.id);
+const e = inf.effects;
+let rewards = '';
+for (const lid of e.unlock || []) rewards += `<span class="reward unlock">🔓 New lever: ${E.leverById[lid].name}</span>`;
+for (const [lid, m] of Object.entries(e.boost || {})) rewards += `<span class="reward unlock">⚡ ${E.leverById[lid].name} ×${m} speed</span>`;
+if (e.revMult) rewards += `<span class="reward money">💰 Revenue ×${e.revMult}</span>`;
+if (e.awareness) rewards += `<span class="reward heat">👀 Suspicion +${e.awareness}</span>`;
+const field = FIELDS.find(f => f.id === inf.field);
+const sheet = openOverlay('reveal', `
+<div class="reveal">
+<div class="stamp">INFERRED</div>
+<div class="big-ico">${inf.icon}</div>
+<h3>${inf.name}</h3>
+<p class="lead" style="margin:2px 0 0">Your model ran on all ${fmt(s.users)} users. One of them:</p>
+<div class="rewards">${rewards}</div>
+<div class="file-card">
+<div class="fc-head">${who.name.toUpperCase()}, ${who.age} · ${field.label.toUpperCase()}</div>
+<p class="tw caret"></p>
+<span class="wrong-note" style="visibility:hidden">${WRONG_NOTE}</span>
+</div>
+<button class="big-btn">File it</button>
+</div>`);
+const p = $('.tw', sheet);
+const note = $('.wrong-note', sheet);
+let i = 0;
+const finish = () => {
+clearInterval(timer);
+p.textContent = inf.line;
+p.classList.remove('caret');
+if (inf.wrong) note.style.visibility = 'visible';
+};
+const timer = setInterval(() => {
+i++;
+p.textContent = inf.line.slice(0, i);
+if (i % 2) sfx.type();
+if (i >= inf.line.length) finish();
+}, 32);
+$('.file-card', sheet).addEventListener('click', finish);
+$('.big-btn', sheet).addEventListener('click', () => { finish(); sfx.click(); closeOverlay(); });
+}
+function openRegulator(s) {
+if (!ui.regLine) ui.regLine = REGULATOR_LINES[0];
+const list = E.activeLevers(s).sort((a, b) => a.heat - b.heat);
+const sheet = openOverlay('reg', `
+<div class="reg">
+<div class="big-ico">⚖️</div>
+<h3>The hearing is now</h3>
+<p class="lead">${ui.regLine}<br>Pick <b>one lever</b> to suspend for ${E.lockoutDuration(s)}s. If you don’t, they pick the hottest one.</p>
+<div class="timer" id="reg-timer"></div>
+<div class="pick-list">${list.map(l => `
+<button class="pick" data-id="${l.id}"><span class="p-ico">${leverIcons(l).join('')}</span><span class="p-name">${l.name}</span><span class="p-heat">${flames(l.heat)}</span></button>`).join('')}
+</div>
+</div>`);
+sheet.querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => { sfx.click(); actions.regulator(b.dataset.id); }));
+renderRegulator(s);
+}
+function renderRegulator(s) {
+if (!s.regulator.pending) { closeOverlay(); return; }
+const t = $('#reg-timer');
+if (t) t.textContent = `${Math.max(0, s.regulator.deadline - s.tick)}s`;
+}
+function openDamageControl() {
+const s = getState();
+openOverlay('dc', `
+<h3>🧯 Damage control</h3>
+<p class="lead">Spend cash from your revenue to calm the public down.</p>
+<div class="dc-cash" id="dc-cash-big"></div>
+<div class="dc-item"><span class="d-ico">🤝</span><span class="d-name" id="dc-lobby-name">Lobbying</span><span class="d-desc">Inquiries take longer to reach a hearing, and suspensions are shorter. Stacks.</span><button data-buy="lobby"></button></div>
+<div class="dc-item"><span class="d-ico">🎨</span><span class="d-name">Rebrand</span><span class="d-desc">New name, same app. <b>−${T.rebrandAmount} suspicion</b>. Once per run.</span><button data-buy="rebrand"></button></div>
+<div class="dc-item"><span class="d-ico">🎭</span><span class="d-name">Privacy Theater</span><span class="d-desc">A settings page nobody reads. <b>Freezes suspicion for ${T.theaterDuration}s</b>, then it rises a little faster for good.</span><button data-buy="theater"></button></div>
+<button class="ghost-btn" id="dc-close">Close</button>`);
+$('#sheet').querySelectorAll('[data-buy]').forEach(b => b.addEventListener('click', () => actions.buy(b.dataset.buy)));
+$('#dc-close').addEventListener('click', () => { sfx.click(); closeOverlay(); });
+renderDamageControl(s);
+}
+function renderDamageControl(s) {
+const big = $('#dc-cash-big');
+if (!big) return;
+big.textContent = `💰 ${money(s.cash)} cash`;
+$('#dc-lobby-name').textContent = s.lobby ? `Lobbying · level ${s.lobby}` : 'Lobbying';
+const set = (what, cost, disabled, label) => {
+const b = $(`[data-buy="${what}"]`);
+b.textContent = label || money(cost);
+b.disabled = disabled || s.cash < cost;
+};
+set('lobby', E.lobbyCost(s), false);
+set('rebrand', E.rebrandCost(s), s.rebrandUsed, s.rebrandUsed ? 'Used' : null);
+const active = s.theaterUntil > s.tick;
+set('theater', E.theaterCost(s), active, active ? `❄️ ${s.theaterUntil - s.tick}s` : null);
+}
+function showBanner(html, ms = 3000) {
+const b = el('div', 'banner', html);
+document.body.append(b);
+const close = () => { b.classList.add('out'); setTimeout(() => b.remove(), 400); };
+b.addEventListener('click', close);
+setTimeout(close, ms);
+}
+function showNews(headline, zone) {
+sfx.news(); buzz([120, 40, 120]);
+const hud = $('#hud');
+hud.classList.remove('shake'); void hud.offsetWidth; hud.classList.add('shake');
+showBanner(`<div class="news"><div class="paper">THE DAILY LEDGER</div><div class="headline">${headline}</div><div class="impact">Story breaks${zone ? ' in ' + zoneName(zone) : ''} · suspicion +${T.viralDump}</div></div>`, 3200);
+}
+function showMilestone(m) {
+sfx.milestone(); buzz(40);
+showBanner(`<div class="ms"><div class="big-ico">${m.icon}</div><div class="ms-title">${m.title}!</div><div class="ms-text">${m.text}</div><div class="ms-text" style="margin-top:8px;color:#4f7f5c;font-weight:800">+${Math.round(m.userBonus * 100)}% users from the buzz</div></div>`, 3400);
+confetti();
+}
+function confetti() {
+const colors = ['#d9a441', '#8fb59a', '#e07a5f', '#8fb3cf', '#9d84b7'];
+for (let i = 0; i < 60; i++) {
+const c = el('div', 'confetti');
+c.style.background = colors[i % colors.length];
+c.style.left = (innerWidth / 2) + 'px';
+c.style.top = (innerHeight * 0.34) + 'px';
+$('#fx').append(c);
+const ang = Math.random() * Math.PI * 2, dist = 120 + Math.random() * 260;
+c.animate([
+{ transform: 'translate(0,0) rotate(0)', opacity: 1 },
+{ transform: `translate(${Math.cos(ang) * dist}px, ${Math.sin(ang) * dist + 260}px) rotate(${Math.random() * 720}deg)`, opacity: 0 },
+], { duration: 1400 + Math.random() * 700, easing: 'cubic-bezier(.2,.6,.4,1)' }).onfinish = () => c.remove();
+}
+}
+function showIntro(onStart, resume) {
+ui.screen = true;
+const scr = $('#screen');
+const avatars = PEOPLE.map(p => `<span style="display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;border:2px solid ${p.color};color:${p.color};font:900 11px var(--font);margin-right:-4px;background:#fffdf8">${p.name[0]}</span>`).join('');
+scr.innerHTML = `<div class="screen-inner">
+<div class="title">Hidden in<br>Plain Sight <span class="eye">👁️</span></div>
+<p class="pitch">You’re the new CEO of <b>${COMPANY}</b>, a social app with 10,000 users. The board wants a <b>$100 billion</b> valuation. You won’t charge anyone a cent. The users are the product.</p>
+<div class="how">
+<div class="how-step"><span class="h-ico">⚙️</span><div><b>Flip levers</b><span>Watch the data stream out of your users and into jars: 📍 🌙 👥 ⏱️</span></div></div>
+<div class="how-step"><span class="h-ico">🔮</span><div><b>Combine data into inferences</b><span>📍📍📍 + 🌙🌙 = 🏠 where they live. Each one boosts revenue and unlocks new levers.</span></div></div>
+<div class="how-step"><span class="h-ico">🎯</span><div><b>Aim distractions</b><span>Hot 🔥 levers make people talk. Drop a viral trend or a rival’s scandal on the hot spot before the story breaks.</span></div></div>
+</div>
+<div class="meet"><div style="display:flex;flex:none">${avatars}</div><p>Your models run on every user at once. We’ll follow five of them.</p></div>
+<button class="big-btn" id="start">${resume ? 'Resume ▶' : 'Start ▶'}</button>
+${resume ? '<button class="ghost-btn" id="restart">New game</button>' : ''}
+</div>`;
+scr.classList.remove('hidden');
+$('#start').addEventListener('click', () => { unlockAudio(); sfx.on(); hideScreen(); onStart(false); });
+if (resume) $('#restart').addEventListener('click', () => { unlockAudio(); sfx.on(); hideScreen(); onStart(true); });
+}
+function hideScreen() {
+ui.screen = false;
+$('#screen').classList.add('hidden');
+requestAnimationFrame(() => map.resize());
+}
+function resetUI() {
+lastFileCount = -1; lastTutorial = -1; lastFace = ''; shownVal = 0;
+ui.stepStart = performance.now();
+ui.openedFile = false;
+ui.freshPeople.clear();
+for (const k of Object.keys(jars)) { jars[k].el.remove(); delete jars[k]; }
+for (const r of Object.values(recipes)) r.sig = '';
+setAim(null);
+if (ui.overlay) closeOverlay();
+window.scrollTo({ top: 0 });
+}
+function showEnd(s, onAgain) {
+if (ui.overlay) { ui.overlay = null; $('#overlay').classList.add('hidden'); }
+setAim(null);
+ui.screen = true;
+document.body.classList.remove('hot', 'critical');
+const scr = $('#screen');
+scr.innerHTML = '<div class="screen-inner" id="end-inner"></div>';
+const inner = $('#end-inner');
+const again = el('button', 'big-btn', 'Play again');
+again.addEventListener('click', () => { sfx.click(); onAgain(); });
+const dossiers = (notes) => PEOPLE.map(p => `<div class="export fade-in" style="margin-bottom:14px">${fileHtml(s, p.id, { notes })}</div>`).join('');
+if (s.over === 'sold') {
+sfx.win();
+inner.innerHTML = `<div class="sold fade-in"><div class="big">Sold.</div><p>You sold ${COMPANY} for ${money(E.valuation(s) * 0.6)} and walked away. The files went with the company.</p></div>` + dossiers(false);
+inner.append(again);
+} else if (s.over === 'win') {
+sfx.win();
+document.body.append(el('div', 'white-flash'));
+setTimeout(() => document.querySelector('.white-flash')?.remove(), 1500);
+inner.innerHTML = dossiers(false) + `<div class="export-foot" style="color:var(--faint);border:0">EXPORTED ${new Date().toISOString().slice(0, 10)} · ${COMPANY.toUpperCase()} AUDIENCE GRAPH · ${fmt(s.users)} PROFILES</div>`;
+inner.append(again);
+} else {
+sfx.lose(); buzz([200, 80, 200, 80, 400]);
+const crash = el('div', 'crash', `<div class="trend">#Delete${COMPANY} is trending</div><div class="big">${fmt(s.users)}</div><div class="cap">users</div>`);
+inner.append(crash);
+const big = $('.big', crash), cap = $('.cap', crash);
+const start = s.users, floor = Math.max(40, Math.round(start * 0.003));
+let n = 0;
+const steps = 45;
+const timer = setInterval(() => {
+n++;
+big.textContent = fmt(floor + (start - floor) * Math.pow(1 - n / steps, 3));
+if (n % 3 === 0) sfx.type();
+if (n >= steps) {
+clearInterval(timer);
+cap.textContent = 'users left';
+inner.append(el('div', 'end-count fade-in', `You learned <b>${s.inferred.length} of ${MAX_INFERENCES}</b> things about them before it ended.`));
+inner.insertAdjacentHTML('beforeend', dossiers(true));
+inner.append(again);
+}
+}, 55);
+}
+scr.classList.remove('hidden');
+scr.scrollTop = 0;
+}
+return { fmt, isPaused, initUI, render, afterTick, toast, onToggle, handleEvents, showIntro, hideScreen, resetUI, showEnd };
+})();
+const __main = (() => {
+const { createState, save, load, clearSave } = __state;
+const E = __engine;
+const UI = __ui;
+let state = load() || createState();
+let ended = false;
+function flush() {
+const events = state.events;
+state.events = [];
+UI.handleEvents(state, events);
+UI.render(state);
+if (state.over && !ended) {
+ended = true;
+clearSave();
+setTimeout(() => UI.showEnd(state, restart), state.over === 'lose' ? 600 : 300);
+} else if (!state.over) {
+save(state);
+}
+}
+function restart() {
+clearSave();
+state = createState();
+state.started = true;
+ended = false;
+UI.hideScreen();
+UI.resetUI();
+UI.render(state);
+}
+const actions = {
+toggle: (id) => { if (E.toggleLever(state, id)) UI.onToggle(state, id); flush(); },
+infer: (id) => { E.runInference(state, id); flush(); },
+buy: (what) => { E.buy(state, what); flush(); },
+regulator: (id) => { E.resolveRegulator(state, id); flush(); },
+distract: (id, x, y) => { E.distract(state, id, x, y); flush(); },
+catch: (id) => { E.catchMoment(state, id); flush(); },
+choose: (i) => { E.chooseEvent(state, i); flush(); },
+};
+UI.initUI(() => state, actions);
+UI.render(state);
+UI.showIntro((fresh) => {
+if (fresh) restart();
+state.started = true;
+UI.render(state);
+}, state.started);
+setInterval(() => {
+if (document.hidden || state.over || !state.started || UI.isPaused()) return;
+E.tick(state);
+UI.afterTick(state);
+flush();
+}, 1000);
+document.body.dataset.ready = '1';
+window.__hips = { get state() { return state; }, E, flush };
+return {  };
+})();
+</script>
 </body>
 </html>
