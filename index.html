@@ -1,1066 +1,1615 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101713">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f6f1e7" />
   <title>Hidden in Plain Sight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Lato:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #101713;
-      --panel: #1b241f;
-      --panel-soft: #222d26;
-      --line: #354139;
-      --text: #eff3ed;
-      --muted: #aab5ac;
-      --quiet: #77847a;
-      --green: #b7e4a8;
-      --gold: #f0c66e;
-      --red: #f17e74;
-      --blue: #a5cbef;
-      --purple: #d3b1ed;
-      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+    :root{
+      --paper:#f6f1e7;
+      --card:#fffdf8;
+      --line:#e3dccd;
+      --ink:#2e2a26;
+      --secondary:#5e574e;
+      --muted:#8c8478;
+      --sage:#8fb59a;
+      --mist:#8fb3cf;
+      --terracotta:#e07a5f;
+      --ochre:#d9a441;
+      --plum:#9d84b7;
+      --red:#c35042;
+      --shadow: 0 10px 20px rgba(30,24,18,0.08);
+      --radius: 14px;
+      --panel: rgba(255,255,255,0.75);
+      --dangerTint: rgba(224,122,95,0.12);
+      --mapBlue: #dfeaf5;
+      --mapRiver: #cfe0ef;
+      --mapPath: rgba(167,151,131,0.35);
+      --mapBlob: rgba(169,144,128,0.14);
     }
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-width: 320px;
-      background: radial-gradient(ellipse at top, #26352b 0, var(--bg) 42rem);
-      color: var(--text);
-      font: 14px/1.45 var(--sans);
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      min-height:100%;
+      background: var(--paper);
+      color:var(--ink);
+      font-family:"Lato",sans-serif;
     }
-    button { font: inherit; color: inherit; }
-    button:focus-visible, summary:focus-visible {
-      outline: 2px solid var(--gold);
-      outline-offset: 3px;
+    body{
+      overflow-x:hidden;
     }
-
-    .app { max-width: 1440px; margin: auto; padding: 0 22px 40px; }
-    .topbar {
-      min-height: 66px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      border-bottom: 1px solid var(--line);
+    button, input, textarea{
+      font:inherit;
     }
-    .brand { display: flex; align-items: center; gap: 11px; }
-    .brand-mark {
-      display: grid;
-      place-items: center;
-      width: 38px;
-      height: 38px;
-      border: 1px solid #536255;
-      border-radius: 12px;
-      color: var(--green);
-      font-weight: 900;
+    button{
+      cursor:pointer;
     }
-    .brand-title { font-size: 12px; font-weight: 800; letter-spacing: .12em; }
-    .brand-sub { color: var(--muted); font: 9px var(--mono); letter-spacing: .08em; }
-    .top-actions { display: flex; align-items: center; gap: 8px; }
-    .clock, .small-button {
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      background: var(--panel);
-      padding: 8px 11px;
-      font: 12px var(--mono);
+    h1,h2,h3,h4{
+      font-family:"Playfair Display",serif;
+      font-variant-numeric: lining-nums;
+      letter-spacing:-0.03em;
+      margin:0;
+      font-weight:700;
     }
-    .small-button { cursor: pointer; min-width: 40px; }
-
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1.4fr 1fr;
-      gap: 10px;
-      margin: 12px 0;
-    }
-    .stat {
-      min-width: 0;
-      padding: 12px 15px;
-      background: #19221d;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-    }
-    .stat-label {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      color: var(--muted);
-      font: 10px var(--mono);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    .stat-value { margin-top: 5px; font-size: 23px; font-weight: 800; letter-spacing: -.05em; }
-    .stat-note { color: var(--muted); font: 10px var(--mono); }
-    .meter { height: 6px; margin-top: 8px; overflow: hidden; background: #303a33; border-radius: 9px; }
-    .meter > span { display: block; width: 0; height: 100%; background: var(--green); transition: width .25s; }
-    #awareness-meter > span { background: linear-gradient(90deg, var(--gold), var(--red)); }
-
-    .board {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 310px;
-      align-items: start;
-      gap: 12px;
-    }
-    .play-column, .side-column { display: grid; gap: 12px; min-width: 0; }
-    .panel {
-      min-width: 0;
-      padding: 15px;
-      background: rgba(27,36,31,.96);
-      border: 1px solid var(--line);
-      border-radius: 13px;
-    }
-    .panel-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    h1, h2, h3, p { margin-top: 0; }
-    h1, h2, h3 { margin-bottom: 0; }
-    h1 { font-size: 18px; }
-    h2 { font-size: 16px; }
-    h3 { font-size: 14px; }
-    .eyebrow { color: var(--muted); font: 9px var(--mono); letter-spacing: .11em; text-transform: uppercase; }
-    .tag {
-      padding: 4px 7px;
-      border: 1px solid var(--line);
-      border-radius: 99px;
-      color: var(--muted);
-      font: 9px var(--mono);
-      white-space: nowrap;
+    .mono{
+      font-family:"Courier Prime",monospace;
+      font-variant-numeric: lining-nums;
     }
 
-    .board-brief {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      padding: 11px 12px;
-      margin-bottom: 12px;
-      background: #283329;
-      border: 1px solid #59644b;
-      border-radius: 10px;
+    .screen{
+      max-width: 1440px;
+      margin:0 auto;
+      padding: 0 10px 30px;
     }
-    .board-stamp { font-size: 20px; }
-    .board-message { font-size: 12px; }
-    .board-message strong { color: var(--green); }
-    .board-step { display: block; margin-top: 4px; color: var(--muted); font: 9px var(--mono); }
 
-    .lever-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
-    .lever {
-      min-width: 0;
-      padding: 10px;
-      background: #202a24;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      transition: border-color .2s, background .2s;
+    .hud{
+      position: sticky;
+      top:0;
+      z-index:20;
+      background: rgba(246,241,231,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom:1px solid var(--line);
     }
-    .lever.on { border-color: #7d9e69; background: #26332a; }
-    .lever.hot { box-shadow: 0 0 0 2px #f17e7460; }
-    .lever-top { display: flex; align-items: flex-start; gap: 8px; }
-    .lever-emoji { font-size: 20px; }
-    .lever-copy { flex: 1; min-width: 0; }
-    .lever-copy strong { display: block; font-size: 12px; }
-    .lever-copy small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
-    .lever-controls { display: flex; align-items: center; gap: 5px; }
-    .toggle, .aim {
-      border: 1px solid #586258;
-      border-radius: 7px;
-      padding: 5px 7px;
-      background: #18201b;
-      cursor: pointer;
-      font-size: 10px;
+    .hud-inner{
+      max-width:1440px;
+      margin:0 auto;
+      padding: 10px 10px 8px;
     }
-    .lever.on .toggle { color: var(--green); border-color: #7d9e69; }
-    .aim.selected { color: var(--gold); border-color: var(--gold); }
-    .lever-foot {
-      display: flex;
-      justify-content: space-between;
-      gap: 6px;
-      border-top: 1px solid #38433b;
-      margin-top: 8px;
-      padding-top: 7px;
-      color: var(--muted);
-      font: 9px var(--mono);
+    .row1{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      justify-content:space-between;
     }
-    .risk { color: var(--gold); }
+    .money-wrap{
+      display:flex;
+      align-items:flex-end;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+    .money{
+      font-family:"Playfair Display",serif;
+      font-variant-numeric: lining-nums;
+      font-size: clamp(1.7rem, 4vw, 3rem);
+      letter-spacing:-0.06em;
+      line-height:1;
+    }
+    .milestone-wrap{
+      flex:1;
+      min-width:120px;
+    }
+    .milestone-head{
+      display:flex;
+      justify-content:space-between;
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--secondary);
+      margin-bottom:5px;
+      gap:8px;
+    }
+    .progress{
+      position:relative;
+      height:8px;
+      border-radius:999px;
+      background:#ece4d7;
+      overflow:hidden;
+      border:1px solid var(--line);
+    }
+    .progress > span{
+      display:block;
+      position:absolute;
+      inset:0 auto 0 0;
+      width:0%;
+      border-radius:inherit;
+      background: var(--ochre);
+    }
+    .tiny{
+      font-size:11px;
+      color:var(--secondary);
+    }
+    .mute{
+      border:1px solid var(--line);
+      background:var(--card);
+      padding:7px 10px;
+      border-radius:10px;
+      font-size:12px;
+      min-width:42px;
+    }
+    .row2{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-top:8px;
+      padding-top:6px;
+      border-top:1px solid var(--line);
+    }
+    .suspicion{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:1;
+      min-width:0;
+    }
+    .face{
+      font-size:20px;
+      width:28px;
+      text-align:center;
+      display:inline-block;
+    }
+    .suspicion-bar{
+      position:relative;
+      flex:1;
+      height:10px;
+      background:#ece4d7;
+      border:1px solid var(--line);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .suspicion-bar > span{
+      position:absolute;
+      inset:0 auto 0 0;
+      width:0%;
+      background: linear-gradient(90deg, var(--sage), var(--terracotta));
+      border-radius:inherit;
+    }
+    .tick{
+      position:absolute;
+      top:-3px;
+      bottom:-3px;
+      width:2px;
+      background: rgba(46,42,38,0.72);
+      left:60%;
+    }
+    .hearing-pill{
+      padding:5px 8px;
+      border-radius:999px;
+      background: rgba(192,79,67,0.1);
+      border:1px solid rgba(195,80,66,0.25);
+      color: var(--red);
+      font-size:10px;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .damage-button{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:10px;
+      padding:7px 10px;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
 
-    .jars {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0,1fr));
-      gap: 8px;
-    }
-    .jar-card {
-      min-width: 0;
-      padding: 8px 5px;
-      background: #151d19;
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      text-align: center;
-    }
-    .jar {
-      position: relative;
-      display: grid;
-      place-items: center;
-      width: 38px;
-      height: 42px;
-      margin: 0 auto 5px;
-      overflow: hidden;
-      border: 1px solid #758177;
-      border-radius: 9px 9px 12px 12px;
-      background: #27322b;
-    }
-    .jar-fill {
-      position: absolute;
-      right: 2px;
-      bottom: 2px;
-      left: 2px;
-      height: 0;
-      border-radius: 0 0 9px 9px;
-      background: linear-gradient(0deg, #90bb73, #d4df8f);
-      opacity: .8;
-      transition: height .25s;
-    }
-    .jar-icon { z-index: 1; font-size: 17px; }
-    .jar-count { font: 9px var(--mono); }
-    .jar-label { overflow: hidden; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
-    .jar-source { display: block; min-height: 11px; color: var(--quiet); font-size: 8px; }
-
-    .recipe-main {
-      display: grid;
-      grid-template-columns: minmax(0,1fr) auto;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: #202a24;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-    }
-    .recipe-main.ready { border-color: var(--gold); background: #302c20; }
-    .recipe-equation { font-size: 20px; font-weight: 800; letter-spacing: .02em; }
-    .recipe-name { margin-top: 4px; color: var(--muted); font-size: 11px; }
-    .recipe-cost { color: var(--quiet); font: 9px var(--mono); }
-    .action-button, .primary-button {
-      border: 0;
-      border-radius: 8px;
-      padding: 9px 12px;
-      background: var(--green);
-      color: #172018;
-      font-weight: 800;
-      cursor: pointer;
-    }
-    .action-button:disabled { background: #414a42; color: #a1a99e; cursor: not-allowed; }
-    details { margin-top: 10px; }
-    summary { cursor: pointer; color: var(--muted); font-size: 10px; }
-    .recipe-list { display: grid; gap: 5px; margin-top: 8px; }
-    .recipe-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 7px 8px;
-      border-bottom: 1px solid #354139;
-      font-size: 10px;
-    }
-    .recipe-row.ready { color: var(--gold); }
-
-    .attention-face { font-size: 27px; }
-    .headline {
-      padding: 9px 10px;
-      border-left: 3px solid var(--gold);
-      background: #25291f;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .hotspot-box {
-      margin: 9px 0;
-      padding: 9px;
-      border: 1px dashed #717767;
-      border-radius: 9px;
-      background: #202820;
-    }
-    .hotspot-box.urgent { border-color: var(--red); }
-    .hotspot-title { font-weight: 800; font-size: 11px; }
-    .hotspot-copy { margin-top: 3px; color: var(--muted); font-size: 10px; }
-    .distraction-list { display: grid; gap: 6px; }
-    .distraction {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      width: 100%;
+    .map-wrap{
+      margin-top:8px;
+      background: rgba(255,255,255,0.7);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
       padding: 8px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #202a24;
-      text-align: left;
-      cursor: pointer;
-      font-size: 10px;
+      box-shadow: var(--shadow);
     }
-    .distraction:disabled { opacity: .45; cursor: not-allowed; }
-    .distraction span:nth-child(2) { flex: 1; }
-    .distraction small { display: block; color: var(--muted); font-size: 9px; }
-    .extinguisher { border-color: #93604c; }
-    .events { display: grid; gap: 5px; color: var(--muted); font-size: 9px; }
-    .event { padding-top: 5px; border-top: 1px solid #354139; }
-    .event time { margin-right: 5px; color: var(--quiet); font-family: var(--mono); }
-    .files-summary { color: var(--muted); font-size: 10px; }
-
-    .token-layer { position: fixed; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; }
-    .token {
-      position: fixed;
-      z-index: 21;
-      font-size: 17px;
-      animation: fly .75s ease-in forwards;
-      filter: drop-shadow(0 2px 5px #000);
-    }
-    @keyframes fly {
-      0% { opacity: 0; transform: translate(0,0) scale(.5); }
-      15% { opacity: 1; }
-      100% { opacity: 0; transform: translate(var(--dx),var(--dy)) scale(1.05); }
-    }
-    .toast {
-      position: fixed;
-      z-index: 40;
-      bottom: 18px;
-      left: 50%;
-      max-width: calc(100vw - 24px);
-      padding: 10px 14px;
-      border: 1px solid #64715e;
-      border-radius: 10px;
-      background: #26342a;
-      opacity: 0;
-      pointer-events: none;
-      transform: translate(-50%, 10px);
-      transition: .2s;
-      font-size: 11px;
-    }
-    .toast.show { opacity: 1; transform: translate(-50%,0); }
-
-    .intro, .result {
-      position: fixed;
-      z-index: 50;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      overflow: auto;
-      padding: 20px;
-      background: rgba(7,12,9,.96);
-    }
-    .intro.hidden, .result.hidden { display: none; }
-    .intro-card, .result-card {
-      width: min(590px, 100%);
-      padding: 24px;
-      border: 1px solid #596650;
-      border-radius: 16px;
-      background: #1b241f;
-      box-shadow: 0 20px 70px #0009;
-    }
-    .intro-card h1 { margin: 8px 0; font-size: clamp(30px,7vw,50px); line-height: 1; }
-    .intro-card p { color: var(--muted); font-size: 13px; }
-    .how-to { display: grid; gap: 7px; margin: 15px 0; }
-    .how-row { display: flex; gap: 8px; padding: 8px; background: #222d26; border-radius: 8px; font-size: 11px; }
-    .win-files { display: grid; gap: 6px; max-height: 45vh; overflow: auto; margin: 14px 0; }
-    .file-row { padding: 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 10px; }
-    .file-row strong { display: block; margin-bottom: 3px; }
-    .milestone-pop {
-      position: fixed;
-      z-index: 30;
-      top: 18%;
-      left: 50%;
-      padding: 12px 17px;
-      border: 1px solid var(--gold);
-      border-radius: 11px;
-      background: #342d1e;
-      text-align: center;
-      font-weight: 800;
-      transform: translateX(-50%);
-      animation: pop 2.2s forwards;
-    }
-    @keyframes pop {
-      0% { opacity: 0; transform: translate(-50%,-10px) scale(.9); }
-      15%,75% { opacity: 1; transform: translate(-50%,0) scale(1); }
-      100% { opacity: 0; transform: translate(-50%,-8px) scale(.96); }
+    canvas{
+      display:block;
+      width:100%;
+      aspect-ratio: 2.3 / 1;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(223,234,245,0.9) 0%, rgba(242,235,224,0.7) 70%, #f8f1e8 100%);
+      border:1px solid rgba(133,121,102,0.18);
     }
 
-    @media (max-width: 850px) {
-      .app { padding: 0 12px 24px; }
-      .board { grid-template-columns: 1fr; }
-      .side-column { grid-template-columns: repeat(2,minmax(0,1fr)); }
-      .side-column .wide { grid-column: 1 / -1; }
+    .tray{
+      display:flex;
+      gap:8px;
+      overflow:auto;
+      padding:8px 2px 0;
+      scrollbar-width:none;
     }
-    @media (max-width: 560px) {
-      .stats { grid-template-columns: 1fr 1fr; }
-      .stats .stat:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
-      .lever-list { grid-template-columns: 1fr; }
-      .side-column { grid-template-columns: 1fr; }
-      .side-column .wide { grid-column: auto; }
-      .jars { grid-template-columns: repeat(5,minmax(0,1fr)); }
-      .panel { padding: 12px; }
-      .stat { padding: 10px; }
-      .stat-value { font-size: 20px; }
-      .brand-sub { max-width: 190px; font-size: 8px; }
-      .live { display: none; }
-      .recipe-main { grid-template-columns: 1fr; }
-      .recipe-equation { font-size: 18px; }
+    .tray::-webkit-scrollbar{display:none}
+    .distraction{
+      min-width:84px;
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:12px;
+      padding:8px 10px;
+      text-align:left;
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+      font-size:10px;
+      color:var(--secondary);
+    }
+    .distraction strong{
+      display:block;
+      font-size:12px;
+      color: var(--ink);
+    }
+    .distraction small{
+      display:block;
+      color:var(--muted);
+      position:relative;
+      z-index:1;
+    }
+    .distraction:disabled{
+      opacity:0.5;
+      cursor:not-allowed;
+    }
+
+    .jar-row{
+      display:grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap:8px;
+      margin-top:10px;
+    }
+    .jar{
+      background: rgba(255,255,255,0.6);
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:8px 4px 7px;
+      min-height:118px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45);
+    }
+    .jar-bottle{
+      position:relative;
+      width:36px;
+      height:42px;
+      border:1px solid rgba(86,77,69,0.5);
+      border-bottom-left-radius:10px;
+      border-bottom-right-radius:10px;
+      border-top-left-radius:6px;
+      border-top-right-radius:6px;
+      background: rgba(255,255,255,0.26);
+      overflow:hidden;
+    }
+    .jar-fill{
+      position:absolute;
+      left:4px;
+      right:4px;
+      bottom:4px;
+      height:0%;
+      border-radius:4px 4px 8px 8px;
+      background: linear-gradient(180deg, rgba(143,181,154,0.75), rgba(143,181,154,1));
+      transition: height .2s ease;
+    }
+    .jar span{
+      display:block;
+      text-align:center;
+    }
+    .jar-icon{font-size:18px; line-height:1; margin-top:4px;}
+    .jar-count{
+      font-family:"Playfair Display",serif;
+      font-size:15px; font-variant-numeric: lining-nums;
+      letter-spacing:-0.05em;
+      margin-top:4px;
+    }
+    .jar-label{
+      font-size:9px;
+      letter-spacing:0.09em;
+      text-transform:uppercase;
+      color: var(--muted);
+      text-align:center;
+      line-height:1.2;
+      min-height:22px;
+    }
+    .jar-need{
+      font-size:9px;
+      color:var(--secondary);
+    }
+
+    .main{
+      display:grid;
+      grid-template-columns: minmax(0,1fr);
+      gap:12px;
+      margin-top:12px;
+    }
+    .panel{
+      background: rgba(255,255,255,0.7);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow:var(--shadow);
+      padding: 14px 12px 12px;
+    }
+    .panel-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .eyebrow{
+      color:var(--secondary);
+      font-size:9px;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      font-weight:700;
+    }
+    .tag{
+      background: rgba(143,181,154,0.12);
+      border:1px solid rgba(143,181,154,0.4);
+      border-radius:999px;
+      padding:5px 8px;
+      font-size:9px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:var(--secondary);
+      white-space:nowrap;
+    }
+    .note{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      background: rgba(143,181,154,0.08);
+      border:1px solid rgba(143,181,154,0.35);
+      border-radius:10px;
+      padding:10px 12px;
+      margin-bottom:10px;
+    }
+    .note .emoji{font-size:18px; line-height:1; margin-top:2px;}
+    .note .text{
+      font-size:12px;
+      line-height:1.4;
+      color:var(--ink);
+    }
+    .note .text strong{font-weight:800;}
+
+    .levers{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+    .lever{
+      background: rgba(255,255,255,0.4);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 10px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      transition:border-color .15s ease, background .15s ease;
+    }
+    .lever.on{
+      border-color: rgba(143,181,154,0.7);
+      background: rgba(143,181,154,0.08);
+    }
+    .lever-top{
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+    .lever-icon{
+      width:32px;
+      height:32px;
+      border-radius:9px;
+      background: rgba(255,255,255,0.6);
+      border:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      font-size:17px;
+      flex-shrink:0;
+    }
+    .lever-copy{
+      flex:1;
+      min-width:0;
+    }
+    .lever-copy h3{
+      font-size:15px;
+      line-height:1.1;
+      letter-spacing:-0.03em;
+    }
+    .quote{
+      margin-top:3px;
+      color:var(--secondary);
+      font-style:italic;
+      font-size:11px;
+      line-height:1.35;
+    }
+    .really{
+      display:block;
+      margin-top:4px;
+      color:var(--ink);
+      font-size:10px;
+      line-height:1.45;
+    }
+    .lever-controls{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-top:2px;
+    }
+    .toggle{
+      border:1px solid var(--line);
+      border-radius:999px;
+      background: rgba(255,255,255,0.7);
+      color:var(--secondary);
+      font-size:10px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      padding:6px 9px;
+      min-width:60px;
+      font-weight:700;
+    }
+    .lever.on .toggle{
+      background: rgba(143,181,154,0.2);
+      color:var(--ink);
+      border-color: rgba(143,181,154,0.6);
+    }
+    .heat{
+      font-size:9px;
+      color: var(--secondary);
+      display:flex;
+      align-items:center;
+      gap:4px;
+      padding-left:2px;
+    }
+    .lever-foot{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      border-top:1px solid var(--line);
+      padding-top:7px;
+      font-size:10px;
+      color:var(--secondary);
+    }
+    .rate{font-weight:700;color:var(--ink);}
+    .lever-bar{
+      position:relative;
+      height:6px;
+      width:100%;
+      background:#efe7dc;
+      border:1px solid var(--line);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .lever-bar > span{
+      position:absolute;
+      inset:0 auto 0 0;
+      width:0%;
+      background: linear-gradient(90deg, var(--sage), var(--mist));
+      border-radius:inherit;
+    }
+
+    .inferences{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+    .inference{
+      background: rgba(255,255,255,0.46);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 10px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-height:150px;
+    }
+    .inference.ready{
+      border-color: rgba(217,164,65,0.55);
+      background: rgba(217,164,65,0.07);
+    }
+    .info-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      color: var(--secondary);
+      font-size:9px;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+    }
+    .infer-name{
+      font-family:"Playfair Display",serif;
+      font-size:18px;
+      line-height:1.05;
+      letter-spacing:-0.04em;
+    }
+    .infer-copy{
+      color: var(--secondary);
+      line-height:1.45;
+      font-size:11px;
+      min-height:46px;
+    }
+    .recipe{
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px;
+      margin-top:auto;
+    }
+    .chip{
+      background: rgba(255,255,255,0.5);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px 6px;
+      font-size:9px;
+      letter-spacing:0.02em;
+      color:var(--secondary);
+    }
+    .infer-button{
+      border:1px solid var(--line);
+      background: var(--card);
+      border-radius:8px;
+      padding:8px 10px;
+      font-weight:700;
+      font-size:11px;
+      line-height:1;
+    }
+    .infer-button:disabled{
+      opacity:0.45;
+      cursor:not-allowed;
+    }
+    .infer-button.ready{
+      background: rgba(217,164,65,0.12);
+      border-color: rgba(217,164,65,0.6);
+      color: var(--ink);
+    }
+
+    .files{
+      display:grid;
+      gap:10px;
+    }
+    .file-card{
+      background: rgba(255,255,255,0.45);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .file-avatar{
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      color: white;
+      font-weight:700;
+      font-family:"Playfair Display",serif;
+      font-size:15px;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25);
+    }
+    .file-meta{
+      flex:1;
+      min-width:0;
+    }
+    .file-name{
+      font-family:"Playfair Display",serif;
+      font-size:18px;
+      letter-spacing:-0.04em;
+      margin-bottom:2px;
+    }
+    .file-lines{
+      color:var(--secondary);
+      font-size:11px;
+      line-height:1.5;
+    }
+    .file-lines strong{
+      color:var(--ink);
+    }
+
+    .intro, .endscreen{
+      position:fixed;
+      inset:0;
+      background: rgba(19,16,12,0.5);
+      display:grid;
+      place-items:center;
+      padding:20px;
+      z-index:50;
+    }
+    .hidden{display:none !important;}
+    .intro-card, .result-card{
+      width:min(720px,100%);
+      background: rgba(255,255,255,0.95);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow: 0 22px 48px rgba(27,22,18,0.12);
+      padding:20px 18px;
+    }
+    .intro-card h1{
+      font-size: clamp(2.5rem, 8vw, 4.9rem);
+      line-height:0.9;
+      margin:10px 0 12px;
+    }
+    .intro-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin:16px 0;
+    }
+    .mini-card{
+      background: rgba(246,241,231,0.7);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 10px;
+      font-size:12px;
+      line-height:1.5;
+    }
+    .mini-card strong{
+      display:block;
+      margin-bottom:4px;
+    }
+    .start{
+      border:1px solid rgba(143,181,154,0.6);
+      background: rgba(143,181,154,0.25);
+      padding:12px 16px;
+      border-radius:12px;
+      font-weight:800;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+      font-size:11px;
+    }
+    .people{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:8px;
+    }
+    .person-badge{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 9px;
+      background: var(--card);
+      font-size:11px;
+    }
+    .person-dot{
+      width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10px;
+      font-family:"Playfair Display",serif;
+      font-weight:700;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(46,42,38,0.92);
+      color:#fff;
+      opacity:0;
+      transition: all .18s ease;
+      border-radius:999px;
+      padding:9px 14px;
+      font-size:11px;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+      z-index:80;
+      pointer-events:none;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .bump{
+      position:fixed;
+      left:50%;
+      top:12%;
+      transform: translateX(-50%) translateY(-8px);
+      opacity:0;
+      background: rgba(217,164,65,0.13);
+      border:1px solid rgba(217,164,65,0.6);
+      border-radius: 12px;
+      padding:10px 14px;
+      font-size:11px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:var(--ink);
+      z-index:90;
+      animation: pop .9s ease forwards;
+    }
+    @keyframes pop{
+      0%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.96)}
+      15%{opacity:1}
+      70%{opacity:1}
+      100%{opacity:0;transform:translateX(-50%) translateY(-8px) scale(1)}
+    }
+
+    @media (min-width: 960px){
+      .main{
+        grid-template-columns: minmax(0,1.2fr) minmax(300px,0.8fr);
+      }
+      .main > .panel{
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 760px){
+      .screen{
+        padding: 0 8px 24px;
+      }
+      .row1{
+        flex-wrap:wrap;
+      }
+      .money-wrap{
+        width:100%;
+      }
+      .levers, .inferences, .intro-grid{
+        grid-template-columns:1fr;
+      }
+      .jar-row{
+        grid-template-columns: repeat(5, minmax(0,1fr));
+      }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">H·P</div>
-        <div>
-          <div class="brand-title">HIDDEN IN PLAIN SIGHT</div>
-          <div class="brand-sub">PLATFORM OPERATIONS • QUARTERLY REVIEW</div>
+  <div class="screen">
+    <header class="hud">
+      <div class="hud-inner">
+        <div class="row1">
+          <div class="money-wrap">
+            <div class="money" id="valuation">$0</div>
+            <div class="milestone-wrap">
+              <div class="milestone-head">
+                <span id="milestone-name">Series A</span>
+                <span id="milestone-progress">$0 / $100M</span>
+              </div>
+              <div class="progress"><span id="milestone-bar"></span></div>
+            </div>
+          </div>
+          <button class="mute" id="muteBtn" aria-label="Mute sound">🔊</button>
+        </div>
+
+        <div class="row2">
+          <div class="suspicion">
+            <span class="face" id="face">😌</span>
+            <div class="suspicion-bar" style="position:relative;">
+              <span id="suspicionFill"></span>
+              <div class="tick" id="tick55"></div>
+            </div>
+            <span class="hearing-pill hidden" id="hearingPill">Hearing 14s</span>
+          </div>
+          <button class="damage-button" id="damageBtn">🧯 <span id="damageCost">$0</span></button>
         </div>
       </div>
-      <div class="top-actions">
-        <span class="tag live">● LIVE PLATFORM</span>
-        <span class="clock" id="clock">08:00</span>
-        <button class="small-button" id="pause" aria-label="Pause">Ⅱ</button>
-        <button class="small-button" id="sound" aria-label="Toggle sound">🔊</button>
+
+      <div class="map-wrap">
+        <canvas id="map" width="1200" height="520"></canvas>
+      </div>
+
+      <div class="hud-inner">
+        <div class="tray" id="distractionTray"></div>
+        <div class="jar-row" id="jarRow"></div>
       </div>
     </header>
 
-    <section class="stats" aria-label="Run status">
-      <div class="stat">
-        <div class="stat-label"><span>Community</span><span id="users-rate">+0 / sec</span></div>
-        <div class="stat-value" id="users">10,000</div>
-        <div class="stat-note">active users</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label"><span>Valuation</span><span>Goal $100B</span></div>
-        <div class="stat-value" id="valuation">$0</div>
-        <div class="stat-note" id="revenue-rate">+$0 / sec</div>
-        <div class="meter"><span id="valuation-meter"></span></div>
-      </div>
-      <div class="stat">
-        <div class="stat-label"><span>Awareness</span><span id="awareness-state">QUIET</span></div>
-        <div class="stat-value" id="awareness">8 <small style="font-size:12px;color:#aab5ac">/ 100</small></div>
-        <div class="stat-note">investigation at 60</div>
-        <div class="meter" id="awareness-meter"><span></span></div>
-      </div>
-    </section>
+    <main class="main">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Note from the Board</div>
+            <h2>Quarterly memo</h2>
+          </div>
+          <span class="tag" id="usersTag">10,000 users</span>
+        </div>
+        <div class="note">
+          <div class="emoji">📌</div>
+          <div class="text" id="boardMemo">
+            <strong>Start with Location Check-ins.</strong> The app is only useful if the platform can learn where its users are, and when.
+          </div>
+        </div>
 
-    <main class="board">
-      <section class="play-column">
-        <section class="panel">
-          <div class="panel-head">
-            <div><div class="eyebrow">The Board says</div><h1>Your next move</h1></div>
-            <span class="tag" id="active-count">0 levers running</span>
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Product</div>
+            <h3>Levers</h3>
           </div>
-          <div class="board-brief">
-            <span class="board-stamp">📋</span>
-            <div class="board-message">
-              <strong id="board-text">Start the quarter.</strong>
-              <span id="board-detail">Switch on a product lever to collect signals from the platform’s user base.</span>
-              <span class="board-step" id="board-step">TUTORIAL • FIRST MINUTE</span>
-            </div>
-          </div>
-          <div id="levers" class="lever-list"></div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <div><div class="eyebrow">Signals from the whole platform</div><h2>Data jars</h2></div>
-            <span class="tag" id="signal-total">0 signals collected</span>
-          </div>
-          <div id="jars" class="jars"></div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <div><div class="eyebrow">Combine signals</div><h2>Next inference</h2></div>
-            <span class="tag" id="inference-total">0 / 15 learned</span>
-          </div>
-          <div id="next-recipe"></div>
-          <details>
-            <summary>Open the inference tree (15 patterns)</summary>
-            <div id="recipe-list" class="recipe-list"></div>
-          </details>
-        </section>
+        </div>
+        <div id="levers" class="levers"></div>
       </section>
 
-      <aside class="side-column">
-        <section class="panel">
-          <div class="panel-head">
-            <div><div class="eyebrow">Population patterns</div><h2>What we’re learning</h2></div>
-            <span class="attention-face" id="face">🙂</span>
+      <aside class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Signal processing</div>
+            <h3>Inferences</h3>
           </div>
-          <div id="learned-list" class="files-summary">No patterns inferred yet. Combine stockpiles to reveal audience cohorts.</div>
-          <div class="meter" style="margin-top:12px"><span id="attention-meter"></span></div>
-          <div class="stat-note" id="attention-caption">Attention is calm.</div>
-        </section>
+          <span class="tag" id="inferenceTag">0 / 15</span>
+        </div>
+        <div id="inferences" class="inferences"></div>
 
-        <section class="panel">
-          <div class="panel-head">
-            <div><div class="eyebrow">Read the room</div><h2>Attention hotspot</h2></div>
-            <span class="tag" id="hotspot-level">CALM</span>
+        <div class="panel-head" style="margin-top:16px;">
+          <div>
+            <div class="eyebrow">Files</div>
+            <h3>People and profiles</h3>
           </div>
-          <div class="headline" id="headline">“A promising new platform attracts a few curious users.”</div>
-          <div id="hotspot" class="hotspot-box">
-            <div class="hotspot-title" id="hotspot-title">No hot spot yet</div>
-            <div class="hotspot-copy" id="hotspot-copy">As activity rises, attention gathers around a lever. Aim a response there before it spreads.</div>
-          </div>
-          <div class="eyebrow" style="margin:10px 0 6px">Aim at the highlighted lever, then choose a response</div>
-          <div id="distractions" class="distraction-list"></div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <div><div class="eyebrow">Emergency response</div><h2>🧯 Damage control</h2></div>
-          </div>
-          <button class="distraction extinguisher" id="extinguisher">
-            <span>🧯</span><span><strong>Extinguish the story</strong><small>Spend $500M to reduce awareness. Cooldown: 45 sec.</small></span><span id="extinguisher-state">READY</span>
-          </button>
-          <div class="stat-note" id="regulator-warning" style="margin-top:8px">Regulator: no inquiry filed.</div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <div><div class="eyebrow">Platform activity</div><h2>Latest headlines</h2></div>
-          </div>
-          <div id="events" class="events"><div class="event">The platform is waiting for its first growth experiment.</div></div>
-        </section>
+        </div>
+        <div id="files" class="files"></div>
       </aside>
     </main>
   </div>
 
-  <div id="token-layer" class="token-layer" aria-hidden="true"></div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
   <div id="intro" class="intro">
     <div class="intro-card">
-      <div class="eyebrow">A game about a whole platform</div>
-      <h1>Hidden in<br>Plain Sight</h1>
-      <p>You run a social media company. Turn product levers on to gather signals from thousands of users, combine signals into population patterns, and grow the platform’s valuation.</p>
-      <div class="how-to">
-        <div class="how-row"><span>🎯</span><span><strong>Win:</strong> reach a $100B valuation.</span></div>
-        <div class="how-row"><span>⚠️</span><span><strong>Lose:</strong> public awareness reaches 100. At 60, regulators investigate.</span></div>
-        <div class="how-row"><span>🫙</span><span>Levers collect signals into jars. Recipes consume them to reveal patterns.</span></div>
-        <div class="how-row"><span>📰</span><span>Attention moves toward busy levers. Aim a distraction at the hot spot to redirect it.</span></div>
+      <div class="eyebrow">The platform is the product</div>
+      <h1>Hidden in Plain Sight</h1>
+      <p style="color:var(--secondary); margin:10px 0 14px; line-height:1.6;">
+        You are the new CEO of Plaza, a social app with 10,000 users. You win by extracting signal, not by chasing money. Harvest data, turn it into inferences, and grow the platform without letting suspicion collapse the app.
+      </p>
+
+      <div class="intro-grid">
+        <div class="mini-card">
+          <strong>What you do</strong>
+          Flip levers, catch moments, fill the jars, and turn collected signal into inferences.
+        </div>
+        <div class="mini-card">
+          <strong>How you win</strong>
+          Reach a $100B valuation before suspicion hits 100.
+        </div>
+        <div class="mini-card">
+          <strong>How you lose</strong>
+          Suspicion reaches 100, a regulator files an inquiry, or a story breaks at the wrong moment.
+        </div>
+        <div class="mini-card">
+          <strong>What is in the way</strong>
+          Hot spots, regulator hearings, story beats, and the fact that more aggressive levers raise suspicion.
+        </div>
       </div>
-      <button id="start" class="primary-button">Start the quarter</button>
+
+      <div class="people">
+        <div class="person-badge"><span class="person-dot" style="background:#d4789c">M</span>Maya</div>
+        <div class="person-badge"><span class="person-dot" style="background:#5b97cc">D</span>Dev</div>
+        <div class="person-badge"><span class="person-dot" style="background:#6fa07a">L</span>Lena</div>
+        <div class="person-badge"><span class="person-dot" style="background:#c99532">S</span>Sam</div>
+        <div class="person-badge"><span class="person-dot" style="background:#8f74ad">J</span>June</div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <button class="start" id="startBtn">Start the quarter</button>
+      </div>
     </div>
   </div>
 
-  <div id="result" class="result hidden" role="dialog" aria-modal="true">
+  <div id="endScreen" class="endscreen hidden">
     <div class="result-card">
-      <div class="eyebrow" id="result-kicker">QUARTERLY REVIEW</div>
-      <h2 id="result-title">Run complete</h2>
-      <p id="result-copy"></p>
-      <div id="result-files" class="win-files"></div>
-      <button id="restart" class="primary-button">Start another quarter</button>
+      <div class="eyebrow" id="endKicker">Quarter complete</div>
+      <h2 id="endTitle" style="font-size:clamp(2rem, 5vw, 3.1rem); margin-top:12px;">Run complete</h2>
+      <p id="endCopy" style="color:var(--secondary); line-height:1.6; margin:12px 0 10px;">The platform stabilized.</p>
+      <div id="finalAudience" style="display:grid; gap:10px; margin:14px 0;"></div>
+      <button class="start" id="restartBtn">Play again</button>
     </div>
   </div>
 
+  <div id="toast" class="toast" aria-live="polite"></div>
   <script>
-    (() => {
-      'use strict';
+    const TYPE_META = {
+      location:{name:'Location', icon:'📍', color:'#8bb7d8'},
+      night:{name:'Late nights', icon:'🌙', color:'#7c8cc4'},
+      contacts:{name:'Contacts', icon:'👥', color:'#a78bbd'},
+      dwell:{name:'Screen time', icon:'⏱️', color:'#d4b87d'},
+      search:{name:'Searches', icon:'🔍', color:'#9bb5d3'},
+      photo:{name:'Photos', icon:'📷', color:'#d6a3ab'},
+      motion:{name:'Movement', icon:'👣', color:'#a2be9c'},
+      typing:{name:'Typing', icon:'⌨️', color:'#c89a80'},
+      purchase:{name:'Purchases', icon:'🛒', color:'#9db47f'},
+      voice:{name:'Voice', icon:'🎙️', color:'#7ba7d8'}
+    };
 
-      const GOAL = 100_000_000_000;
-      const RUN_TIME = 480;
-      const types = {
-        location:{name:'Location',emoji:'📍'},
-        contacts:{name:'Contacts',emoji:'👥'},
-        dwell:{name:'Dwell time',emoji:'⏱️'},
-        typing:{name:'Typing cadence',emoji:'⌨️'},
-        purchase:{name:'Purchases',emoji:'🛒'},
-        photo:{name:'Photo metadata',emoji:'📸'},
-        night:{name:'Night usage',emoji:'🌙'},
-        motion:{name:'Motion',emoji:'📳'},
-        voice:{name:'Voice',emoji:'🎙️'},
-        search:{name:'Search',emoji:'🔎'}
-      };
+    const PEOPLE = [
+      {id:'maya', name:'Maya Reyes', age:34, neighborhood:'Riverside', color:'#d4789c', initials:'M'},
+      {id:'dev', name:'Dev Okafor', age:19, neighborhood:'Campus', color:'#5b97cc', initials:'D'},
+      {id:'lena', name:'Lena Fischer', age:41, neighborhood:'Suburbs', color:'#6fa07a', initials:'L'},
+      {id:'sam', name:'Sam Ortiz', age:52, neighborhood:'Downtown', color:'#c99532', initials:'S'},
+      {id:'june', name:'June Park', age:67, neighborhood:'Old Town', color:'#8f74ad', initials:'J'}
+    ];
 
-      const levers = [
-        {id:'feed',name:'Neighborhood feed',emoji:'📍',type:'location',rate:48e6,risk:.045,desc:'Local recommendations and location pings.'},
-        {id:'social',name:'Contact sync',emoji:'👥',type:'contacts',rate:42e6,risk:.04,desc:'Find connections across the community.'},
-        {id:'watch',name:'Infinite watch',emoji:'⏱️',type:'dwell',rate:55e6,risk:.055,desc:'Learn what keeps people watching.'},
-        {id:'keyboard',name:'Smart keyboard',emoji:'⌨️',type:'typing',rate:35e6,risk:.03,desc:'Patterns in what people almost say.'},
-        {id:'shop',name:'Shoppable moments',emoji:'🛒',type:'purchase',rate:46e6,risk:.04,desc:'Turn browsing into shopping signals.'},
-        {id:'camera',name:'Camera cloud',emoji:'📸',type:'photo',rate:48e6,risk:.055,unlock:'relationship',desc:'Photo metadata, neatly backed up.'},
-        {id:'night',name:'Quiet hours insights',emoji:'🌙',type:'night',rate:45e6,risk:.035,unlock:'home',desc:'The platform never sleeps.'},
-        {id:'motion',name:'Motion context',emoji:'📳',type:'motion',rate:45e6,risk:.05,unlock:'commute',desc:'Movement patterns across the city.'},
-        {id:'voice',name:'Voice assistant',emoji:'🎙️',type:'voice',rate:50e6,risk:.065,unlock:'household',desc:'Helpful listening, at scale.'},
-        {id:'search',name:'Search personalization',emoji:'🔎',type:'search',rate:58e6,risk:.055,unlock:'pregnancy',desc:'The questions behind the questions.'},
-        {id:'dm',name:'DM mining',emoji:'✉️',type:'contacts',rate:62e6,risk:.075,unlock:'socialgraph',desc:'Conversation patterns, not conversations.'},
-        {id:'routine',name:'Routine nudges',emoji:'📆',type:'location',rate:58e6,risk:.06,unlock:'routine',desc:'A reminder at just the right time.'},
-        {id:'loyalty',name:'Loyalty loops',emoji:'🔁',type:'purchase',rate:68e6,risk:.07,unlock:'loyalty',desc:'Make familiar choices feel inevitable.'},
-        {id:'family',name:'Family graph',emoji:'🧑‍🤝‍🧑',type:'contacts',rate:62e6,risk:.07,unlock:'caregiver',desc:'Connections behind household patterns.'}
-      ];
+    const LEVERS = [
+      {id:'checkins', name:'Location Check-ins', pitch:'Suggest tagging where you are. Always.', really:'Every tag is a timestamped GPS point. Enough of them and you know where someone sleeps, works and worships.', data:'location', rate:0.4, heat:1, neighborhoods:['Downtown','Campus'], unlockedAt:0, home:'location'},
+      {id:'darkmode', name:'Dark Mode', pitch:'Easier on the eyes at 3 a.m.', really:'Dim screens don’t wake anyone up, so people keep scrolling long after they meant to sleep.', data:'night', rate:0.42, heat:1, neighborhoods:['Campus','Old Town'], unlockedAt:0, home:'night'},
+      {id:'friends', name:'Find Friends', pitch:'Upload your contacts to see who’s here.', really:'Uploading a phonebook hands over everyone in it, including people who never joined.', data:'contacts', rate:0.38, heat:1, neighborhoods:['Downtown','Suburbs','Riverside','Old Town','Campus'], unlockedAt:0, home:'contacts'},
+      {id:'scroll', name:'Infinite Scroll', pitch:'Remove the bottom of the feed.', really:'With no stopping point, sessions run longer. How long someone lingers shows what they care about.', data:'dwell', rate:0.35, heat:1, neighborhoods:['Campus','Riverside'], unlockedAt:0, home:'dwell'},
+      {id:'search', name:'Search Suggestions', pitch:'Finish their sentences for them.', really:'Autocomplete reveals what people are about to ask, including the questions they’d never say out loud.', data:'search', rate:0.46, heat:1, neighborhoods:['Downtown','Suburbs','Campus'], unlockedAt:1, home:'search'},
+      {id:'photos', name:'Photo Memories', pitch:'“On this day, four years ago.”', really:'Old photos carry dates, places and faces. Resurfacing them gets people to re-tag who they were with.', data:'photo', rate:0.44, heat:2, neighborhoods:['Riverside','Old Town'], unlockedAt:1, home:'photo'},
+      {id:'step', name:'Step Counter', pitch:'Wellness, gamified.', really:'An accelerometer shows how someone moves: their pace, a limp, how much they sleep, and a sudden change in routine.', data:'motion', rate:0.34, heat:1, neighborhoods:['Suburbs','Riverside'], unlockedAt:2, home:'motion'},
+      {id:'keyboard', name:'Smart Keyboard', pitch:'Predictive text that learns you.', really:'Typing speed, hesitation and deleted words track mood and stress, even in messages that are never sent.', data:'typing', rate:0.36, heat:2, neighborhoods:['Campus','Downtown'], unlockedAt:2, home:'typing'},
+      {id:'shop', name:'Shop Tab', pitch:'Checkout without leaving the app.', really:'Purchases are the most honest data there is. A basket can show a pregnancy, a diagnosis or a money problem.', data:'purchase', rate:0.43, heat:2, neighborhoods:['Suburbs','Downtown'], unlockedAt:3, home:'purchase'},
+      {id:'voice', name:'Voice Notes', pitch:'Say it instead of typing it.', really:'Voice carries tone, stress and health. A recording says far more than the words in it.', data:'voice', rate:0.41, heat:2, neighborhoods:['Old Town','Riverside'], unlockedAt:3, home:'voice'},
+      {id:'neighborhood', name:'Neighborhood Feed', pitch:'See what’s happening on your street.', really:'Neighbors post photos of each other’s streets, cars and front doors. It maps the people who never consented.', data:'location', rate:0.58, heat:3, neighborhoods:['Suburbs','Riverside'], unlockedAt:4, home:'location'},
+      {id:'dm', name:'DM Mining', pitch:'End-to-end*. (*Terms apply.)', really:'Private messages are where people say what they actually think: who they love, fear and owe.', data:'contacts', rate:0.62, heat:3, neighborhoods:['Campus'], unlockedAt:5, home:'contacts'},
+      {id:'buylater', name:'Buy Now, Pay Later', pitch:'Four easy payments.', really:'Small loans keep people buying, and the repayments map exactly how close they are to running out of money.', data:'purchase', rate:0.6, heat:3, neighborhoods:['Suburbs'], unlockedAt:6, home:'purchase'},
+      {id:'sleep', name:'Sleep Tracker', pitch:'Leave your phone on the pillow.', really:'A phone on the pillow records when someone sleeps, wakes and who else is in the bed.', data:'night', rate:0.52, heat:2, neighborhoods:['Old Town'], unlockedAt:6, home:'night'},
+      {id:'alwaysmic', name:'Always-On Mic', pitch:'For better ads. Only for better ads.', really:'Background audio fills in everything the screen missed: arguments, TV shows, the name of a pharmacy.', data:'voice', rate:0.7, heat:3, neighborhoods:['Campus','Downtown','Old Town','Suburbs','Riverside'], unlockedAt:7, home:'voice'}
+    ];
 
-      const patterns = [
-        {id:'home',name:'Neighborhood patterns',emoji:'🏘️',recipe:{location:1200,night:800},boost:1.10,cohort:'2,400 users show a consistent home-and-night pattern.',unlock:'night'},
-        {id:'insomnia',name:'Late-night scrollers',emoji:'🌙',recipe:{night:1200,dwell:1200},boost:1.10,cohort:'2,100 users are active well after midnight.',unlock:null},
-        {id:'pregnancy',name:'Life-stage shopping pattern',emoji:'🛍️',recipe:{purchase:1200,search:1200,location:800},boost:1.20,cohort:'3,200 users share a new-shopping and search pattern.',unlock:'search',wrong:true},
-        {id:'relationship',name:'Shared-household signals',emoji:'🏠',recipe:{photo:1000,contacts:1000},boost:1.12,cohort:'2,000 users show overlapping household and contact signals.',unlock:'camera'},
-        {id:'jobloss',name:'Career-change searches',emoji:'💼',recipe:{search:1000,location:800,dwell:1000},boost:1.15,cohort:'2,800 users browse career advice during work hours.',unlock:null},
-        {id:'commute',name:'Commuter corridors',emoji:'🚌',recipe:{location:1400,motion:800},boost:1.12,cohort:'3,000 users share a repeat travel corridor.',unlock:'motion'},
-        {id:'socialgraph',name:'Highly connected clusters',emoji:'🕸️',recipe:{contacts:1400,typing:800},boost:1.14,cohort:'2,600 users sit in unusually active social clusters.',unlock:'dm'},
-        {id:'household',name:'Household shopping mix',emoji:'🧺',recipe:{voice:800,purchase:1200,location:1000},boost:1.15,cohort:'3,000 users have a household-sized shopping pattern.',unlock:'voice',wrong:true},
-        {id:'routine',name:'Weekly routines',emoji:'📆',recipe:{location:1000,dwell:1000,night:800},boost:1.10,cohort:'2,800 users repeat the same weekly activity pattern.',unlock:'routine'},
-        {id:'anxiety',name:'Hesitation signals',emoji:'💭',recipe:{typing:1400,search:1000},boost:1.16,cohort:'2,400 users repeatedly draft, delete, and search.',unlock:null},
-        {id:'financial',name:'Price-sensitive shoppers',emoji:'🏷️',recipe:{purchase:1400,search:1000},boost:1.18,cohort:'2,400 users compare prices before checkout.',unlock:null},
-        {id:'relationshiprisk',name:'Changing social clusters',emoji:'🔀',recipe:{photo:800,contacts:1400,night:800},boost:1.14,cohort:'3,000 users show a changing pattern of late-night connections.',unlock:null,exclusive:'social-choice'},
-        {id:'loyalty',name:'Repeat-brand shoppers',emoji:'📦',recipe:{purchase:1400,dwell:1000,typing:800},boost:1.16,cohort:'3,200 users repeatedly choose the same products.',unlock:'loyalty',exclusive:'social-choice'},
-        {id:'health',name:'Wellness research clusters',emoji:'🩺',recipe:{search:1400,night:800,location:1000},boost:1.18,cohort:'3,200 users browse wellness topics and nearby services.',unlock:null,exclusive:'community-choice'},
-        {id:'caregiver',name:'Care-network patterns',emoji:'🤝',recipe:{location:1200,contacts:1200,voice:800},boost:1.17,cohort:'3,200 users connect visits, calls, and household errands.',unlock:'family',exclusive:'community-choice'}
-      ];
+    const INFERENCES = [
+      {id:'home', name:'Home Address', recipe:{location:3, night:2}, effect:'unlock neighborhood', field:'commute', line:'Lives at 41 Alder Street, second floor. Lights off around 1 a.m.', description:'your model runs across the user base and says where their home likely is.', wrong:false},
+      {id:'social', name:'Social Circle', recipe:{contacts:3, dwell:3}, effect:'boost search', field:'relationships', line:'Closest to her sister, Ada. Messages her every morning before 9.', description:'overlap in contacts and time spent online.', wrong:false},
+      {id:'insomnia', name:'Insomnia', recipe:{night:9, dwell:9}, effect:'boost keyboard', field:'sleep', line:'Awake most nights between 2 and 4. Scrolls, never posts.', description:'late-night active windows and dwell time line up.', wrong:false},
+      {id:'commute', name:'Commute', recipe:{location:12, dwell:9}, effect:'unlock step counter', field:'commute', line:'Leaves home at 7:40. Arrives late on Thursdays.', wrong:false},
+      {id:'shopping', name:'Shopping Habits', recipe:{search:12, location:12}, effect:'unlock shop tab', field:'finances', line:'Shops on Sunday nights. Abandons the cart about half the time.', wrong:false},
+      {id:'relationship', name:'Relationship Status', recipe:{photo:9, contacts:10}, effect:'unlock DM Mining', field:'relationships', line:'Engaged since June. Has not told her father.', wrong:false},
+      {id:'anxiety', name:'Anxiety', recipe:{typing:9, night:9}, effect:'unlock voice notes', field:'health', line:'Types fast and deletes most of it. Worse the night before exams.', wrong:false},
+      {id:'sleep', name:'Sleep Schedule', recipe:{motion:9, night:10}, effect:'unlock sleep tracker', field:'sleep', line:'Up at 4:50 every morning. Naps until 2 on Saturdays.', wrong:false},
+      {id:'mood', name:'Mood Print', recipe:{voice:9, typing:10}, effect:'unlock always-on mic', field:'health', line:'Her voice drops half a tone after calls with her father.', wrong:false},
+      {id:'chronicpain', name:'Chronic Pain', recipe:{motion:12, search:12}, effect:'unlock buy now, pay later', field:'health', line:'Walks with a slight limp since October. Searched “knee MRI cost” three times.', wrong:false},
+      {id:'jobloss', name:'Job Loss', recipe:{search:90, location:90, dwell:72}, effect:'boost search', field:'finances', line:'Lost his job in September. Hasn’t been to the office since.', wrong:true, exclusive:'job'},
+      {id:'promotion', name:'Promotion', recipe:{search:90, location:90, typing:72}, effect:'boost shop', field:'finances', line:'Promoted in September. Spends the raise paying down a card.', wrong:false, exclusive:'job'},
+      {id:'pregnancy', name:'Pregnancy', recipe:{purchase:102, search:72, location:60}, effect:'boost shop', field:'health', line:'Pregnant. Due in late spring.', wrong:true, exclusive:'money'},
+      {id:'debt', name:'Debt', recipe:{purchase:102, search:72, typing:60}, effect:'boost BNPL', field:'finances', line:'Owes $14,200 across three cards. Pays the minimum on the 3rd.', wrong:false, exclusive:'money'},
+      {id:'caller', name:'Late-Night Caller', recipe:{contacts:108, night:96, voice:96}, effect:'boost DM mining', field:'relationships', line:'Calls an unsaved number after midnight. Twenty minutes, every Tuesday.', wrong:true}
+    ];
 
-      const distractions = [
-        {id:'trend',name:'Viral trend',emoji:'🚀',hint:'Wide, brief; also harvests search.',cooldown:22,reduction:24,duration:12},
-        {id:'scandal',name:'Rival scandal',emoji:'🕵️',hint:'Big redirect; raises industry suspicion.',cooldown:35,reduction:38,duration:0},
-        {id:'outrage',name:'Outrage topic',emoji:'🔥',hint:'Strong redirect; users leave over time.',cooldown:24,reduction:44,duration:0},
-        {id:'launch',name:'Shiny feature launch',emoji:'✨',hint:'Small redirect; costs $400M.',cooldown:30,reduction:20,duration:0}
-      ];
+    const DISTRACTIONS = [
+      {id:'trend', name:'Viral Trend', icon:'💃', radius:0.46, duration:6, cooldown:30, label:'wide · brief · harvests'},
+      {id:'scandal', name:'Rival Scandal', icon:'🗞️', radius:0.2, duration:20, cooldown:55, label:'narrow · lasting · poisons the well'},
+      {id:'outrage', name:'Outrage Topic', icon:'😡', radius:0.3, duration:8, cooldown:16, label:'cheap · strong · users leave'},
+      {id:'launch', name:'Feature Launch', icon:'🚀', radius:0, duration:0, cooldown:0, label:'everywhere · instant'}
+    ];
 
-      const milestones = [
-        [1e9,'$1B','First billion. The Board has updated its wallpaper.'],
-        [10e9,'$10B','Ten billion. Growth has been described as “organic.”'],
-        [25e9,'$25B','A quarter of the way. Nobody asked what the product is.'],
-        [50e9,'$50B','Halfway there. The press has noticed the press release.'],
-        [75e9,'$75B','Almost there. Please avoid saying “data” on stage.']
-      ];
+    const state = {
+      started:false,
+      ended:false,
+      paused:false,
+      tick:0,
+      users:10000,
+      revenue:0,
+      valuationMultiple:2.2e5,
+      suspicion:8,
+      attention:0,
+      fileCards:[],
+      inventory:{ location:0, night:0, contacts:0, dwell:0, search:0, photo:0, motion:0, typing:0, purchase:0, voice:0 },
+      totalHarvest:{ location:0, night:0, contacts:0, dwell:0, search:0, photo:0, motion:0, typing:0, purchase:0, voice:0 },
+      activeLevers:new Set(),
+      learned:new Set(),
+      openedFiles:new Set(),
+      decisionsSeen:new Set(),
+      hotSpots:[],
+      moments:[],
+      activeDistractions:[],
+      cooldowns:{ trend:0, scandal:0, outrage:0, launch:0 },
+      hearing:0,
+      hearingActive:false,
+      hearingChoice:null,
+      regulatorSuspended:null,
+      damageCooldown:0,
+      milestoneIndex:0,
+      mute:false,
+      boardMemoIndex:0,
+      tutorialStep:0,
+      nextTime:0,
+      selectedEvent:null,
+      audit:{},
+      generatedFiles:[],
+      milestoneValues:[100000000, 1000000000, 10000000000, 50000000000],
+      noteOrder:[
+        'Start with Location Check-ins. The app is only useful if the platform can learn where its users are, and when.',
+        'The platform grows when a lever stays on. More active levers mean more data, but more suspicion.',
+        'Once the jars are full enough, infer a pattern. That consumes the ingredients and permanently improves the machine.',
+        'Hot spots in the map are where attention gathers. Split it before it breaks.',
+        'The app is a platform, not a person. Learn from the whole user base.'
+      ]
+    };
 
-      const state = {
-        started:false,paused:false,ended:false,seconds:0,users:10000,revenue:0,awareness:8,
-        attention:0, active:new Set(), aim:null, hotspot:null, hotspotHeat:0,
-        inventory:Object.fromEntries(Object.keys(types).map(k=>[k,0])),
-        totals:Object.fromEntries(Object.keys(types).map(k=>[k,0])),
-        learned:new Set(), wrong:new Set(), exclusive:{}, dossier:[],
-        cooldowns:Object.fromEntries(distractions.map(d=>[d.id,0])),
-        activeTrend:0, regulatorEta:0, regulatorHold:0, press:0,
-        extinguisher:0, industrySuspicion:0, departed:0, milestones:new Set(),
-        events:[], sound:true, tutorial:0
-      };
+    const y = (v) => document.getElementById(v);
 
-      const $ = id => document.getElementById(id);
-      let audioContext = null;
-      const money = n => n >= 1e12 ? '$'+(n/1e12).toFixed(2)+'T' : n >= 1e9 ? '$'+(n/1e9).toFixed(1)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(0)+'M' : '$'+Math.floor(n);
-      const short = n => n >= 1e6 ? (n/1e6).toFixed(n >= 10e6 ? 0 : 1)+'M' : n >= 1000 ? (n/1000).toFixed(n >= 10e3 ? 0 : 1)+'K' : String(Math.floor(n));
-      const timeLeft = () => Math.max(0,RUN_TIME-state.seconds);
-      const fmtClock = n => String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
+    function money(n){
+      if(n >= 1e12) return '$'+(n/1e12).toFixed(2)+'T';
+      if(n >= 1e9) return '$'+(n/1e9).toFixed(2)+'B';
+      if(n >= 1e6) return '$'+(n/1e6).toFixed(2)+'M';
+      if(n >= 1e3) return '$'+(n/1e3).toFixed(1)+'K';
+      return '$'+Math.floor(n);
+    }
 
-      function sound(frequency=440, duration=.07) {
-        if (!state.sound) return;
-        try {
-          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-          const oscillator = audioContext.createOscillator();
-          const gain = audioContext.createGain();
-          oscillator.frequency.value = frequency;
-          gain.gain.setValueAtTime(.035,audioContext.currentTime);
-          gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);
-          oscillator.connect(gain); gain.connect(audioContext.destination);
-          oscillator.start(); oscillator.stop(audioContext.currentTime+duration);
-        } catch (_) {}
+    function fmt(n){
+      return n.toLocaleString('en-US', {maximumFractionDigits:0});
+    }
+
+    function toast(msg){
+      const t = y('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(()=>t.classList.remove('show'), 1800);
+    }
+
+    function popNote(msg){
+      const p = document.createElement('div');
+      p.className = 'bump';
+      p.textContent = msg;
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(), 1100);
+    }
+
+    function clamp(v,min,max){ return Math.min(max, Math.max(min, v)); }
+
+    function getMilestone(){
+      const threshold = state.milestoneValues[state.milestoneIndex] || 100000000000;
+      const prev = state.milestoneIndex > 0 ? state.milestoneValues[state.milestoneIndex -1] : 0;
+      const label = state.milestoneIndex === 0 ? 'Series A' : state.milestoneIndex === 1 ? 'Unicorn' : state.milestoneIndex === 2 ? 'Decacorn' : 'Halfway to forever';
+      return { label, threshold, prev };
+    }
+
+    function updateHud(){
+      const val = state.revenue * state.valuationMultiple;
+      y('valuation').textContent = money(val);
+      const milestone = getMilestone();
+      const ratio = clamp((val - milestone.prev) / (milestone.threshold - milestone.prev || 1), 0, 1);
+      y('milestone-name').textContent = milestone.label;
+      y('milestone-progress').textContent = `${money(Math.min(val, milestone.threshold))} / ${money(milestone.threshold)}`;
+      y('milestone-bar').style.width = (ratio*100) + '%';
+      y('usersTag').textContent = `${fmt(Math.floor(state.users))} users`;
+      y('damageCost').textContent = money(Math.max(0, 500000000 - state.revenue * 0.02));
+      y('suspicionFill').style.width = state.suspicion + '%';
+      const count = state.hearing > 0 ? state.hearing : 0;
+      const pill = y('hearingPill');
+      if(count > 0){
+        pill.textContent = `Hearing ${count}s`;
+        pill.classList.remove('hidden');
+      } else {
+        pill.classList.add('hidden');
       }
+      const face = y('face');
+      if(state.suspicion < 20) face.textContent = '😌';
+      else if(state.suspicion < 40) face.textContent = '🙂';
+      else if(state.suspicion < 60) face.textContent = '🤨';
+      else if(state.suspicion < 80) face.textContent = '😠';
+      else face.textContent = '🤬';
 
-      function toast(text) {
-        $('toast').textContent = text;
-        $('toast').classList.add('show');
-        clearTimeout(toast.timer);
-        toast.timer=setTimeout(()=>$('toast').classList.remove('show'),2100);
-      }
+      const danger = state.suspicion > 70;
+      document.body.style.background = danger ? 'radial-gradient(circle at top, rgba(224,122,95,0.10), #f6f1e7 28%)' : '#f6f1e7';
+      y('tick55').style.left = '60%';
+    }
 
-      function event(text) {
-        state.events.unshift({time:fmtClock(state.seconds),text});
-        state.events=state.events.slice(0,5);
-      }
-
-      function currentRates() {
-        const selected=levers.filter(l=>state.active.has(l.id));
-        const multiplier=[...state.learned].reduce((n,id)=>n*(patterns.find(p=>p.id===id)?.boost||1),1);
-        return {
-          revenue:selected.reduce((n,l)=>n+l.rate,0)*multiplier,
-          users:selected.length*75
-        };
-      }
-
-      function displayName(pattern) {
-        return state.learned.has(pattern.id) ? pattern.name : (pattern.known ? 'Unclassified pattern' : 'Unknown pattern');
-      }
-
-      function makeRecipe(pattern) {
-        return Object.entries(pattern.recipe).map(([key,amount])=>`${types[key].emoji} ×${short(amount)}`).join(' + ');
-      }
-
-      function ready(pattern) {
-        return Object.entries(pattern.recipe).every(([key,amount])=>state.inventory[key]>=amount);
-      }
-
-      function nextPattern() {
-        return patterns.find(p=>!state.learned.has(p.id) && !(p.exclusive&&state.exclusive[p.exclusive]));
-      }
-
-      function renderLevers() {
-        const root=$('levers'); root.innerHTML='';
-        for (const lever of levers) {
-          if (lever.unlock && !state.learned.has(lever.unlock)) continue;
-          const active=state.active.has(lever.id);
-          const isHot=state.hotspot?.lever===lever.id && state.attention>=22;
-          const node=document.createElement('article');
-          node.className='lever'+(active?' on':'')+(isHot?' hot':'');
-          node.dataset.lever=lever.id;
-          node.innerHTML=`
-            <div class="lever-top">
-              <span class="lever-emoji">${lever.emoji}</span>
-              <span class="lever-copy"><strong>${lever.name}</strong><small>${lever.desc}</small></span>
-              <span class="lever-controls">
-                <button class="toggle" data-toggle="${lever.id}">${active?'ON':'OFF'}</button>
-                ${state.attention>=22?`<button class="aim ${state.aim===lever.id?'selected':''}" data-aim="${lever.id}">${state.aim===lever.id?'AIMED':'AIM'}</button>`:''}
-              </span>
+    function renderLevers(){
+      const root = y('levers'); root.innerHTML = '';
+      LEVERS.forEach(lever => {
+        const active = state.activeLevers.has(lever.id);
+        const card = document.createElement('div');
+        card.className = 'lever ' + (active ? 'on' : '');
+        card.innerHTML = `
+          <div class="lever-top">
+            <div class="lever-icon">${lever.home === 'location' ? '📍' : lever.home === 'night' ? '🌙' : lever.home === 'contacts' ? '👥' : lever.home === 'dwell' ? '⏱️' : lever.home === 'search' ? '🔍' : lever.home === 'photo' ? '📷' : lever.home === 'motion' ? '👣' : lever.home === 'typing' ? '⌨️' : lever.home === 'purchase' ? '🛒' : '🎙️'}</div>
+            <div class="lever-copy">
+              <h3>${lever.name}</h3>
+              <div class="quote">“${lever.pitch}”</div>
+              <span class="really">Really: ${lever.really}</span>
             </div>
-            <div class="lever-foot">
-              <span>+${money(lever.rate)}/sec</span>
-              <span class="risk">+${lever.risk.toFixed(2)} awareness/sec</span>
-            </div>`;
-          root.append(node);
+          </div>
+          <div class="lever-controls">
+            <button class="toggle">${active ? 'On' : 'Off'}</button>
+            <div class="heat">` + Array.from({length: lever.heat},()=> '🔥').join('') + `</div>
+          </div>
+          <div class="lever-bar"><span style="width:${Math.min(100, (state.inventory[lever.data] / 40) * 100)}%"></span></div>
+          <div class="lever-foot">
+            <span class="rate">+${money(lever.rate * 1000000)}</span>
+            <span>+${lever.heat * 0.03}/s warning</span>
+          </div>
+        `;
+        card.querySelector('.toggle').addEventListener('click', ()=>toggleLever(lever.id));
+        root.appendChild(card);
+      });
+    }
+
+    function renderJars(){
+      const row = y('jarRow'); row.innerHTML = '';
+      Object.keys(TYPE_META).forEach((key) => {
+        const have = state.inventory[key];
+        const need = 3;
+        const fill = Math.min(100, (have / need) * 100);
+        const bottle = document.createElement('div');
+        bottle.className = 'jar';
+        bottle.innerHTML = `
+          <div class="jar-bottle">
+            <div class="jar-fill" style="height:${fill}%"></div>
+            <div class="jar-icon">${TYPE_META[key].icon}</div>
+          </div>
+          <div class="jar-count">${have}</div>
+          <div class="jar-label">${TYPE_META[key].name}</div>
+          <div class="jar-need">${have}/${need}</div>
+        `;
+        row.appendChild(bottle);
+      });
+    }
+
+    function inferReady(inf){
+      return Object.entries(inf.recipe).every(([k,v]) => (state.inventory[k] || 0) >= v);
+    }
+
+    function getPatternLabel(inf){
+      return Object.entries(inf.recipe).map(([k,v])=>`${TYPE_META[k].icon}${v}`).join(' + ');
+    }
+
+    function renderInferences(){
+      const root = y('inferences'); root.innerHTML = '';
+      INFERENCES.forEach((inf) => {
+        const ready = inferReady(inf);
+        const card = document.createElement('div');
+        card.className = 'inference ' + (ready ? 'ready' : '');
+        card.innerHTML = `
+          <div class="info-head">
+            <span>${inf.name}</span>
+            <span>${state.learned.has(inf.id) ? 'Learned' : ready ? 'Ready' : 'Locked'}</span>
+          </div>
+          <div class="infer-name">${inf.name}</div>
+          <div class="infer-copy">${state.learned.has(inf.id) ? inf.line : inf.description}</div>
+          <div class="recipe">${Object.entries(inf.recipe).map(([k,v]) => `<span class=\"chip\">${TYPE_META[k].icon}${v}</span>`).join('')}</div>
+          <button class="infer-button ${ready ? 'ready' : ''}" ${state.learned.has(inf.id) ? 'disabled' : ''}>${state.learned.has(inf.id) ? 'Filed' : ready ? 'Infer' : 'Need more data'}</button>
+        `;
+        if(!state.learned.has(inf.id) && ready){
+          card.querySelector('.infer-button').addEventListener('click', ()=>runInference(inf.id));
         }
-        root.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggleLever(b.dataset.toggle));
-        root.querySelectorAll('[data-aim]').forEach(b=>b.onclick=()=>{state.aim=b.dataset.aim; render(); toast(`Aimed at ${levers.find(l=>l.id===state.aim).name}`);});
-        $('active-count').textContent=`${state.active.size} levers running`;
+        root.appendChild(card);
+      });
+      y('inferenceTag').textContent = `${state.learned.size} / ${INFERENCES.length}`;
+    }
+
+    function renderFiles(){
+      const root = y('files'); root.innerHTML = '';
+      const featured = PEOPLE.slice(0,5);
+      featured.forEach(person => {
+        const open = state.openedFiles.has(person.id);
+        const card = document.createElement('div');
+        card.className = 'file-card';
+        card.innerHTML = `
+          <div class="file-avatar" style="background:${person.color}">${person.initials}</div>
+          <div class="file-meta">
+            <div class="file-name">${person.name}</div>
+            <div class="file-lines">
+              <strong>${person.age}</strong> · ${person.neighborhood}<br>
+              ${open ? 'Open file — recent lines recorded.' : 'Tap to open.'}
+            </div>
+          </div>
+        `;
+        card.addEventListener('click', ()=>openFile(person.id));
+        root.appendChild(card);
+      });
+    }
+
+    function openFile(id){
+      const person = PEOPLE.find(p => p.id === id);
+      if(!person) return;
+      state.openedFiles.add(id);
+      toast(`Opened ${person.name}'s file`);
+      renderFiles();
+      const fileCard = document.createElement('div');
+      fileCard.className = 'panel';
+      fileCard.style.marginTop = '8px';
+      fileCard.innerHTML = `
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Confidential</div>
+            <h3>${person.name}</h3>
+          </div>
+          <span class="tag">${person.neighborhood}</span>
+        </div>
+        <div class="file-lines mono" style="padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,0.45);">
+          ${person.name}<br>
+          age ${person.age}<br>
+          neighborhood ${person.neighborhood}<br><br>
+          ${state.learned.size ? '• Lives near a major commuter route.<br>' : '• File not yet restored.<br>'}
+          ${state.learned.has('home') ? '• Home Address: 41 Alder Street, second floor.<br>' : ''}
+          ${state.learned.has('insomnia') ? '• Sleep: awake most nights between 2 and 4.<br>' : ''}
+          ${state.learned.has('relationship') ? '• Relationship: engaged since June.<br>' : ''}
+          ${state.learned.size > 5 ? '• Recent activity: the platform is learning patterns.<br>' : ''}
+          <span style="color:var(--muted);">Blank lines used for unrevealed details.</span>
+        </div>
+      `;
+      const root = y('files');
+      root.appendChild(fileCard);
+    }
+
+    function toggleLever(id){
+      if(state.ended) return;
+      const lever = LEVERS.find(l => l.id === id);
+      if(!lever) return;
+      if(state.activeLevers.has(id)){
+        state.activeLevers.delete(id);
+        toast(`${lever.name} switched off`);
+      } else {
+        state.activeLevers.add(id);
+        popNote(`${lever.name} live`);
       }
 
-      function renderJars() {
-        const root=$('jars'); root.innerHTML='';
-        for(const [key,type] of Object.entries(types)){
-          const amount=state.inventory[key];
-          const fill=Math.min(94,amount/3000*94);
-          const active=levers.filter(l=>l.type===key&&state.active.has(l.id)).length;
-          const card=document.createElement('div');
-          card.className='jar-card';
-          card.innerHTML=`<div class="jar" data-jar="${key}"><div class="jar-fill" style="height:${fill}%"></div><span class="jar-icon">${type.emoji}</span></div><div class="jar-count">${short(amount)}</div><div class="jar-label">${type.name}</div><span class="jar-source">${active?`↑ ${active} source${active>1?'s':''}`:' '}</span>`;
-          root.append(card);
-        }
-        $('signal-total').textContent=`${short(Object.values(state.totals).reduce((a,b)=>a+b,0))} signals collected`;
+      if(state.tutorialStep === 0){
+        state.tutorialStep = 1;
       }
+      renderEverything();
+    }
 
-      function renderNext() {
-        const item=nextPattern();
-        const root=$('next-recipe');
-        if(!item){root.innerHTML='<div class="recipe-main"><div><div class="recipe-equation">🎉 All patterns inferred!</div><div class="recipe-name">The Board is very pleased with itself.</div></div></div>';return;}
-        item.known=Object.keys(item.recipe).some(k=>state.inventory[k]>0);
-        const isReady=ready(item);
-        const title=item.known?item.name:`${Object.keys(item.recipe).length} ingredients unknown`;
-        const formula=item.known?`${makeRecipe(item)} → ${item.emoji}`:`❔ + ❔ → ❔`;
-        root.innerHTML=`<div class="recipe-main ${isReady?'ready':''}">
-          <div><div class="recipe-equation">${formula}</div><div class="recipe-name">${title}</div><div class="recipe-cost">${isReady?'READY — combine signals now':'Collect ingredients in the jars above.'}</div></div>
-          <button class="action-button" id="infer" ${isReady?'':'disabled'}>${isReady?'Infer pattern':'Not ready'}</button>
-        </div>`;
-        const infer=$('infer');
-        if(infer) infer.onclick=()=>learn(item);
-        const list=$('recipe-list'); list.innerHTML='';
-        for(const p of patterns){
-          const known=Object.keys(p.recipe).some(k=>state.inventory[k]>0)||state.learned.has(p.id);
-          const row=document.createElement('div');
-          row.className='recipe-row'+(ready(p)?' ready':'');
-          row.innerHTML=`<span>${state.learned.has(p.id)?p.emoji+' '+p.name:known?`${makeRecipe(p)} → ${p.emoji}`:`${Object.keys(p.recipe).length} unknown ingredients`}</span><span>${state.learned.has(p.id)?'LEARNED':ready(p)?'READY':known?'COLLECTING':'LOCKED'}</span>`;
-          list.append(row);
-        }
-        $('inference-total').textContent=`${state.learned.size} / ${patterns.length} learned`;
+    function runInference(id){
+      const inf = INFERENCES.find(i => i.id === id);
+      if(!inf || state.learned.has(inf.id)) return;
+      if(!inferReady(inf)) return;
+      Object.entries(inf.recipe).forEach(([key,val]) => {
+        state.inventory[key] = Math.max(0, state.inventory[key] - val);
+      });
+      state.learned.add(inf.id);
+      state.boardMemoIndex = 3;
+      toast(`Inferred ${inf.name}`);
+      renderEverything();
+    }
+
+    function addData(type, amount){
+      state.inventory[type] = (state.inventory[type] || 0) + amount;
+      state.totalHarvest[type] = (state.totalHarvest[type] || 0) + amount;
+    }
+
+    function getNextMemo(){
+      const memo = state.noteOrder[Math.min(state.boardMemoIndex, state.noteOrder.length - 1)];
+      y('boardMemo').innerHTML = `<strong>${memo.split('. ')[0]}.</strong> ${memo.slice(memo.indexOf('.') + 2)}`;
+    }
+
+    function renderEverything(){
+      updateHud();
+      getNextMemo();
+      renderLevers();
+      renderJars();
+      renderInferences();
+      renderFiles();
+      renderDistractions();
+      if(!state.started) return;
+    }
+
+    function makeDistractions(){
+      const container = document.getElementById('distractionTray');
+      container.innerHTML = '';
+      DISTRACTIONS.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'distraction';
+        btn.disabled = state.cooldowns[item.id] > 0;
+        btn.innerHTML = `
+          <div style="font-size:22px;">${item.icon}</div>
+          <div><strong>${item.name}</strong><small>${item.label}</small></div>
+        `;
+        btn.addEventListener('click', ()=>{ /* placeholder */ });
+        container.appendChild(btn);
+      });
+    }
+
+    function renderDistractions(){
+      const container = document.getElementById('distractionTray');
+      container.innerHTML = '';
+      DISTRACTIONS.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'distraction';
+        btn.disabled = state.cooldowns[item.id] > 0;
+        btn.innerHTML = `
+          <div style="font-size:22px;">${item.icon}</div>
+          <div><strong>${item.name}</strong><small>${item.label}</small></div>
+        `;
+        btn.addEventListener('click', () => activateDistraction(item.id));
+        container.appendChild(btn);
+      });
+    }
+
+    function activateDistraction(id){
+      if(state.cooldowns[id] > 0) return;
+      const active = DISTRACTIONS.find(d => d.id === id);
+      if(!active) return;
+      state.cooldowns[id] = active.cooldown;
+      toast(`${active.name} launched`);
+      if(id === 'trend') {
+        state.activeDistractions.push({ ...active, expiry: 6 });
       }
-
-      function renderLearned() {
-        const list=[...state.learned].map(id=>{
-          const p=patterns.find(x=>x.id===id);
-          return `<div class="event">${p.emoji} <strong>${p.name}</strong><br>${p.cohort}${p.wrong?'<br><span style="color:#aab5ac">Model confidence: low.</span>':''}</div>`;
-        });
-        $('learned-list').innerHTML=list.length?list.join(''):'No patterns inferred yet. Combine stockpiles to reveal audience cohorts.';
+      if(id === 'launch') {
+        state.revenue = Math.max(0, state.revenue - 45_000_000);
       }
+      renderEverything();
+    }
 
-      function renderAttention() {
-        const hot=state.hotspot;
-        $('attention-meter').style.width=`${Math.min(100,state.attention)}%`;
-        $('attention-caption').textContent=state.attention<22?'Attention is calm.':state.attention<55?'Attention is drifting toward a product lever. Aim a response.':'Attention is spreading. Act now or risk an investigation.';
-        $('face').textContent=state.attention<22?'🙂':state.attention<45?'😕':state.attention<70?'😟':'😨';
-        $('hotspot-level').textContent=state.attention<22?'CALM':state.attention<55?'RISING':'HOT';
-        $('hotspot-title').textContent=hot&&state.attention>=22?`Heat: ${levers.find(l=>l.id===hot.lever)?.name||'platform activity'}`:'No hot spot yet';
-        $('hotspot-copy').textContent=state.attention<22?'As activity rises, attention gathers around a lever. Aim a response there before it spreads.':`The hot spot is ${levers.find(l=>l.id===hot?.lever)?.name||'platform activity'}. Aim at that lever to redirect attention.`;
-        $('hotspot').classList.toggle('urgent',state.attention>=55);
-        const headlines=[
-          '“A promising new platform attracts a few curious users.”',
-          '“The feed knows what you did last Thursday.”',
-          '“Engagement is up. So are the questions.”',
-          '“Regulator asks platform to explain its growth.”',
-          '“Users discover their ‘private’ habits are trending.”'
+    function startGame(){
+      state.started = true;
+      state.paused = false;
+      document.getElementById('intro').classList.add('hidden');
+      toast('Quarter live');
+      renderEverything();
+    }
+
+    function initMap(){
+      const canvas = document.getElementById('map');
+      const ctx = canvas.getContext('2d');
+      const view = { w: canvas.width, h: canvas.height };
+
+      function draw(){
+        ctx.clearRect(0,0,view.w,view.h);
+
+        // soft map background
+        ctx.fillStyle = '#dfeaf5';
+        ctx.fillRect(0,0,view.w,view.h);
+
+        // river
+        ctx.beginPath();
+        ctx.moveTo(0, view.h * 0.75);
+        ctx.bezierCurveTo(view.w * 0.16, view.h * 0.64, view.w * 0.26, view.h * 0.86, view.w * 0.46, view.h * 0.76);
+        ctx.bezierCurveTo(view.w * 0.7, view.h * 0.62, view.w * 0.85, view.h * 0.9, view.w, view.h * 0.78);
+        ctx.lineTo(view.w, view.h);
+        ctx.lineTo(0, view.h);
+        ctx.closePath();
+        ctx.fillStyle = '#cfe0ef';
+        ctx.fill();
+
+        // path lines
+        ctx.strokeStyle = 'rgba(167,151,131,0.35)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(120, 180);
+        ctx.bezierCurveTo(240, 120, 380, 210, 460, 180);
+        ctx.moveTo(580, 190);
+        ctx.bezierCurveTo(770, 150, 920, 230, 1080, 200);
+        ctx.stroke();
+
+        // neighborhood blobs
+        const neighborhoods = [
+          {x:157,y:120,w:210,h:120,name:'Campus',color:'rgba(164,187,209,0.16)'},
+          {x:425,y:120,w:210,h:120,name:'Downtown',color:'rgba(214,170,116,0.12)'},
+          {x:690,y:100,w:220,h:150,name:'Suburbs',color:'rgba(140,181,154,0.18)'},
+          {x:900,y:160,w:190,h:130,name:'Riverside',color:'rgba(188,161,197,0.15)'},
+          {x:360,y:262,w:240,h:150,name:'Old Town',color:'rgba(190,148,120,0.12)'}
         ];
-        $('headline').textContent=headlines[Math.min(headlines.length-1,Math.floor(state.awareness/24))];
-        const d=$('distractions'); d.innerHTML='';
-        for(const item of distractions){
-          const cd=state.cooldowns[item.id];
-          const b=document.createElement('button');
-          b.className='distraction'; b.disabled=cd>0||state.attention<22;
-          b.innerHTML=`<span>${item.emoji}</span><span><strong>${item.name}</strong><small>${item.hint}</small></span><span>${cd?cd+'s':'USE'}</span>`;
-          b.onclick=()=>useDistraction(item);
-          d.append(b);
+        neighborhoods.forEach(n => {
+          ctx.beginPath();
+          ctx.ellipse(n.x, n.y, n.w/2, n.h/2, 0, 0, Math.PI*2);
+          ctx.fillStyle = n.color;
+          ctx.fill();
+          ctx.fillStyle = 'rgba(46,42,38,0.78)';
+          ctx.font = 'italic 500 13px Playfair Display';
+          ctx.fillText(n.name, n.x - 24, n.y + 4);
+        });
+
+        const userCount = 180;
+        for(let i=0;i<userCount;i++){
+          const angle = i * 22.3;
+          const radius = 12 + (i % 9) * 9;
+          const x = 120 + ((i * 81) % (view.w - 220)) + Math.sin(i * 0.9) * 18;
+          const y = 80 + ((i * 57) % (view.h - 180)) + Math.cos(i * 0.7) * 14;
+          ctx.beginPath();
+          ctx.fillStyle = 'rgba(34, 31, 28, 0.45)';
+          ctx.arc(x, y, 2.1, 0, Math.PI * 2);
+          ctx.fill();
         }
-      }
 
-      function renderRisk() {
-        $('awareness-meter').firstElementChild.style.width=`${Math.min(100,state.awareness)}%`;
-        $('awareness-state').textContent=state.awareness>=60?'CRITICAL':state.awareness>=45?'RISING':'QUIET';
-        $('regulator-warning').textContent=state.awareness>=50&&state.awareness<60
-          ?`⚠ Inquiry expected in about ${Math.max(1,Math.ceil((60-state.awareness)/Math.max(.05,awarenessRate())))} seconds.`
-          :state.regulatorHold>0?`Investigation active. A lever is suspended for ${state.regulatorHold}s.`
-          :'Regulator: no inquiry filed.';
-        $('extinguisher-state').textContent=state.extinguisher>0?`${state.extinguisher}s`:'READY';
-        $('extinguisher').disabled=state.extinguisher>0||state.revenue<500e6||state.ended;
-        $('extinguisher').style.opacity=$('extinguisher').disabled?'.55':'1';
-        $('press-state').textContent=state.press>70?'PUBLISHING':state.press>35?'ASKING':'QUIET';
-      }
+        // active hot spots
+        state.hotSpots.forEach(spot => {
+          const r = 14 + spot.heat * 18;
+          ctx.beginPath();
+          ctx.strokeStyle = spot.color || 'rgba(224,122,95,0.9)';
+          ctx.lineWidth = 2;
+          ctx.arc(spot.x, spot.y, r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.fillStyle = 'rgba(224,122,95,0.1)';
+          ctx.arc(spot.x, spot.y, r * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+        });
 
-      function renderEvents() {
-        $('events').innerHTML=state.events.map(e=>`<div class="event"><time>${e.time}</time>${e.text}</div>`).join('')||'<div class="event">The platform is waiting for its first growth experiment.</div>';
-      }
+        // moments
+        state.moments.forEach(moment => {
+          const p = moment.p;
+          const alpha = moment.ttl / 4.5;
+          ctx.beginPath();
+          ctx.fillStyle = moment.story ? 'rgba(217,164,65,0.9)' : 'rgba(143,181,154,0.9)';
+          ctx.arc(p.x, p.y, 8, 0, Math.PI*2);
+          ctx.fill();
+          ctx.fillStyle = `rgba(46,42,38,${alpha})`;
+          ctx.font = '700 10px Lato';
+          ctx.fillText(moment.label, p.x + 12, p.y - 8);
+        });
 
-      function renderStats() {
-        const rates=currentRates();
-        $('clock').textContent=fmtClock(timeLeft());
-        $('users').textContent=Math.floor(state.users).toLocaleString();
-        $('users-rate').textContent=`+${Math.floor(rates.users).toLocaleString()} / sec`;
-        $('valuation').textContent=money(state.revenue);
-        $('revenue-rate').textContent=`+${money(rates.revenue)} / sec`;
-        $('valuation-meter').style.width=`${Math.min(100,state.revenue/GOAL*100)}%`;
-        $('awareness').innerHTML=`${Math.floor(state.awareness)} <small style="font-size:12px;color:#aab5ac">/ 100</small>`;
+        // active pings (from levers to jars) handled separately if needed
+        requestAnimationFrame(draw);
       }
+      requestAnimationFrame(draw);
 
-      function renderBoard() {
-        const b=$('board-text'), d=$('board-detail'), s=$('board-step');
-        if(!state.started){
-          b.textContent='Start the quarter.';
-          d.textContent='Switch on a product lever to collect signals from the platform’s user base.';
-          s.textContent='TUTORIAL • FIRST MINUTE';
-        } else if(state.seconds<60){
-          s.textContent=`TUTORIAL • ${60-state.seconds}s LEFT`;
-          if(!state.active.size){
-            b.textContent='Step 1: Turn on a product lever.';
-            d.textContent='Try Neighborhood feed. It gathers location signals from the community.';
-          } else if(state.learned.size===0&&!nextPattern()?.known){
-            b.textContent='Step 2: Collect signal from more than one source.';
-            d.textContent='Keep a lever running. Try Night usage or Infinite watch to fill the first recipe.';
-          } else if(state.learned.size===0){
-            b.textContent='Step 3: Read the recipe, then infer a pattern.';
-            d.textContent='When the button says “Infer pattern,” press it. The recipe stock is consumed.';
-          } else {
-            b.textContent='Step 4: Grow the platform, but watch attention.';
-            d.textContent='More active levers mean more revenue and faster awareness. Aim a distraction at the hot lever.';
+      const press = (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width * canvas.width;
+        const y = (event.clientY - rect.top) / rect.height * canvas.height;
+        state.moments.forEach(m => {
+          const dx = x - m.p.x; const dy = y - m.p.y;
+          if(Math.hypot(dx,dy) < 14){
+            if(m.ttl > 0){
+              state.moments = state.moments.filter(mm => mm !== m);
+              toast(`Caught: ${m.label}`);
+              addData(m.type, m.amount);
+            }
           }
-        } else {
-          s.textContent='BOARD OBJECTIVE • $100B BEFORE AWARENESS 100';
-          if(state.awareness>=50){
-            b.textContent='Attention is getting expensive.';
-            d.textContent='Read the highlighted hot spot. Aim a distraction there, or use the extinguisher to buy time.';
-          } else if(nextPattern()){
-            b.textContent='Choose your next audience pattern.';
-            d.textContent='Keep collecting the ingredients shown in the next recipe. Every learned pattern boosts valuation.';
-          } else {
-            b.textContent='All patterns inferred. Keep scaling.';
-            d.textContent='Manage attention and grow valuation to the $100B target.';
-          }
-        }
+        });
+      };
+      canvas.addEventListener('click', press);
+    }
+
+    function seedMoments(){
+      const zones = [
+        {x:180, y:120}, {x:440, y:160}, {x:750, y:160}, {x:930, y:200}, {x:480, y:360}
+      ];
+      const dataTypes = Object.keys(TYPE_META);
+      const labels = [
+        'Left the house at 4 a.m.',
+        'Typed “I’m fine” four times',
+        'Bought sleeping pills',
+        'Walked past a clinic twice',
+        'Searched “how to drop out”',
+        'Deleted a long message',
+        'Called her father for 41 sec',
+        'Bought a pregnancy test'
+      ];
+      state.moments = zones.map((p, idx) => ({
+        id: idx + 'm',
+        p,
+        label: labels[idx % labels.length],
+        type: dataTypes[idx % dataTypes.length],
+        amount: 2 + (idx % 3),
+        ttl: 4.5,
+        story: idx % 4 === 0
+      }));
+    }
+
+    function gameTick(){
+      if(!state.started || state.paused || state.ended) return;
+
+      state.tick += 1;
+
+      const active = Array.from(state.activeLevers);
+      active.forEach(id => {
+        const lever = LEVERS.find(l => l.id === id);
+        if(!lever) return;
+        const factor = 1 + (state.users / 10000) * 0.18;
+        const mod = state.learned.size * 0.02;
+        addData(lever.data, Math.max(1, Math.round(lever.rate * 10 * factor + mod)));
+      });
+
+      state.revenue += active.length * 0.2;
+      state.suspicion += active.reduce((sum, id) => {
+        const lever = LEVERS.find(l => l.id === id);
+        return sum + (lever ? lever.heat * 0.03 : 0);
+      }, 0.03);
+
+      if(state.activeDistractions.length){
+        state.activeDistractions = state.activeDistractions.filter(d => {
+          d.expiry -= 1;
+          return d.expiry > 0;
+        });
       }
 
-      function render() {
-        renderStats(); renderBoard(); renderLevers(); renderJars(); renderNext();
-        renderLearned(); renderAttention(); renderRisk(); renderEvents();
+      Object.keys(state.cooldowns).forEach(k => {
+        if(state.cooldowns[k] > 0) state.cooldowns[k] -= 1;
+      });
+
+      if(state.suspicion >= 60 && !state.hearingActive){
+        state.hearingActive = true;
+        state.hearing = 15;
+        toast('Inquiry filed — hearing now');
       }
 
-      function flyToken(leverId,type) {
-        const from=document.querySelector(`[data-lever="${leverId}"] .lever-emoji`);
-        const to=document.querySelector(`[data-jar="${type}"]`);
-        if(!from||!to||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-        const a=from.getBoundingClientRect(), b=to.getBoundingClientRect();
-        const token=document.createElement('span'); token.className='token'; token.textContent=types[type].emoji;
-        token.style.left=(a.left+a.width/2)+'px'; token.style.top=(a.top+a.height/2)+'px';
-        token.style.setProperty('--dx',(b.left+b.width/2-a.left-a.width/2)+'px');
-        token.style.setProperty('--dy',(b.top+b.height/2-a.top-a.height/2)+'px');
-        $('token-layer').append(token); setTimeout(()=>token.remove(),800);
-      }
-
-      function toggleLever(id) {
-        if(state.ended)return;
-        const lever=levers.find(l=>l.id===id);
-        if(state.active.has(id)){state.active.delete(id);event(`${lever.name} switched off.`);}
-        else {state.active.add(id);event(`${lever.name} on: collecting ${types[lever.type].name.toLowerCase()} signals across the platform.`);sound(510,.08);}
-        render();
-      }
-
-      function learn(pattern) {
-        if(!ready(pattern)||state.learned.has(pattern.id))return;
-        for(const [key,amount] of Object.entries(pattern.recipe))state.inventory[key]-=amount;
-        state.learned.add(pattern.id); pattern.known=true;
-        if(pattern.exclusive)state.exclusive[pattern.exclusive]=pattern.id;
-        if(pattern.wrong)state.wrong.add(pattern.id);
-        state.dossier.push(pattern);
-        if(pattern.unlock)event(`New product lever unlocked: ${levers.find(l=>l.id===pattern.unlock)?.name||pattern.unlock}.`);
-        event(`Pattern inferred: ${pattern.name}. ${pattern.cohort}`);
-        toast(`${pattern.emoji} Pattern found: ${pattern.name}`);
-        sound(760,.18);
-        render();
-      }
-
-      function useDistraction(item) {
-        if(state.cooldowns[item.id]>0||state.attention<22)return;
-        const correct=state.aim&&state.hotspot&&state.aim===state.hotspot.lever;
-        state.cooldowns[item.id]=item.cooldown;
-        if(!correct){
-          event(`${item.name} missed the hot spot. Cooldown spent; attention unchanged.`);
-          toast('Missed the hot spot. The Board is not impressed.');
-          sound(180,.13);
-          render();
-          return;
-        }
-        state.attention=Math.max(0,state.attention-item.reduction);
-        if(item.id==='trend')state.activeTrend=item.duration;
-        if(item.id==='scandal')state.industrySuspicion=Math.min(20,state.industrySuspicion+2);
-        if(item.id==='outrage')state.departed+=Math.ceil(state.users*.025);
-        if(item.id==='launch')state.revenue=Math.max(0,state.revenue-400e6);
-        state.aim=null;
-        event(`${item.name} hit the ${levers.find(l=>l.id===state.hotspot.lever)?.name} hotspot. Attention −${item.reduction}.`);
-        toast(`${item.emoji} Distraction landed!`);
-        sound(660,.14);
-        render();
-      }
-
-      function awarenessRate() {
-        return .035+levers.filter(l=>state.active.has(l.id)).reduce((n,l)=>n+l.risk,0)+state.industrySuspicion*.002;
-      }
-
-      function fireExtinguisher() {
-        if(state.extinguisher>0||state.revenue<500e6||state.ended)return;
-        state.revenue-=500e6;
-        state.awareness=Math.max(0,state.awareness-14);
-        state.extinguisher=45;
-        event('Damage control: “We value your privacy.” Awareness reduced by 14.');
-        toast('🧯 Story contained. For now.');
-        sound(330,.12);
-        render();
-      }
-
-      function regulator() {
-        state.regulatorHold=30;
-        const active=[...state.active];
-        if(active.length){
-          const id=state.hotspot?.lever&&state.active.has(state.hotspot.lever)?state.hotspot.lever:active[0];
-          state.active.delete(id);
-          event(`Regulator investigation: ${levers.find(l=>l.id===id).name} suspended for 30 seconds.`);
-        } else event('Regulator investigation filed. No active levers to suspend.');
-        toast('⚠ Investigation filed. One lever suspended.');
-        sound(150,.3);
-      }
-
-      function tick() {
-        if(!state.started||state.paused||state.ended)return;
-        state.seconds++;
-        const rates=currentRates();
-        state.users+=rates.users;
-        state.revenue+=rates.revenue;
-
-        for(const lever of levers){
-          if(!state.active.has(lever.id))continue;
-          const amount=Math.min(lever.type==='location'?300:240,Math.max(0,state.users*.035));
-          state.inventory[lever.type]+=amount;
-          state.totals[lever.type]+=amount;
-          if(Math.random()<.75)flyToken(lever.id,lever.type);
-        }
-
-        if(state.activeTrend>0){
-          state.inventory.search+=110;
-          state.totals.search+=110;
-          state.activeTrend--;
-        }
-
-        state.attention=Math.min(100,state.attention+.08+state.active.size*.20);
-        state.press=Math.min(100,state.press+.08+state.active.size*.025);
-        if(state.press>=100){
-          state.press=0; state.awareness+=12;
-          event('Headline published: “Platform’s engagement tricks draw questions.”');
-          toast('📰 A story broke. Awareness +12.');
-        }
-
-        if(state.attention>=22){
-          if(!state.hotspot||!state.active.has(state.hotspot.lever)||state.seconds%14===0){
-            const active=[...state.active];
-            if(active.length)state.hotspot={lever:active[Math.floor(Math.random()*active.length)]};
-          }
-        } else { state.hotspot=null; state.aim=null; }
-
-        if(state.awareness>=50&&state.regulatorEta===0&&state.awareness<60){
-          state.regulatorEta=Math.max(1,Math.ceil((60-state.awareness)/Math.max(.05,awarenessRate())));
-          event(`Regulator warning: inquiry expected in about ${state.regulatorEta} seconds.`);
-        }
-        if(state.regulatorEta>0){
-          state.regulatorEta--;
-          if(state.awareness>=60) {state.regulatorEta=0;regulator();}
-        }
-
-        for(const id of Object.keys(state.cooldowns))if(state.cooldowns[id]>0)state.cooldowns[id]--;
-        if(state.regulatorHold>0)state.regulatorHold--;
-        if(state.extinguisher>0)state.extinguisher--;
-
-        for(const [threshold,label,line] of milestones){
-          if(state.revenue>=threshold&&!state.milestones.has(threshold)){
-            state.milestones.add(threshold);
-            event(`Valuation milestone ${label}. ${line}`);
-            toast(`${label} valuation! ${line}`);
-            const pop=document.createElement('div'); pop.className='milestone-pop'; pop.textContent=`${label} VALUATION • ${line}`;
-            document.body.append(pop); setTimeout(()=>pop.remove(),2300); sound(800,.2);
+      if(state.hearingActive){
+        state.hearing -= 1;
+        if(state.hearing <= 0){
+          state.hearingActive = false;
+          state.hearing = 0;
+          state.hearingChoice = null;
+          if(state.suspicion >= 60){
+            state.suspicion += 8;
+            toast('Inquiry concluded with a suspension');
           }
         }
-
-        if(state.revenue>=GOAL){finish(true);return;}
-        if(state.awareness>=100){finish(false);return;}
-        if(state.seconds>=RUN_TIME){finish(false,true);return;}
-        render();
       }
 
-      function finish(won,timedOut=false) {
-        state.ended=true;
-        $('result').classList.remove('hidden');
-        $('result-kicker').textContent=won?'TARGET REACHED':timedOut?'EIGHT-MINUTE REVIEW':'MASS DELETION';
-        $('result-title').textContent=won?'The platform is worth $100B.':timedOut?'Quarter closed. The story is unfinished.':'The platform has been emptied.';
-        $('result-copy').textContent=won
-          ?'The Board celebrates a successful quarter. The files below show what was harvested across the community—not one person.'
-          :timedOut?'Time ran out before the valuation target. These are the platform-wide files collected during the run.':`Awareness reached 100. ${Math.floor(state.users-state.departed).toLocaleString()} users remain; the platform has collapsed. Here are the files collected before deletion.`;
-        const files=$('result-files'); files.innerHTML='';
-        for(const [key,type] of Object.entries(types)){
-          const amount=Math.floor(state.totals[key]);
-          if(!amount)continue;
-          const row=document.createElement('div'); row.className='file-row';
-          row.innerHTML=`<strong>${type.emoji} ${type.name} file</strong>${amount.toLocaleString()} signals collected across the platform’s user base.`;
-          files.append(row);
-        }
-        for(const pattern of state.dossier){
-          const row=document.createElement('div'); row.className='file-row';
-          row.innerHTML=`<strong>${pattern.emoji} ${pattern.name}</strong>${pattern.cohort}${pattern.wrong?' (Model confidence was low.)':''}`;
-          files.append(row);
-        }
-        if(!files.children.length)files.innerHTML='<div class="file-row">No files were completed this quarter.</div>';
-        sound(won?880:130,.3);
+      state.moments.forEach(m => m.ttl -= 0.1);
+      state.moments = state.moments.filter(m => m.ttl > 0);
+
+      if(state.moments.length < 3){
+        seedMoments();
       }
 
-      function start() {
-        state.started=true;
-        $('intro').classList.add('hidden');
-        event('Quarter begins. 10,000 users are active. Build valuation; keep awareness below 100.');
-        render();
-        sound(520,.08);
+      if(state.revenue * state.valuationMultiple >= 100_000_000_000){
+        endGame('win');
+      } else if(state.suspicion >= 100){
+        endGame('lose');
       }
 
-      $('start').onclick=start;
-      $('pause').onclick=()=>{if(!state.started||state.ended)return;state.paused=!state.paused;$('pause').textContent=state.paused?'▶':'Ⅱ';toast(state.paused?'Paused':'Quarter resumed');};
-      $('sound').onclick=()=>{state.sound=!state.sound;$('sound').textContent=state.sound?'🔊':'🔇';};
-      $('extinguisher').onclick=fireExtinguisher;
-      $('restart').onclick=()=>window.location.reload();
-      document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.started&&!state.ended&&!state.paused){state.paused=true;$('pause').textContent='▶';}});
-      render();
-      setInterval(tick,1000);
-    })();
+      renderEverything();
+    }
+
+    function endGame(mode){
+      state.ended = true;
+      const end = document.getElementById('endScreen');
+      const kicker = document.getElementById('endKicker');
+      const title = document.getElementById('endTitle');
+      const copy = document.getElementById('endCopy');
+      const audience = document.getElementById('finalAudience');
+
+      if(mode === 'win'){
+        kicker.textContent = 'TARGET REACHED';
+        title.textContent = 'The platform is worth $100B.';
+        copy.textContent = 'The app reached the valuation target. The audience report is below. The wrong lines remain unmarked.';
+      } else {
+        kicker.textContent = 'PLATFORM COLLAPSED';
+        title.textContent = 'The app was deleted.';
+        copy.textContent = 'Suspicion reached 100. The audience report shows the moment the platform failed.';
+      }
+
+      audience.innerHTML = `
+        <div class="mini-card"><strong>Location</strong> harvested from ${fmt(Math.floor(state.totalHarvest.location))} users</div>
+        <div class="mini-card"><strong>Contacts</strong> harvested from ${fmt(Math.floor(state.totalHarvest.contacts))} users</div>
+        <div class="mini-card"><strong>Search</strong> harvested from ${fmt(Math.floor(state.totalHarvest.search))} users</div>
+        <div class="mini-card"><strong>Valuation</strong> ${money(state.revenue * state.valuationMultiple)}</div>
+      `;
+
+      end.classList.remove('hidden');
+    }
+
+    function reset(){
+      state.started = false;
+      state.ended = false;
+      state.paused = false;
+      state.tick = 0;
+      state.users = 10000;
+      state.revenue = 0;
+      state.suspicion = 8;
+      state.attention = 0;
+      state.inventory = {location:0,night:0,contacts:0,dwell:0,search:0,photo:0,motion:0,typing:0,purchase:0,voice:0};
+      state.totalHarvest = {location:0,night:0,contacts:0,dwell:0,search:0,photo:0,motion:0,typing:0,purchase:0,voice:0};
+      state.activeLevers = new Set();
+      state.learned = new Set();
+      state.openedFiles = new Set();
+      state.hotSpots = [];
+      state.moments = [];
+      state.activeDistractions = [];
+      state.cooldowns = {trend:0, scandal:0, outrage:0, launch:0};
+      state.hearing = 0;
+      state.hearingActive = false;
+      state.hearingChoice = null;
+      state.boardMemoIndex = 0;
+      state.museum = [];
+      state.started = false;
+      document.getElementById('endScreen').classList.add('hidden');
+      document.getElementById('intro').classList.remove('hidden');
+      renderEverything();
+    }
+
+    document.getElementById('startBtn').addEventListener('click', startGame);
+    document.getElementById('restartBtn').addEventListener('click', () => { reset(); });
+    document.getElementById('muteBtn').addEventListener('click', () => { state.mute = !state.mute; document.getElementById('muteBtn').textContent = state.mute ? '🔇' : '🔊'; });
+    document.getElementById('damageBtn').addEventListener('click', () => {
+      if(state.revenue < 50000000) return;
+      state.revenue -= 50000000;
+      state.suspicion = Math.max(0, state.suspicion - 14);
+      toast('Damage control used');
+      renderEverything();
+    });
+
+    initMap();
+    seedMoments();
+    renderEverything();
+    setInterval(gameTick, 1000);
   </script>
 </body>
 </html>
-```.
