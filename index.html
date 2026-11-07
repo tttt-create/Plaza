@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b1614" />
+  <meta name="theme-color" content="#091210" />
   <title>Hidden in Plain Sight</title>
-  <meta name="description" content="Dark-comedy social platform management game." />
+  <meta name="description" content="Hidden in Plain Sight — a dark-comedy management game about turning data into influence." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -16,56 +16,56 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">H·P</div>
-        <div class="brand-text">
-          <span>HIDDEN IN PLAIN SIGHT</span>
-          <small>MAYA QUINN • QUARTERLY SIGNAL REVIEW</small>
+        <div class="brand-name-wrap">
+          <div class="brand-name">HIDDEN IN PLAIN SIGHT</div>
+          <div class="brand-sub">MAYA QUINN · QUARTERLY SIGNAL REVIEW</div>
         </div>
       </div>
 
-      <div class="topbar-actions">
-        <span class="live-chip"><i></i> LIVE</span>
-        <span class="run-clock" id="clock">08:00</span>
-        <button class="icon-button" id="pause-button" aria-label="Pause game">II</button>
+      <div class="header-right">
+        <span class="live-pill"><i></i> SYSTEM LIVE</span>
+        <div class="clock" id="clock">08:00</div>
+        <button class="icon-button" id="pause-button" aria-label="Pause">II</button>
       </div>
     </header>
 
-    <section class="metrics">
-      <article class="metric-card">
-        <div class="metric-head">
+    <section class="stats">
+      <article class="stat-card">
+        <div class="stat-head">
           <span>Users</span>
           <span class="trend">+0/sec</span>
         </div>
-        <div class="metric-value" id="users-value">10,000</div>
-        <div class="metric-sub" id="users-rate">+0/sec</div>
+        <div class="stat-value" id="users-value">10,000</div>
+        <div class="stat-foot" id="users-rate">+0/sec</div>
       </article>
 
-      <article class="metric-card alt">
-        <div class="metric-head">
+      <article class="stat-card alt">
+        <div class="stat-head">
           <span>Valuation</span>
           <span class="goal">Target $100B</span>
         </div>
-        <div class="metric-value" id="revenue-value">$0</div>
-        <div class="metric-sub" id="revenue-rate">+$0/sec</div>
-        <div class="progress">
-          <div id="revenue-bar" class="progress-bar revenue"></div>
+        <div class="stat-value" id="revenue-value">$0</div>
+        <div class="stat-foot" id="revenue-rate">+$0/sec</div>
+        <div class="track">
+          <div class="track-bar revenue" id="revenue-bar"></div>
         </div>
       </article>
 
-      <article class="metric-card warn">
-        <div class="metric-head">
+      <article class="stat-card danger">
+        <div class="stat-head">
           <span>Awareness</span>
-          <span class="status" id="awareness-status">LOW</span>
+          <span id="awareness-status" class="status-pill low">LOW</span>
         </div>
-        <div class="metric-value"><span id="awareness-value">8</span><small> / 100</small></div>
-        <div class="metric-sub">Investigation at 60 • deletion at 100</div>
-        <div class="progress">
-          <div id="awareness-bar" class="progress-bar awareness"></div>
+        <div class="stat-value"><span id="awareness-value">8</span><small>/100</small></div>
+        <div class="stat-foot">Investigation at 60 · deletion at 100</div>
+        <div class="track">
+          <div class="track-bar awareness" id="awareness-bar"></div>
         </div>
       </article>
     </section>
 
-    <main class="layout">
-      <section class="left-column">
+    <main class="game-layout">
+      <section class="main-column">
         <div class="panel">
           <div class="panel-header">
             <div>
@@ -75,23 +75,23 @@
             <div class="pill" id="active-count">0 active</div>
           </div>
 
-          <div class="board-note" id="board-note">
-            Turn on a lever to start harvesting data. Your first move should be the neighborhood feed.
+          <div class="instruction-box" id="instruction-box">
+            Turn on <strong>Neighborhood feed</strong> to begin collecting location pings.
           </div>
 
-          <div id="lever-list" class="lever-list"></div>
+          <div class="lever-list" id="lever-list"></div>
         </div>
 
         <div class="panel">
           <div class="panel-header">
             <div>
               <div class="eyebrow">Raw material</div>
-              <h3>Stockpile</h3>
+              <h3>Data stockpiles</h3>
             </div>
-            <div class="pill muted">10K users • 5 files</div>
+            <div class="pill light">10K users • 5 files</div>
           </div>
 
-          <div id="inventory" class="inventory-grid"></div>
+          <div id="inventory-grid" class="inventory-grid"></div>
         </div>
 
         <div class="panel">
@@ -103,32 +103,33 @@
             <div class="pill" id="inference-count">0 / 15</div>
           </div>
 
-          <div id="inference-list" class="inference-list"></div>
+          <div id="inference-grid" class="inference-grid"></div>
         </div>
       </section>
 
-      <aside class="right-column">
-        <div class="panel dossier-panel">
+      <aside class="side-column">
+        <div class="panel profile-panel">
           <div class="panel-header">
             <div>
               <div class="eyebrow">Private profile</div>
               <h3>Maya’s dossier</h3>
             </div>
-            <div class="pill muted">CONFIDENTIAL</div>
+            <div class="pill light">Confidential</div>
           </div>
 
-          <div class="profile-top">
-            <div class="profile-avatar">
-              <div class="avatar-face">◕</div>
+          <div class="profile-card">
+            <div class="avatar-wrap">
+              <div class="avatar">◕</div>
             </div>
-            <div>
+            <div class="profile-copy">
               <div class="profile-name">Maya Quinn</div>
               <div class="profile-meta">34 • Portland, OR</div>
             </div>
           </div>
 
           <div id="dossier-fields" class="dossier-fields"></div>
-          <div class="completion-row">
+
+          <div class="profile-footer">
             <span>Profile completion</span>
             <strong id="profile-percent">0%</strong>
           </div>
@@ -140,19 +141,17 @@
               <div class="eyebrow">Attention</div>
               <h3>Hot spots</h3>
             </div>
-            <div class="pill" id="attention-label">LOW</div>
+            <div class="pill" id="attention-pill">LOW</div>
           </div>
 
-          <div class="attention-meter">
-            <div class="attention-track">
-              <div id="attention-bar" class="attention-fill"></div>
-            </div>
+          <div class="attention-track">
+            <div class="attention-fill" id="attention-fill"></div>
           </div>
 
           <div class="hotspot-box">
             <div class="hotspot-label">Current target</div>
-            <div id="hotspot-name" class="hotspot-name">No major attention spike</div>
-            <div id="hotspot-desc" class="hotspot-desc">The platform is quiet.</div>
+            <div class="hotspot-name" id="hotspot-name">No current spike</div>
+            <div class="hotspot-desc" id="hotspot-desc">The platform is quiet.</div>
           </div>
         </div>
 
@@ -162,7 +161,7 @@
               <div class="eyebrow">Distraction</div>
               <h3>Response tools</h3>
             </div>
-            <div class="pill muted" id="distraction-pill">Ready</div>
+            <div class="pill light" id="distraction-pill">Ready</div>
           </div>
 
           <div id="distraction-list" class="distraction-list"></div>
@@ -177,22 +176,22 @@
           </div>
 
           <div class="pressure-row">
-            <div class="pressure-label">Regulator</div>
-            <div class="pressure-state" id="regulator-state">DORMANT</div>
+            <span>Regulator</span>
+            <strong id="regulator-label">Dormant</strong>
           </div>
           <div class="mini-track">
-            <div id="regulator-bar" class="mini-fill regulator"></div>
+            <div class="mini-fill regulator" id="regulator-bar"></div>
           </div>
 
           <div class="pressure-row">
-            <div class="pressure-label">Press</div>
-            <div class="pressure-state" id="press-state">QUIET</div>
+            <span>Press</span>
+            <strong id="press-label">Quiet</strong>
           </div>
           <div class="mini-track">
-            <div id="press-bar" class="mini-fill press"></div>
+            <div class="mini-fill press" id="press-bar"></div>
           </div>
 
-          <div id="pressure-summary" class="pressure-summary">
+          <div class="pressure-summary" id="pressure-summary">
             No one is watching yet.
           </div>
         </div>
@@ -204,6 +203,7 @@
               <h3>Signals</h3>
             </div>
           </div>
+
           <div id="event-feed" class="event-feed"></div>
         </div>
       </aside>
@@ -213,14 +213,12 @@
   <div id="toast" class="toast" aria-live="polite"></div>
   <div id="token-layer" aria-hidden="true"></div>
 
-  <div id="result-panel" class="result-panel hidden" role="dialog" aria-modal="true" aria-labelledby="result-title">
+  <div id="result-panel" class="result-panel hidden">
     <div class="result-card">
       <div class="result-badge" id="result-badge">Outcome</div>
-      <h2 id="result-title">Quarter ended</h2>
+      <h2 id="result-title">Quarter complete</h2>
       <p id="result-summary" class="result-summary"></p>
-
       <div id="result-dossier" class="result-dossier"></div>
-
       <button id="restart-button" class="primary-button">Play again</button>
     </div>
   </div>
