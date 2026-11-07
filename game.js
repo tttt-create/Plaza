@@ -1,573 +1,717 @@
 (() => {
   'use strict';
 
-  const TARGET = 100_000_000_000;
-  const DURATION = 480;
+  const TARGET_REVENUE = 100_000_000_000;
+  const DURATION_SECONDS = 480;
 
-  const dataNames = {
-    location: 'Location',
-    contacts: 'Contacts',
-    dwell: 'Dwell time',
-    typing: 'Typing cadence',
-    purchase: 'Purchase history',
-    photo: 'Photo metadata',
-    night: 'Night usage',
-    motion: 'Accelerometer',
-    voice: 'Voice',
-    search: 'Search history'
+  const dataMeta = {
+    location:{label:'Location', emoji:'📍', tone:'green'},
+    contacts:{label:'Contacts', emoji:'👥', tone:'blue'},
+    dwell:{label:'Dwell', emoji:'⏱️', tone:'amber'},
+    typing:{label:'Typing', emoji:'⌨️', tone:'purple'},
+    purchase:{label:'Purchases', emoji:'🛒', tone:'green'},
+    photo:{label:'Photos', emoji:'📸', tone:'purple'},
+    night:{label:'Night', emoji:'🌙', tone:'blue'},
+    motion:{label:'Motion', emoji:'📳', tone:'amber'},
+    voice:{label:'Voice', emoji:'🎙️', tone:'purple'},
+    search:{label:'Search', emoji:'🔎', tone:'green'}
+  };
+
+  const fieldLabels = {
+    commute:'Commute',
+    sleep:'Sleep',
+    health:'Health',
+    relationships:'Relationships',
+    finances:'Finances'
   };
 
   const levers = [
-    {id:'feed',name:'Neighborhood feed',icon:'⌖',description:'Local recommendations, tuned to routine.',data:'location',rate:2.3,risk:.055},
-    {id:'social',name:'Contact sync',icon:'⌘',description:'Find the people users already know.',data:'contacts',rate:1.8,risk:.045},
-    {id:'watch',name:'Infinite watch',icon:'◷',description:'Keep the next clip impossibly relevant.',data:'dwell',rate:2.8,risk:.07},
-    {id:'keyboard',name:'Smart keyboard',icon:'⌨',description:'Improve suggestions before they are typed.',data:'typing',rate:1.4,risk:.035},
-    {id:'shop',name:'Shoppable moments',icon:'◇',description:'Make the impulse purchasable.',data:'purchase',rate:2,risk:.05},
-    {id:'camera',name:'Camera cloud',icon:'▧',description:'Back up every photo. Keep the metadata.',data:'photo',rate:1.6,risk:.055,unlock:'relationship'},
-    {id:'night',name:'Quiet hours insights',icon:'☾',description:'There is no such thing as off-peak.',data:'night',rate:1.5,risk:.04,unlock:'insomnia'},
-    {id:'motion',name:'Motion context',icon:'⌁',description:'A little movement completes the picture.',data:'motion',rate:1.5,risk:.065,unlock:'commute'},
-    {id:'voice',name:'Voice assistant',icon:'◖',description:'Helpful, even when nobody asked.',data:'voice',rate:1.7,risk:.075,unlock:'household'},
-    {id:'search',name:'Search personalization',icon:'⌕',description:'Anticipate the question behind the question.',data:'search',rate:2.2,risk:.06,unlock:'pregnancy'},
-    {id:'dm',name:'DM mining',icon:'✉',description:'Conversation context, for a more connected experience.',data:'contacts',rate:2.5,risk:.09,unlock:'socialgraph'},
-    {id:'routine',name:'Routine nudges',icon:'◷',description:'A gentle reminder at exactly the right time.',data:'location',rate:2.4,risk:.07,unlock:'routine'},
-    {id:'loyalty',name:'Loyalty loops',icon:'↻',description:'Make the familiar choice feel inevitable.',data:'purchase',rate:3.1,risk:.08,unlock:'loyalty'},
-    {id:'family',name:'Family graph',icon:'⌂',description:'Map the connections behind every household.',data:'contacts',rate:2.8,risk:.085,unlock:'caregiver'}
+    {id:'feed', name:'Neighborhood feed', icon:'📍', data:'location', rate:2.4, risk:0.055, desc:'Local recs, tuned to routine.'},
+    {id:'social', name:'Contact sync', icon:'👥', data:'contacts', rate:1.8, risk:0.045, desc:'Find the people she already knows.'},
+    {id:'watch', name:'Infinite watch', icon:'⏱️', data:'dwell', rate:2.8, risk:0.07, desc:'Keep the next clip impossible to ignore.'},
+    {id:'keyboard', name:'Smart keyboard', icon:'⌨️', data:'typing', rate:1.4, risk:0.035, desc:'Predict her next sentence before she types it.'},
+    {id:'shop', name:'Shoppable moments', icon:'🛒', data:'purchase', rate:2.0, risk:0.05, desc:'Turn impulse into conversion.'},
+    {id:'camera', name:'Camera cloud', icon:'📸', data:'photo', rate:1.6, risk:0.055, desc:'Archive the images and the metadata.'},
+    {id:'night', name:'Quiet hours insights', icon:'🌙', data:'night', rate:1.5, risk:0.04, desc:'The platform never sleeps.'},
+    {id:'motion', name:'Motion context', icon:'📳', data:'motion', rate:1.5, risk:0.065, desc:'Movement adds up to motive.'},
+    {id:'voice', name:'Voice assistant', icon:'🎙️', data:'voice', rate:1.7, risk:0.075, desc:'Always listening. Very helpful.'},
+    {id:'search', name:'Search personalization', icon:'🔎', data:'search', rate:2.2, risk:0.06, desc:'Ask the question behind the question.'}
   ];
 
-  const inferences = [
-    {id:'home',name:'Home address',recipe:{location:20,night:12},effect:'Unlocks Neighborhood feed · +12% yield',field:'commute',text:'Leaves home at 7:40. Gets back just after 6.',boost:1.12},
-    {id:'insomnia',name:'Insomnia',recipe:{night:20,dwell:20},effect:'Unlocks Quiet hours insights · +12% yield',lever:'night',field:'sleep',text:'Often still scrolling at 2:13 a.m.',boost:1.12},
-    {id:'pregnancy',name:'Pregnancy likelihood',recipe:{purchase:18,search:18,location:12},effect:'Unlocks Search personalization · +55% yield',lever:'search',field:'health',text:'Recently searched for ginger tea and prenatal vitamins.',boost:1.55,wrong:true},
-    {id:'relationship',name:'Relationship status',recipe:{photo:18,contacts:18},effect:'Unlocks Camera cloud · +16% yield',lever:'camera',field:'relationships',text:'There are two toothbrushes in the bathroom. Probably.',boost:1.16},
-    {id:'jobloss',name:'Job loss risk',recipe:{search:16,location:12,dwell:16},effect:'+18% revenue yield',field:'finances',text:'Searching “how long does severance last” on weekdays.',boost:1.18},
-    {id:'commute',name:'Commute pattern',recipe:{location:24,motion:14},effect:'Unlocks Motion context · +14% yield',lever:'motion',field:'commute',text:'Takes the 14 bus. Avoids the stop by the bridge.',boost:1.14},
-    {id:'socialgraph',name:'Social graph',recipe:{contacts:25,typing:16},effect:'Unlocks DM mining · +14% yield',lever:'dm',field:'relationships',text:'Three people get a reply within one minute. One waits all day.',boost:1.14},
-    {id:'household',name:'Household composition',recipe:{voice:12,purchase:18,location:18},effect:'Unlocks Voice assistant · +16% yield',lever:'voice',field:'finances',text:'Buys oat milk for one. The family-size cereal is inconclusive.',boost:1.16,wrong:true},
-    {id:'routine',name:'Weekly routine',recipe:{location:18,dwell:18,night:12},effect:'Unlocks Routine nudges · +12% yield',lever:'routine',field:'commute',text:'Wednesday is groceries. Thursday is a little less predictable.',boost:1.12},
-    {id:'anxiety',name:'Anxiety signal',recipe:{typing:22,search:18},effect:'+20% revenue yield',field:'health',text:'Types a message, deletes it, then searches for the right words.',boost:1.2},
-    {id:'financial',name:'Financial stress',recipe:{purchase:22,search:18},effect:'+22% revenue yield',field:'finances',text:'Checks the balance before ordering, then orders anyway.',boost:1.22},
-    {id:'relationshiprisk',name:'Relationship risk',recipe:{photo:15,contacts:22,night:12},effect:'Unlocks DM mining · +15% yield',lever:'dm',field:'relationships',text:'A new name appears often after midnight.',boost:1.15,wrong:true,exclusive:'relationship-choice'},
-    {id:'loyalty',name:'Brand loyalty',recipe:{purchase:20,dwell:20,typing:12},effect:'Unlocks Loyalty loops · +20% yield',lever:'loyalty',field:'finances',text:'Keeps choosing the same blue package. We call it trust.',boost:1.2,exclusive:'relationship-choice'},
-    {id:'health',name:'Health event likelihood',recipe:{search:22,night:15,location:14},effect:'+25% revenue yield',field:'health',text:'Looks up a clinic, then looks up the clinic hours.',boost:1.25,exclusive:'health-choice'},
-    {id:'caregiver',name:'Caregiver status',recipe:{location:20,contacts:20,voice:14},effect:'Unlocks Family graph · +22% yield',lever:'family',field:'relationships',text:'A pharmacy pickup is always on someone else’s route.',boost:1.22,wrong:true,exclusive:'health-choice'}
+  const inferenceRecipes = [
+    {id:'home', name:'Home address', recipe:[['location',3],['night',2]], field:'commute', text:'Leaves home at 7:40. Arrives late on Thursdays.', wrong:false, boost:1.12, emoji:'🏠'},
+    {id:'insomnia', name:'Insomnia', recipe:[['night',2],['dwell',2]], field:'sleep', text:'Sleeps in fits, wakes around 2:13 a.m., and checks the feed again.', wrong:false, boost:1.12, emoji:'😵'},
+    {id:'pregnancy', name:'Pregnancy likelihood', recipe:[['purchase',2],['search',2],['location',2]], field:'health', text:'Recently searched “ginger tea”, “prenatal vitamins”, and “how long does it take to feel better”.', wrong:true, boost:1.55, emoji:'🤰'},
+    {id:'relationship', name:'Relationship status', recipe:[['photo',2],['contacts',2]], field:'relationships', text:'There are two toothbrushes in the bathroom. Probably.', wrong:false, boost:1.16, emoji:'💑'},
+    {id:'jobloss', name:'Job loss risk', recipe:[['search',2],['location',2],['dwell',2]], field:'finances', text:'Looks up severance advice on weekdays and updates a spreadsheet by hand.', wrong:false, boost:1.18, emoji:'💸'},
+    {id:'commute', name:'Commute pattern', recipe:[['location',3],['motion',2]], field:'commute', text:'Takes the 14 bus. Avoids the bridge stop by habit.', wrong:false, boost:1.14, emoji:'🚍'},
+    {id:'socialgraph', name:'Social graph', recipe:[['contacts',3],['typing',2]], field:'relationships', text:'The same three names reply within a minute. One person waits all day.', wrong:false, boost:1.14, emoji:'🧠'},
+    {id:'household', name:'Household composition', recipe:[['voice',2],['purchase',2],['location',2]], field:'finances', text:'Buys oat milk for one person and cereal for five. There are probably visitors.', wrong:true, boost:1.16, emoji:'🏡'},
+    {id:'routine', name:'Weekly routine', recipe:[['location',2],['dwell',2],['night',2]], field:'commute', text:'Wednesday is grocery night. Thursday is where the routine breaks down.', wrong:false, boost:1.12, emoji:'📆'},
+    {id:'anxiety', name:'Anxiety signal', recipe:[['typing',2],['search',2]], field:'health', text:'Types a message, deletes it, then searches for the right words.', wrong:false, boost:1.20, emoji:'😬'},
+    {id:'financial', name:'Financial stress', recipe:[['purchase',2],['search',2]], field:'finances', text:'Checks the checking account before ordering, then buys anyway.', wrong:false, boost:1.22, emoji:'📉'},
+    {id:'relationshiprisk', name:'Relationship risk', recipe:[['photo',2],['contacts',2],['night',2]], field:'relationships', text:'A new name shows up after midnight more often than the others.', wrong:true, boost:1.15, emoji:'⚠️', exclusive:'relationship-choice'},
+    {id:'loyalty', name:'Brand loyalty', recipe:[['purchase',2],['dwell',2],['typing',2]], field:'finances', text:'Always chooses the same blue package. The algorithm calls it trust.', wrong:false, boost:1.2, emoji:'📦', exclusive:'relationship-choice'},
+    {id:'health', name:'Health event likelihood', recipe:[['search',2],['night',2],['location',2]], field:'health', text:'Looks up clinic hours, then looks up the clinic address.', wrong:false, boost:1.25, emoji:'🩺', exclusive:'health-choice'},
+    {id:'caregiver', name:'Caregiver status', recipe:[['location',2],['contacts',2],['voice',2]], field:'relationships', text:'Someone else’s pharmacy pickup is always on her route.', wrong:true, boost:1.22, emoji:'🧑‍⚕️', exclusive:'health-choice'}
   ];
 
-  const fields = [
-    {id:'commute',label:'COMMUTE'},
-    {id:'sleep',label:'SLEEP'},
-    {id:'health',label:'HEALTH'},
-    {id:'relationships',label:'RELATIONSHIPS'},
-    {id:'finances',label:'FINANCES'}
+  const tutorialSteps = [
+    'The Board wants the first signal: turn on <strong>Neighborhood feed</strong>.',
+    'Nice. The platform is harvesting <strong>📍 location</strong> and <strong>🌙 night</strong> data.',
+    'Now make one inference. You need enough data to unlock it.',
+    'Every learning fills in Maya’s profile. Some guesses are wrong. That is okay.',
+    'Keep growth high, but keep awareness low. The Board is watching.'
   ];
 
-  const initial = () => ({
-    seconds:0,
+  const headlineBank = [
+    'No one is watching yet.',
+    'Maya keeps to herself — for now.',
+    'A quiet record is a useful record.',
+    'The platform is quietly outperforming expectations.',
+    'A small story is becoming a bigger one.',
+    'The regulator is taking notes.',
+    'The press has started asking questions.',
+    'This quarter is becoming expensive.'
+  ];
+
+  const introAudio = {
+    data:'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=',
+    win:'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=',
+    alert:'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='
+  };
+
+  const state = {
+    started:false,
+    paused:false,
+    ended:false,
+    onlyOnce:true,
+    currentStep:0,
+    second:0,
     users:10000,
     revenue:0,
     awareness:8,
-    inventory:Object.fromEntries(Object.keys(dataNames).map(key=>[key,0])),
+    inventory:Object.fromEntries(Object.keys(dataMeta).map(key => [key,0])),
     active:new Set(),
     unlocked:new Set(),
     unlockedLevers:new Set(['feed','social','watch','keyboard','shop']),
     dossier:{},
     wrong:new Set(),
-    exclusive:{},
-    paused:false,
-    ended:false,
+    events:[],
+    totalInferences:0,
     regulatorFired:false,
     regulatorCooldown:0,
     forcedOff:null,
     press:0,
+    rebrandUsed:false,
     lobbying:0,
     privacy:0,
-    rebrandUsed:false,
-    events:[]
-  });
-
-  let s = initial();
-  const $ = id => document.getElementById(id);
-  const fmt = n => new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Math.floor(n));
-
-  const money = n => {
-    if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
-    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
-    if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
-    if (n >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
-    return '$' + fmt(n);
+    exclusive:{},
+    headlineIndex:0,
+    audioEnabled:true
   };
 
-  const fmtRate = n => n >= 1e9
-    ? '$' + (n / 1e9).toFixed(1) + 'B'
-    : n >= 1e6
-      ? '$' + (n / 1e6).toFixed(1) + 'M'
-      : '$' + fmt(n);
+  const els = {
+    introScreen: document.getElementById('intro-screen'),
+    gameScreen: document.getElementById('game-screen'),
+    startButton: document.getElementById('start-button'),
+    tutorialBox: document.getElementById('tutorial-box'),
+    leverList: document.getElementById('lever-list'),
+    inventory: document.getElementById('inventory'),
+    inferenceList: document.getElementById('inference-list'),
+    usersValue: document.getElementById('users-value'),
+    usersRate: document.getElementById('users-rate'),
+    revenueValue: document.getElementById('revenue-value'),
+    revenueRate: document.getElementById('revenue-rate'),
+    revenueBar: document.getElementById('revenue-bar'),
+    awarenessValue: document.getElementById('awareness-value'),
+    awarenessStatus: document.getElementById('awareness-status'),
+    awarenessBar: document.getElementById('awareness-bar'),
+    regulatorState: document.getElementById('regulator-state'),
+    regulatorBar: document.getElementById('regulator-bar'),
+    pressState: document.getElementById('press-state'),
+    pressBar: document.getElementById('press-bar'),
+    headlineBox: document.getElementById('headline-box'),
+    eventFeed: document.getElementById('event-feed'),
+    endScreen: document.getElementById('end-screen'),
+    endTitle: document.getElementById('end-title'),
+    endSummary: document.getElementById('end-summary'),
+    endBadge: document.getElementById('end-badge'),
+    endDossier: document.getElementById('end-dossier'),
+    restartButton: document.getElementById('restart-button'),
+    revealPanel: document.getElementById('reveal-panel'),
+    toast: document.getElementById('toast'),
+    tokenLayer: document.getElementById('token-layer'),
+    activeCount: document.getElementById('active-count'),
+    inferenceCount: document.getElementById('inference-count'),
+    suspicionFace: document.getElementById('suspicion-face'),
+    dossierFields: document.getElementById('dossier-fields'),
+    pauseButton: document.getElementById('pause-button'),
+    muteButton: document.getElementById('mute-button')
+  };
 
-  function log(message) {
-    s.events.unshift({t:s.seconds,message});
-    s.events = s.events.slice(0,5);
-    renderEvents();
+  let tickLoop;
+
+  function formatMoney(amount) {
+    if (amount >= 1e12) return '$' + (amount / 1e12).toFixed(2) + 'T';
+    if (amount >= 1e9) return '$' + (amount / 1e9).toFixed(2) + 'B';
+    if (amount >= 1e6) return '$' + (amount / 1e6).toFixed(1) + 'M';
+    if (amount >= 1e3) return '$' + (amount / 1e3).toFixed(0) + 'K';
+    return '$' + Math.floor(amount);
   }
 
-  function toast(message) {
-    const el = $('toast');
+  function formatNumber(value) {
+    return new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Math.floor(value));
+  }
+
+  function beep(type='data') {
+    if (!state.audioEnabled) return;
+    const audio = new Audio(introAudio[type] || introAudio.data);
+    audio.volume = type === 'alert' ? 0.5 : 0.25;
+    audio.play().catch(() => {});
+  }
+
+  function showToast(message) {
+    const el = els.toast;
     el.textContent = message;
-    el.classList.add('show');
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => el.classList.remove('show'),2100);
+    el.classList.add('visible');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => el.classList.remove('visible'), 1800);
   }
 
-  function recipeReady(inference) {
-    return Object.entries(inference.recipe).every(([key,amount]) => s.inventory[key] >= amount);
+  function updateTutorial() {
+    const step = tutorialSteps[Math.min(state.currentStep, tutorialSteps.length - 1)];
+    els.tutorialBox.innerHTML = step || 'The Board is waiting.';
+    els.tutorialBox.classList.add('flash');
+    setTimeout(() => els.tutorialBox.classList.remove('flash'), 220);
+  }
+
+  function createToken(x, y, token) {
+    const el = document.createElement('div');
+    el.className = 'token';
+    el.textContent = token;
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    el.style.setProperty('--dx', `${(Math.random() * 90 - 45).toFixed(1)}px`);
+    el.style.setProperty('--dy', `${(-90 - Math.random() * 80).toFixed(1)}px`);
+    els.tokenLayer.appendChild(el);
+    setTimeout(() => el.remove(), 1100);
+  }
+
+  function emitTokensFromLever(id) {
+    const button = document.querySelector(`.lever-card[data-id="${id}"] .toggle`);
+    if (!button) return;
+    const rect = button.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const tokenMap = {
+      feed:'📍', social:'👥', watch:'⏱️', keyboard:'⌨️', shop:'🛒',
+      camera:'📸', night:'🌙', motion:'📳', voice:'🎙️', search:'🔎'
+    };
+    const token = tokenMap[id] || '✨';
+    createToken(x, y, token);
+    beep('data');
   }
 
   function renderLevers() {
-    const list = $('lever-list');
-    list.innerHTML = '';
+    els.leverList.innerHTML = '';
 
-    for (const lever of levers) {
-      if (!s.unlockedLevers.has(lever.id)) continue;
+    levers.forEach(lever => {
+      const active = state.active.has(lever.id);
+      const card = document.createElement('div');
+      card.className = `lever-card ${active ? 'active' : ''}`;
+      card.dataset.id = lever.id;
 
-      const on = s.active.has(lever.id);
-      const card = document.createElement('article');
-      card.className = `lever-card${on ? ' active' : ''}`;
       card.innerHTML = `
-        <div class="lever-top">
-          <span class="lever-icon">${lever.icon}</span>
+        <div class="top">
+          <div class="lever-icon">${lever.icon}</div>
           <div class="lever-copy">
-            <h3>${lever.name}</h3>
-            <p>${lever.description}</p>
+            <h4>${lever.name}</h4>
+            <p>${lever.desc}</p>
           </div>
-          <button class="lever-action"
-            aria-label="${on ? 'Turn off' : 'Turn on'} ${lever.name}"
-            aria-pressed="${on}"
-            ${s.forcedOff === lever.id || s.ended ? 'disabled' : ''}></button>
+          <button class="toggle" aria-label="${active ? 'Disable' : 'Enable'} ${lever.name}" data-id="${lever.id}"></button>
         </div>
-        <div class="lever-bottom">
-          <span class="lever-yield">+${fmtRate(lever.rate * 1e7)}/s · ${dataNames[lever.data]}</span>
-          <span class="lever-risk">+${lever.risk.toFixed(2)} A/s</span>
+        <div class="lever-foot">
+          <span class="yield">+${formatMoney(lever.rate * 1e6)}/s</span>
+          <span class="risk">+${lever.risk.toFixed(2)} A/s</span>
         </div>
       `;
 
-      card.querySelector('button').onclick = () => toggle(lever.id);
-      list.append(card);
-    }
+      card.querySelector('.toggle').addEventListener('click', () => {
+        toggleLever(lever.id);
+      });
 
-    $('active-count').textContent = `${s.active.size} ACTIVE`;
+      els.leverList.appendChild(card);
+    });
+
+    els.activeCount.textContent = `${state.active.size} ACTIVE`;
   }
 
   function renderInventory() {
-    const grid = $('data-grid');
-    grid.innerHTML = '';
+    els.inventory.innerHTML = '';
 
-    for (const [id,name] of Object.entries(dataNames)) {
-      const cell = document.createElement('div');
-      cell.className = 'data-cell';
-      cell.innerHTML = `<span>${name}</span><b>${fmt(s.inventory[id])}</b>`;
-      grid.append(cell);
-    }
+    Object.entries(dataMeta).forEach(([key, meta]) => {
+      const item = document.createElement('div');
+      item.className = 'inventory-item';
+      item.innerHTML = `
+        <span class="inventory-token">${meta.emoji}</span>
+        <div class="inventory-value">${formatNumber(state.inventory[key])}</div>
+        <span class="inventory-label">${meta.label}</span>
+      `;
+      els.inventory.appendChild(item);
+    });
+  }
+
+  function inferenceReady(inf) {
+    return inf.recipe.every(([key, amount]) => state.inventory[key] >= amount);
+  }
+
+  function recipeString(inf) {
+    return inf.recipe.map(([key, amount]) => `${dataMeta[key].emoji} ${amount}`).join(' + ');
   }
 
   function renderInferences() {
-    const grid = $('inference-grid');
-    grid.innerHTML = '';
+    els.inferenceList.innerHTML = '';
 
-    for (const inference of inferences) {
-      const unlocked = s.unlocked.has(inference.id);
-      const excluded = inference.exclusive &&
-        s.exclusive[inference.exclusive] &&
-        s.exclusive[inference.exclusive] !== inference.id;
-      const ready = recipeReady(inference);
-      const card = document.createElement('article');
-      card.className = `inference-card ${unlocked ? 'unlocked' : ready ? 'available' : 'locked'}`;
+    inferenceRecipes.forEach(inf => {
+      const ready = inferenceReady(inf);
+      const unlocked = state.unlocked.has(inf.id);
+      const blocked = inf.exclusive && state.exclusive[inf.exclusive] && state.exclusive[inf.exclusive] !== inf.id;
 
-      let content;
+      const card = document.createElement('div');
+      card.className = `inference-card ${unlocked ? 'unlocked' : ready ? 'ready' : 'locked'}`;
 
       if (unlocked) {
-        content = `<div class="inference-effect">${inference.effect}</div>`;
-      } else if (excluded) {
-        content = '<div class="inference-recipe">MUTUALLY EXCLUSIVE</div>';
-      } else {
-        const held = Object.entries(inference.recipe)
-          .filter(([key]) => s.inventory[key] > 0);
-        const recipe = held.length
-          ? Object.entries(inference.recipe)
-              .map(([key,amount]) => `${dataNames[key]} ${amount}`)
-              .join(' + ')
-          : `REQUIRES: ${Object.keys(inference.recipe).length} UNKNOWN`;
-
-        content = `
-          <div class="inference-recipe">${recipe}</div>
-          <button class="infer-button" ${!ready || s.ended ? 'disabled' : ''}>
-            ${ready ? 'GENERATE INFERENCE' : 'INSUFFICIENT DATA'}
-          </button>
+        card.innerHTML = `
+          <div class="inference-head">
+            <span>${inf.emoji}</span>
+            <span>Leaked</span>
+          </div>
+          <div class="inference-name">${inf.name}</div>
+          <div class="inference-recipe">${inf.text}</div>
         `;
+      } else if (blocked) {
+        card.innerHTML = `
+          <div class="inference-head">
+            <span>🚫</span>
+            <span>Blocked</span>
+          </div>
+          <div class="inference-name">Unknown</div>
+          <div class="inference-recipe">Mutually exclusive branch</div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="inference-head">
+            <span>${inf.emoji}</span>
+            <span>${ready ? 'Ready' : 'Locked'}</span>
+          </div>
+          <div class="inference-name">${inf.name}</div>
+          <div class="inference-recipe">${recipeString(inf)}</div>
+          <button class="inference-button ${ready ? 'ready' : ''}" ${ready ? '' : 'disabled'}>Learn</button>
+        `;
+        const button = card.querySelector('.inference-button');
+        if (button) button.addEventListener('click', () => craftInference(inf.id));
       }
 
-      card.innerHTML = `
-        <div class="inference-name">
-          <span>${unlocked ? inference.name : '▰ ▰ ▰'}</span>
-          <span class="state">${unlocked ? 'COMMITTED' : excluded ? 'EXCLUDED' : ready ? 'READY' : 'LOCKED'}</span>
-        </div>
-        ${content}
-      `;
+      els.inferenceList.appendChild(card);
+    });
 
-      const button = card.querySelector('button');
-      if (button) button.onclick = () => craft(inference);
-      grid.append(card);
-    }
-
-    $('inference-count').textContent = `${s.unlocked.size} / 15`;
+    els.inferenceCount.textContent = `${state.unlocked.size} / ${inferenceRecipes.length}`;
   }
 
   function renderDossier() {
-    const container = $('dossier-fields');
-    container.innerHTML = '';
+    els.dossierFields.innerHTML = '';
 
-    for (const field of fields) {
-      const value = s.dossier[field.id];
+    Object.entries(fieldLabels).forEach(([key, label]) => {
+      const value = state.dossier[key];
       const row = document.createElement('div');
-      row.className = 'dossier-field';
-      row.innerHTML = `
-        <span class="field-name">${field.label}</span>
-        <span class="field-value ${value ? '' : 'blank'}">
-          ${value || '— — —'}
-          ${value && s.wrong.has(field.id) ? '<small class="wrong-note">LOW CONFIDENCE · MODEL OUTPUT</small>' : ''}
-        </span>
-      `;
-      container.append(row);
-    }
+      row.className = 'dossier-row';
 
-    $('profile-percent').textContent = `${Math.round(s.unlocked.size / 15 * 100)}%`;
+      row.innerHTML = `
+        <div class="dossier-key">${label}</div>
+        <div class="dossier-value ${value ? (state.wrong.has(key) ? 'wrong' : '') : 'empty'}">
+          ${value || '…'}
+          ${value && state.wrong.has(key) ? '<span class=\"warning-note\">Low confidence • model output</span>' : ''}
+        </div>
+      `;
+
+      els.dossierFields.appendChild(row);
+    });
   }
 
   function renderEvents() {
-    const feed = $('event-feed');
-    if (!feed) return;
-
-    feed.innerHTML = s.events.map(event => `
-      <div class="event">
-        <time>${String(Math.floor(event.t / 60)).padStart(2,'0')}:${String(event.t % 60).padStart(2,'0')}</time>
-        ${event.message}
-      </div>
-    `).join('') || '<div class="event">Awaiting first measurable opportunity.</div>';
+    els.eventFeed.innerHTML = '';
+    state.events.slice(0,6).forEach(event => {
+      const row = document.createElement('div');
+      row.className = 'event-item';
+      row.innerHTML = `<strong>${event.time}</strong> ${event.text}`;
+      els.eventFeed.appendChild(row);
+    });
   }
 
-  function rates() {
-    const active = levers.filter(lever => s.active.has(lever.id));
-    const multiplier = [...s.unlocked].reduce((total,id) => {
-      return total * (inferences.find(item => item.id === id)?.boost || 1);
-    },1);
+  function currentRates() {
+    const active = levers.filter(l => state.active.has(l.id));
+    const mult = [...state.unlocked].reduce((total, id) => {
+      const inf = inferenceRecipes.find(item => item.id === id);
+      return total * (inf ? inf.boost : 1);
+    }, 1);
 
     return {
-      revenue: active.reduce((total,lever) => total + lever.rate,0) * 1e7 * multiplier,
-      users: active.reduce((total,lever) => total + lever.rate * 155,0)
+      users: active.reduce((total, lever) => total + lever.rate * 155, 0),
+      revenue: active.reduce((total, lever) => total + lever.rate, 0) * 1e7 * mult
     };
   }
 
-  function render() {
-    const left = Math.max(0,DURATION - s.seconds);
-    $('clock').textContent =
-      `${String(Math.floor(left / 60)).padStart(2,'0')}:${String(left % 60).padStart(2,'0')}`;
+  function setHeadline(text) {
+    const headline = document.querySelector('#headline-box .headline');
+    if (headline) headline.textContent = text;
+  }
 
-    $('users').textContent = fmt(s.users);
-    $('revenue').textContent = money(s.revenue);
+  function renderStats() {
+    const rates = currentRates();
 
-    const currentRates = rates();
-    $('user-growth').textContent = `+${fmt(currentRates.users)} / sec`;
-    $('revenue-rate').textContent = `+${fmtRate(currentRates.revenue)}/sec`;
-    $('revenue-percent').textContent = `${(s.revenue / TARGET * 100).toFixed(1)}%`;
-    $('revenue-bar').style.width = `${Math.min(100,s.revenue / TARGET * 100)}%`;
-    $('awareness').textContent = Math.floor(s.awareness);
-    $('awareness-bar').style.width = `${Math.min(100,s.awareness)}%`;
+    els.usersValue.textContent = formatNumber(state.users);
+    els.usersRate.textContent = `+${formatNumber(rates.users)}/sec`;
+    els.revenueValue.textContent = formatMoney(state.revenue);
+    els.revenueRate.textContent = `+$${formatNumber(rates.revenue)}/sec`;
+    els.revenueBar.style.width = `${Math.min(100, (state.revenue / TARGET_REVENUE) * 100)}%`;
 
-    const status = $('awareness-status');
-    status.textContent = s.awareness >= 60 ? 'ELEVATED' : s.awareness >= 35 ? 'RISING' : 'LOW';
-    status.style.color = s.awareness >= 60
-      ? 'var(--red)'
-      : s.awareness >= 35
-        ? 'var(--amber)'
-        : 'var(--green)';
+    els.awarenessValue.textContent = Math.floor(state.awareness);
+    els.awarenessStatus.textContent = state.awareness >= 60 ? 'ELEVATED' : state.awareness >= 35 ? 'RISING' : 'LOW';
+    els.awarenessBar.style.width = `${Math.min(100, state.awareness)}%`;
 
-    $('regulator-bar').style.width = `${Math.min(100,s.awareness / 60 * 100)}%`;
-    $('regulator-label').textContent = s.regulatorFired
-      ? (s.regulatorCooldown > 0 ? 'ACTIVE' : 'COOLED DOWN')
-      : s.awareness >= 60
-        ? 'INVESTIGATING'
-        : 'DORMANT';
+    els.regulatorState.textContent = state.regulatorFired ? (state.regulatorCooldown > 0 ? 'ACTIVE' : 'COOLED') : 'DORMANT';
+    els.regulatorBar.style.width = `${Math.min(100, state.awareness / 60 * 100)}%`;
 
-    $('regulator-copy').textContent = s.forcedOff
-      ? `${levers.find(lever => lever.id === s.forcedOff)?.name || 'A lever'} offline · ${Math.ceil(s.regulatorCooldown)} sec remaining.`
-      : 'Investigation begins at 60 awareness.';
+    els.pressState.textContent = state.press >= 75 ? 'PUBLISHING' : state.press >= 40 ? 'HUNTING' : 'QUIET';
+    els.pressBar.style.width = `${Math.min(100, state.press)}%`;
 
-    $('press-bar').style.width = `${Math.min(100,s.press)}%`;
-    $('press-label').textContent = s.press >= 75
-      ? 'PUBLISHING'
-      : s.press >= 40
-        ? 'ASKING QUESTIONS'
-        : 'QUIET';
+    const suspicion = Math.min(5, Math.floor(state.awareness / 20));
+    const faces = ['◕', '◔', '◑', '◐', '☹'];
+    els.suspicionFace.textContent = faces[suspicion] || '◕';
 
-    $('press-copy').textContent = s.press >= 75
-      ? 'The story is going live.'
-      : s.press >= 40
-        ? 'A journalist is connecting the dots.'
-        : 'No calls from the press desk. For now.';
+    setHeadline(headlineBank[Math.min(state.headlineIndex, headlineBank.length - 1)]);
+  }
 
-    document.querySelectorAll('[data-counter]').forEach(button => {
-      const type = button.dataset.counter;
-      const cost = {lobbying:250e6,rebrand:1e9,privacy:500e6}[type];
+  function pushEvent(text) {
+    const time = `${String(Math.floor(state.second / 60)).padStart(2,'0')}:${String(state.second % 60).padStart(2,'0')}`;
+    state.events.unshift({time, text});
+    state.events = state.events.slice(0,6);
+    renderEvents();
+  }
 
-      button.disabled = s.ended ||
-        s.revenue < cost ||
-        (type === 'rebrand' && s.rebrandUsed) ||
-        (type === 'lobbying' && s.lobbying > 0) ||
-        (type === 'privacy' && s.privacy > 0);
+  function showReveal(inf) {
+    const panel = els.revealPanel;
+    panel.classList.remove('hidden');
+    panel.innerHTML = `
+      <div class="reveal-kicker">New learning</div>
+      <div class="reveal-emoji">${inf.emoji}</div>
+      <div class="reveal-title">${inf.name}</div>
+      <div class="reveal-copy">${inf.text}</div>
+    `;
+    setTimeout(() => panel.classList.add('hidden'), 2800);
+  }
+
+  function craftInference(id) {
+    const inf = inferenceRecipes.find(item => item.id === id);
+    if (!inf || state.unlocked.has(id) || state.ended) return;
+    if (inf.exclusive && state.exclusive[inf.exclusive]) return;
+
+    const ready = inferenceReady(inf);
+    if (!ready) return;
+
+    inf.recipe.forEach(([key, amount]) => {
+      state.inventory[key] -= amount;
     });
 
-    $('pause-button').textContent = s.paused ? '▶' : 'Ⅱ';
-    document.body.classList.toggle('paused',s.paused);
+    state.unlocked.add(id);
+    state.totalInferences += 1;
+
+    if (inf.exclusive) state.exclusive[inf.exclusive] = id;
+    if (inf.lever) state.unlockedLevers.add(inf.lever);
+
+    state.dossier[inf.field] = inf.text;
+    if (inf.wrong) state.wrong.add(inf.field);
+
+    showReveal(inf);
+    beep('win');
+    showToast(`${inf.name} learned`);
+    pushEvent(`<strong>${inf.name}</strong> learned from the signal pool.`);
+    updateTutorial();
+
+    if (state.currentStep < tutorialSteps.length - 1) {
+      state.currentStep += 1;
+    }
+  }
+
+  function toggleLever(id) {
+    if (state.ended) return;
+
+    const lever = levers.find(item => item.id === id);
+    if (!lever) return;
+
+    if (state.active.has(id)) {
+      state.active.delete(id);
+      pushEvent(`<strong>${lever.name}</strong> offline.`);
+    } else {
+      state.active.add(id);
+      emitTokensFromLever(id);
+      pushEvent(`<strong>${lever.name}</strong> online.`);
+    }
+
+    if (state.currentStep === 0 && state.active.size > 0) {
+      state.currentStep = 1;
+    }
 
     renderLevers();
+    renderStats();
     renderInventory();
+    renderInferences();
+    updateTutorial();
+  }
+
+  function buyCounter(type) {
+    const costMap = {
+      lobbying:250e6,
+      rebrand:1e9,
+      privacy:500e6
+    };
+
+    if (state.ended) return;
+    const cost = costMap[type];
+    if (state.revenue < cost) {
+      showToast('Not enough valuation.');
+      return;
+    }
+
+    if (type === 'rebrand' && state.rebrandUsed) {
+      showToast('Rebrand already used.');
+      return;
+    }
+
+    if (type === 'lobbying' && state.lobbying > 0) return;
+    if (type === 'privacy' && state.privacy > 0) return;
+
+    state.revenue -= cost;
+
+    if (type === 'rebrand') {
+      state.rebrandUsed = true;
+      state.awareness = Math.max(0, state.awareness - 25);
+      showToast('Rebrand deployed. Awareness resets.');
+      pushEvent('<strong>Rebrand</strong> scrubbed the narrative.');
+    }
+
+    if (type === 'lobbying') {
+      state.lobbying = 60;
+      showToast('Lobbying engaged.');
+      pushEvent('<strong>Lobbying</strong> slowed the regulator.');
+    }
+
+    if (type === 'privacy') {
+      state.privacy = 20;
+      showToast('Privacy theater engaged.');
+      pushEvent('<strong>Privacy theater</strong> paused growth.');
+    }
+
+    renderStats();
+  }
+
+  function stepGame() {
+    if (!state.started || state.paused || state.ended) return;
+
+    state.second += 1;
+
+    const rates = currentRates();
+    state.users += rates.users;
+    state.revenue += rates.revenue;
+
+    levers.forEach(lever => {
+      if (state.active.has(lever.id)) {
+        state.inventory[lever.data] += 1;
+      }
+    });
+
+    if (state.privacy > 0) {
+      state.privacy -= 1;
+    } else {
+      state.awareness += 0.04 + levers.filter(l => state.active.has(l.id)).reduce((sum, l) => sum + l.risk, 0);
+    }
+
+    if (state.lobbying > 0) state.lobbying -= 1;
+    if (state.press > 0) state.press += 0.08;
+
+    if (state.press >= 100) {
+      state.press = 0;
+      state.awareness += 15;
+      showToast('The press ran the story.');
+      beep('alert');
+      pushEvent('<strong>Press leak.</strong> Awareness jumps by 15.');
+    }
+
+    if (state.awareness >= 60 && !state.regulatorFired) {
+      state.regulatorFired = true;
+      state.regulatorCooldown = 30;
+
+      const actives = [...state.active];
+      if (actives.length) {
+        const target = actives[Math.floor(Math.random() * actives.length)];
+        state.active.delete(target);
+        state.forcedOff = target;
+        showToast('Regulator investigation: one lever shut off.');
+        pushEvent(`<strong>Regulator investigation.</strong> ${levers.find(l => l.id === target).name} is suspended.`);
+      }
+    }
+
+    if (state.forcedOff) {
+      state.regulatorCooldown -= 1;
+      if (state.regulatorCooldown <= 0) {
+        state.forcedOff = null;
+        pushEvent('<strong>Regulatory hold lifted.</strong>');
+      }
+    }
+
+    if (state.headlineIndex < headlineBank.length - 1) {
+      state.headlineIndex = Math.min(headlineBank.length - 1, Math.floor(state.awareness / 20));
+    }
+
+    if (state.currentStep === 2 && state.unlocked.size > 0) {
+      state.currentStep = 3;
+    }
+
+    if (state.revenue >= TARGET_REVENUE) {
+      endGame(true);
+      return;
+    }
+
+    if (state.awareness >= 100) {
+      endGame(false);
+      return;
+    }
+
+    if (state.second >= DURATION_SECONDS) {
+      endGame(false, true);
+      return;
+    }
+
+    renderStats();
+    renderInventory();
+    renderLevers();
     renderInferences();
     renderDossier();
     renderEvents();
   }
 
-  function toggle(id) {
-    if (s.ended || s.forcedOff === id) return;
+  function endGame(won, timedOut = false) {
+    state.ended = true;
+    state.paused = false;
+    els.gameScreen.classList.remove('active');
+    els.endScreen.classList.remove('hidden');
 
-    const lever = levers.find(item => item.id === id);
-    if (!lever) return;
-
-    if (s.active.has(id)) {
-      s.active.delete(id);
-      log(`<strong>${lever.name}</strong> paused. The dashboard refreshes.`);
-    } else {
-      s.active.add(id);
-      log(`<strong>${lever.name}</strong> deployed. ${dataNames[lever.data]} collection started.`);
-    }
-
-    render();
-  }
-
-  function craft(inference) {
-    if (
-      s.ended ||
-      s.unlocked.has(inference.id) ||
-      !recipeReady(inference) ||
-      (inference.exclusive && s.exclusive[inference.exclusive])
-    ) return;
-
-    for (const [key,amount] of Object.entries(inference.recipe)) {
-      s.inventory[key] -= amount;
-    }
-
-    s.unlocked.add(inference.id);
-
-    if (inference.exclusive) s.exclusive[inference.exclusive] = inference.id;
-    if (inference.lever) s.unlockedLevers.add(inference.lever);
-
-    s.dossier[inference.field] = inference.text;
-    if (inference.wrong) s.wrong.add(inference.field);
-
-    log(`<strong>${inference.name}</strong> inferred. ${inference.lever ? 'A new product lever is available.' : 'Yield model updated.'}`);
-    toast(`${inference.name} inferred · ${inference.lever ? 'new lever unlocked' : 'revenue yield improved'}`);
-    render();
-  }
-
-  function buyCountermeasure(type) {
-    if (s.ended) return;
-
-    const config = {
-      lobbying: {cost:250e6,time:60,message:'Lobbying engaged. Regulatory timelines remain flexible.'},
-      rebrand: {cost:1e9,message:'Rebrand deployed. Awareness reset by 25 points.'},
-      privacy: {cost:500e6,time:20,message:'Privacy Theater enabled. Growth paused for 20 seconds.'}
-    }[type];
-
-    if (s.revenue < config.cost) {
-      toast('Insufficient revenue. Consider running more levers.');
-      return;
-    }
-
-    if (type === 'rebrand' && s.rebrandUsed) {
-      toast('Rebrand already used this run.');
-      return;
-    }
-
-    if ((type === 'lobbying' && s.lobbying > 0) ||
-        (type === 'privacy' && s.privacy > 0)) return;
-
-    s.revenue -= config.cost;
-
-    if (type === 'rebrand') {
-      s.rebrandUsed = true;
-      s.awareness = Math.max(0,s.awareness - 25);
-    } else {
-      s[type] = config.time;
-    }
-
-    log(config.message);
-    toast(config.message);
-    render();
-  }
-
-  function step() {
-    if (s.paused || s.ended) return;
-
-    s.seconds += 1;
-
-    const currentRates = rates();
-    s.users += currentRates.users;
-    s.revenue += currentRates.revenue;
-
-    for (const lever of levers) {
-      if (s.active.has(lever.id)) s.inventory[lever.data] += 1;
-    }
-
-    const awarenessRate = .04 +
-      levers.filter(lever => s.active.has(lever.id))
-        .reduce((total,lever) => total + lever.risk,0);
-
-    if (s.privacy > 0) {
-      s.privacy -= 1;
-    } else {
-      s.awareness += awarenessRate;
-    }
-
-    if (s.lobbying > 0) s.lobbying -= 1;
-    if (s.lobbying === 0 && s.regulatorFired && s.regulatorCooldown === 0) {
-      s.regulatorFired = false;
-    }
-
-    s.press += .10 + s.active.size * .025;
-
-    if (s.press >= 100) {
-      s.press = 0;
-      s.awareness += 15;
-      log('<strong>Press inquiry published.</strong> Public awareness rises by 15.');
-      toast('A story just went live. Awareness +15.');
-    }
-
-    if (s.awareness >= 60 && !s.regulatorFired) {
-      s.regulatorFired = true;
-      s.regulatorCooldown = 30;
-
-      const active = [...s.active];
-      if (active.length) {
-        const shutDown = active[Math.floor(Math.random() * active.length)];
-        s.active.delete(shutDown);
-        s.forcedOff = shutDown;
-
-        log(`<strong>Regulator investigation.</strong> ${levers.find(lever => lever.id === shutDown).name} suspended for 30 seconds.`);
-        toast('Investigation opened · one lever suspended for 30 sec.');
-      } else {
-        log('<strong>Regulator investigation.</strong> No active levers to suspend.');
-      }
-    }
-
-    if (s.forcedOff) {
-      s.regulatorCooldown -= 1;
-
-      if (s.regulatorCooldown <= 0) {
-        s.forcedOff = null;
-        log('<strong>Regulatory hold lifted.</strong> The suspended lever is available again.');
-      }
-    }
-
-    if (s.revenue >= TARGET) {
-      endGame(true);
-      return;
-    }
-
-    if (s.awareness >= 100) {
-      endGame(false);
-      return;
-    }
-
-    if (s.seconds >= DURATION) {
-      endGame(false,true);
-      return;
-    }
-
-    if (s.seconds % 2 === 0) render();
-  }
-
-  function endGame(won,timedOut=false) {
-    s.ended = true;
-    s.paused = false;
-    document.body.classList.remove('paused');
-
-    $('result-mark').textContent = won ? '✓' : '×';
-    $('result-mark').style.color = won ? 'var(--green)' : 'var(--red)';
-    $('result-title').textContent = won
-      ? 'A person-shaped market, captured.'
+    const endBadge = won ? 'SUCCESS' : timedOut ? 'TIME UP' : 'FAILED';
+    const endTitle = won ? 'Maya is a market now.' : timedOut ? 'The quarter ended before the story arrived.' : 'The platform was deleted.';
+    const endSummary = won
+      ? 'The platform reached $100B valuation. Maya is complete, and the files still contain the wrong entries.'
       : timedOut
-        ? 'Quarter closed. The story is unfinished.'
-        : 'The platform has been emptied.';
+        ? 'The Board ran out of time. The dossier remains partial, but the story is still there.'
+        : 'Awareness hit 100. The platform crashed, and the users disappeared.';
 
-    $('result-eyebrow').textContent = won
-      ? 'VALUATION TARGET REACHED'
-      : timedOut
-        ? 'EIGHT-MINUTE REVIEW'
-        : 'MASS DELETION';
+    els.endBadge.textContent = endBadge;
+    els.endTitle.textContent = endTitle;
+    els.endSummary.textContent = endSummary;
 
-    $('result-lead').textContent = won
-      ? 'The $100B valuation was reached. Here is the completed dossier on Mara Ellison. The model was wrong about some things. It performed anyway.'
-      : timedOut
-        ? 'Eight minutes are up. The platform did not reach its target. This is what the system learned about Mara Ellison before the quarter closed.'
-        : `Awareness reached ${Math.floor(s.awareness)}. Users left, data vanished, and this is what remained of Mara Ellison's profile.`;
-
-    const dossier = $('result-dossier');
-    dossier.innerHTML = '';
-
-    for (const field of fields) {
-      const value = s.dossier[field.id];
-      const row = document.createElement('div');
-      row.className = 'dossier-field';
-      row.innerHTML = `
-        <span class="field-name">${field.label}</span>
-        <span class="field-value ${value ? '' : 'blank'}">
-          ${value || '— — —'}
-          ${value && s.wrong.has(field.id) ? '<small class="wrong-note">LOW CONFIDENCE · MODEL OUTPUT</small>' : ''}
-        </span>
+    const endRows = Object.entries(fieldLabels).map(([key, label]) => {
+      const value = state.dossier[key];
+      return `
+        <div class="dossier-row">
+          <div class="dossier-key">${label}</div>
+          <div class="dossier-value ${value ? (state.wrong.has(key) ? 'wrong' : '') : 'empty'}">
+            ${value || '…'}
+            ${value && state.wrong.has(key) ? '<span class=\"warning-note\">Low confidence • model output</span>' : ''}
+          </div>
+        </div>
       `;
-      dossier.append(row);
-    }
+    }).join('');
 
-    $('overlay').classList.remove('hidden');
-    $('pause-button').disabled = true;
-    render();
+    els.endDossier.innerHTML = endRows;
+
+    beep('alert');
   }
 
-  function restart() {
-    s = initial();
-    $('overlay').classList.add('hidden');
-    $('pause-button').disabled = false;
-    log('<strong>New quarter started.</strong> Acquisition systems are ready.');
-    render();
+  function startGame() {
+    state.started = true;
+    state.paused = false;
+    state.ended = false;
+    els.introScreen.classList.remove('active');
+    els.gameScreen.classList.add('active');
+    state.currentStep = 0;
+    updateTutorial();
+    renderLevers();
+    renderInventory();
+    renderInferences();
+    renderDossier();
+    renderStats();
+    renderEvents();
+    if (!tickLoop) tickLoop = setInterval(stepGame, 1000);
   }
 
-  document.querySelectorAll('[data-counter]').forEach(button => {
-    button.onclick = () => buyCountermeasure(button.dataset.counter);
+  function resetGame() {
+    Object.assign(state, {
+      started:false,
+      paused:false,
+      ended:false,
+      currentStep:0,
+      second:0,
+      users:10000,
+      revenue:0,
+      awareness:8,
+      inventory:Object.fromEntries(Object.keys(dataMeta).map(key => [key,0])),
+      active:new Set(),
+      unlocked:new Set(),
+      unlockedLevers:new Set(['feed','social','watch','keyboard','shop']),
+      dossier:{},
+      wrong:new Set(),
+      events:[],
+      regulatorFired:false,
+      regulatorCooldown:0,
+      forcedOff:null,
+      press:0,
+      lobbying:0,
+      privacy:0,
+      rebrandUsed:false,
+      exclusive:{},
+      headlineIndex:0
+    });
+
+    els.endScreen.classList.add('hidden');
+    els.introScreen.classList.add('active');
+    els.gameScreen.classList.remove('active');
+  }
+
+  document.getElementById('start-button').addEventListener('click', startGame);
+  els.restartButton.addEventListener('click', () => {
+    resetGame();
   });
 
-  $('pause-button').onclick = () => {
-    if (s.ended) return;
-    s.paused = !s.paused;
-    render();
-  };
-
-  $('restart-button').onclick = restart;
-
-  document.addEventListener('visibilitychange',() => {
-    if (document.hidden && !s.ended && !s.paused) {
-      s.paused = true;
-      render();
-      toast('Run paused while you were away.');
-    }
+  document.querySelectorAll('.counter-button').forEach(button => {
+    button.addEventListener('click', () => buyCounter(button.dataset.type));
   });
 
-  log('<strong>Quarter initialized.</strong> Five acquisition systems available.');
-  render();
-  setInterval(step,1000);
+  els.pauseButton.addEventListener('click', () => {
+    if (!state.started || state.ended) return;
+    state.paused = !state.paused;
+    els.pauseButton.textContent = state.paused ? '▶' : '⏸';
+  });
+
+  els.muteButton.addEventListener('click', () => {
+    state.audioEnabled = !state.audioEnabled;
+    els.muteButton.textContent = state.audioEnabled ? '🔊' : '🔇';
+  });
+
+  updateTutorial();
+  renderLevers();
+  renderInventory();
+  renderInferences();
+  renderDossier();
+  renderStats();
+  renderEvents();
 })();
