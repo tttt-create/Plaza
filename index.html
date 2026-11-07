@@ -1,228 +1,1066 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#091210" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101713">
   <title>Hidden in Plain Sight</title>
-  <meta name="description" content="Hidden in Plain Sight — a dark-comedy management game about turning data into influence." />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101713;
+      --panel: #1b241f;
+      --panel-soft: #222d26;
+      --line: #354139;
+      --text: #eff3ed;
+      --muted: #aab5ac;
+      --quiet: #77847a;
+      --green: #b7e4a8;
+      --gold: #f0c66e;
+      --red: #f17e74;
+      --blue: #a5cbef;
+      --purple: #d3b1ed;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: radial-gradient(ellipse at top, #26352b 0, var(--bg) 42rem);
+      color: var(--text);
+      font: 14px/1.45 var(--sans);
+    }
+    button { font: inherit; color: inherit; }
+    button:focus-visible, summary:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .app { max-width: 1440px; margin: auto; padding: 0 22px 40px; }
+    .topbar {
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid #536255;
+      border-radius: 12px;
+      color: var(--green);
+      font-weight: 900;
+    }
+    .brand-title { font-size: 12px; font-weight: 800; letter-spacing: .12em; }
+    .brand-sub { color: var(--muted); font: 9px var(--mono); letter-spacing: .08em; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .clock, .small-button {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel);
+      padding: 8px 11px;
+      font: 12px var(--mono);
+    }
+    .small-button { cursor: pointer; min-width: 40px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr 1fr;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .stat {
+      min-width: 0;
+      padding: 12px 15px;
+      background: #19221d;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    .stat-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font: 10px var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .stat-value { margin-top: 5px; font-size: 23px; font-weight: 800; letter-spacing: -.05em; }
+    .stat-note { color: var(--muted); font: 10px var(--mono); }
+    .meter { height: 6px; margin-top: 8px; overflow: hidden; background: #303a33; border-radius: 9px; }
+    .meter > span { display: block; width: 0; height: 100%; background: var(--green); transition: width .25s; }
+    #awareness-meter > span { background: linear-gradient(90deg, var(--gold), var(--red)); }
+
+    .board {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      align-items: start;
+      gap: 12px;
+    }
+    .play-column, .side-column { display: grid; gap: 12px; min-width: 0; }
+    .panel {
+      min-width: 0;
+      padding: 15px;
+      background: rgba(27,36,31,.96);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2, h3 { margin-bottom: 0; }
+    h1 { font-size: 18px; }
+    h2 { font-size: 16px; }
+    h3 { font-size: 14px; }
+    .eyebrow { color: var(--muted); font: 9px var(--mono); letter-spacing: .11em; text-transform: uppercase; }
+    .tag {
+      padding: 4px 7px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      color: var(--muted);
+      font: 9px var(--mono);
+      white-space: nowrap;
+    }
+
+    .board-brief {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 11px 12px;
+      margin-bottom: 12px;
+      background: #283329;
+      border: 1px solid #59644b;
+      border-radius: 10px;
+    }
+    .board-stamp { font-size: 20px; }
+    .board-message { font-size: 12px; }
+    .board-message strong { color: var(--green); }
+    .board-step { display: block; margin-top: 4px; color: var(--muted); font: 9px var(--mono); }
+
+    .lever-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+    .lever {
+      min-width: 0;
+      padding: 10px;
+      background: #202a24;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      transition: border-color .2s, background .2s;
+    }
+    .lever.on { border-color: #7d9e69; background: #26332a; }
+    .lever.hot { box-shadow: 0 0 0 2px #f17e7460; }
+    .lever-top { display: flex; align-items: flex-start; gap: 8px; }
+    .lever-emoji { font-size: 20px; }
+    .lever-copy { flex: 1; min-width: 0; }
+    .lever-copy strong { display: block; font-size: 12px; }
+    .lever-copy small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .lever-controls { display: flex; align-items: center; gap: 5px; }
+    .toggle, .aim {
+      border: 1px solid #586258;
+      border-radius: 7px;
+      padding: 5px 7px;
+      background: #18201b;
+      cursor: pointer;
+      font-size: 10px;
+    }
+    .lever.on .toggle { color: var(--green); border-color: #7d9e69; }
+    .aim.selected { color: var(--gold); border-color: var(--gold); }
+    .lever-foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      border-top: 1px solid #38433b;
+      margin-top: 8px;
+      padding-top: 7px;
+      color: var(--muted);
+      font: 9px var(--mono);
+    }
+    .risk { color: var(--gold); }
+
+    .jars {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 8px;
+    }
+    .jar-card {
+      min-width: 0;
+      padding: 8px 5px;
+      background: #151d19;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      text-align: center;
+    }
+    .jar {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 42px;
+      margin: 0 auto 5px;
+      overflow: hidden;
+      border: 1px solid #758177;
+      border-radius: 9px 9px 12px 12px;
+      background: #27322b;
+    }
+    .jar-fill {
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      left: 2px;
+      height: 0;
+      border-radius: 0 0 9px 9px;
+      background: linear-gradient(0deg, #90bb73, #d4df8f);
+      opacity: .8;
+      transition: height .25s;
+    }
+    .jar-icon { z-index: 1; font-size: 17px; }
+    .jar-count { font: 9px var(--mono); }
+    .jar-label { overflow: hidden; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+    .jar-source { display: block; min-height: 11px; color: var(--quiet); font-size: 8px; }
+
+    .recipe-main {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #202a24;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .recipe-main.ready { border-color: var(--gold); background: #302c20; }
+    .recipe-equation { font-size: 20px; font-weight: 800; letter-spacing: .02em; }
+    .recipe-name { margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .recipe-cost { color: var(--quiet); font: 9px var(--mono); }
+    .action-button, .primary-button {
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      background: var(--green);
+      color: #172018;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .action-button:disabled { background: #414a42; color: #a1a99e; cursor: not-allowed; }
+    details { margin-top: 10px; }
+    summary { cursor: pointer; color: var(--muted); font-size: 10px; }
+    .recipe-list { display: grid; gap: 5px; margin-top: 8px; }
+    .recipe-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 8px;
+      border-bottom: 1px solid #354139;
+      font-size: 10px;
+    }
+    .recipe-row.ready { color: var(--gold); }
+
+    .attention-face { font-size: 27px; }
+    .headline {
+      padding: 9px 10px;
+      border-left: 3px solid var(--gold);
+      background: #25291f;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .hotspot-box {
+      margin: 9px 0;
+      padding: 9px;
+      border: 1px dashed #717767;
+      border-radius: 9px;
+      background: #202820;
+    }
+    .hotspot-box.urgent { border-color: var(--red); }
+    .hotspot-title { font-weight: 800; font-size: 11px; }
+    .hotspot-copy { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .distraction-list { display: grid; gap: 6px; }
+    .distraction {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #202a24;
+      text-align: left;
+      cursor: pointer;
+      font-size: 10px;
+    }
+    .distraction:disabled { opacity: .45; cursor: not-allowed; }
+    .distraction span:nth-child(2) { flex: 1; }
+    .distraction small { display: block; color: var(--muted); font-size: 9px; }
+    .extinguisher { border-color: #93604c; }
+    .events { display: grid; gap: 5px; color: var(--muted); font-size: 9px; }
+    .event { padding-top: 5px; border-top: 1px solid #354139; }
+    .event time { margin-right: 5px; color: var(--quiet); font-family: var(--mono); }
+    .files-summary { color: var(--muted); font-size: 10px; }
+
+    .token-layer { position: fixed; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; }
+    .token {
+      position: fixed;
+      z-index: 21;
+      font-size: 17px;
+      animation: fly .75s ease-in forwards;
+      filter: drop-shadow(0 2px 5px #000);
+    }
+    @keyframes fly {
+      0% { opacity: 0; transform: translate(0,0) scale(.5); }
+      15% { opacity: 1; }
+      100% { opacity: 0; transform: translate(var(--dx),var(--dy)) scale(1.05); }
+    }
+    .toast {
+      position: fixed;
+      z-index: 40;
+      bottom: 18px;
+      left: 50%;
+      max-width: calc(100vw - 24px);
+      padding: 10px 14px;
+      border: 1px solid #64715e;
+      border-radius: 10px;
+      background: #26342a;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 10px);
+      transition: .2s;
+      font-size: 11px;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+
+    .intro, .result {
+      position: fixed;
+      z-index: 50;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      overflow: auto;
+      padding: 20px;
+      background: rgba(7,12,9,.96);
+    }
+    .intro.hidden, .result.hidden { display: none; }
+    .intro-card, .result-card {
+      width: min(590px, 100%);
+      padding: 24px;
+      border: 1px solid #596650;
+      border-radius: 16px;
+      background: #1b241f;
+      box-shadow: 0 20px 70px #0009;
+    }
+    .intro-card h1 { margin: 8px 0; font-size: clamp(30px,7vw,50px); line-height: 1; }
+    .intro-card p { color: var(--muted); font-size: 13px; }
+    .how-to { display: grid; gap: 7px; margin: 15px 0; }
+    .how-row { display: flex; gap: 8px; padding: 8px; background: #222d26; border-radius: 8px; font-size: 11px; }
+    .win-files { display: grid; gap: 6px; max-height: 45vh; overflow: auto; margin: 14px 0; }
+    .file-row { padding: 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 10px; }
+    .file-row strong { display: block; margin-bottom: 3px; }
+    .milestone-pop {
+      position: fixed;
+      z-index: 30;
+      top: 18%;
+      left: 50%;
+      padding: 12px 17px;
+      border: 1px solid var(--gold);
+      border-radius: 11px;
+      background: #342d1e;
+      text-align: center;
+      font-weight: 800;
+      transform: translateX(-50%);
+      animation: pop 2.2s forwards;
+    }
+    @keyframes pop {
+      0% { opacity: 0; transform: translate(-50%,-10px) scale(.9); }
+      15%,75% { opacity: 1; transform: translate(-50%,0) scale(1); }
+      100% { opacity: 0; transform: translate(-50%,-8px) scale(.96); }
+    }
+
+    @media (max-width: 850px) {
+      .app { padding: 0 12px 24px; }
+      .board { grid-template-columns: 1fr; }
+      .side-column { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .side-column .wide { grid-column: 1 / -1; }
+    }
+    @media (max-width: 560px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .stats .stat:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+      .lever-list { grid-template-columns: 1fr; }
+      .side-column { grid-template-columns: 1fr; }
+      .side-column .wide { grid-column: auto; }
+      .jars { grid-template-columns: repeat(5,minmax(0,1fr)); }
+      .panel { padding: 12px; }
+      .stat { padding: 10px; }
+      .stat-value { font-size: 20px; }
+      .brand-sub { max-width: 190px; font-size: 8px; }
+      .live { display: none; }
+      .recipe-main { grid-template-columns: 1fr; }
+      .recipe-equation { font-size: 18px; }
+    }
+  </style>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="app">
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">H·P</div>
-        <div class="brand-name-wrap">
-          <div class="brand-name">HIDDEN IN PLAIN SIGHT</div>
-          <div class="brand-sub">MAYA QUINN · QUARTERLY SIGNAL REVIEW</div>
+        <div>
+          <div class="brand-title">HIDDEN IN PLAIN SIGHT</div>
+          <div class="brand-sub">PLATFORM OPERATIONS • QUARTERLY REVIEW</div>
         </div>
       </div>
-
-      <div class="header-right">
-        <span class="live-pill"><i></i> SYSTEM LIVE</span>
-        <div class="clock" id="clock">08:00</div>
-        <button class="icon-button" id="pause-button" aria-label="Pause">II</button>
+      <div class="top-actions">
+        <span class="tag live">● LIVE PLATFORM</span>
+        <span class="clock" id="clock">08:00</span>
+        <button class="small-button" id="pause" aria-label="Pause">Ⅱ</button>
+        <button class="small-button" id="sound" aria-label="Toggle sound">🔊</button>
       </div>
     </header>
 
-    <section class="stats">
-      <article class="stat-card">
-        <div class="stat-head">
-          <span>Users</span>
-          <span class="trend">+0/sec</span>
-        </div>
-        <div class="stat-value" id="users-value">10,000</div>
-        <div class="stat-foot" id="users-rate">+0/sec</div>
-      </article>
-
-      <article class="stat-card alt">
-        <div class="stat-head">
-          <span>Valuation</span>
-          <span class="goal">Target $100B</span>
-        </div>
-        <div class="stat-value" id="revenue-value">$0</div>
-        <div class="stat-foot" id="revenue-rate">+$0/sec</div>
-        <div class="track">
-          <div class="track-bar revenue" id="revenue-bar"></div>
-        </div>
-      </article>
-
-      <article class="stat-card danger">
-        <div class="stat-head">
-          <span>Awareness</span>
-          <span id="awareness-status" class="status-pill low">LOW</span>
-        </div>
-        <div class="stat-value"><span id="awareness-value">8</span><small>/100</small></div>
-        <div class="stat-foot">Investigation at 60 · deletion at 100</div>
-        <div class="track">
-          <div class="track-bar awareness" id="awareness-bar"></div>
-        </div>
-      </article>
+    <section class="stats" aria-label="Run status">
+      <div class="stat">
+        <div class="stat-label"><span>Community</span><span id="users-rate">+0 / sec</span></div>
+        <div class="stat-value" id="users">10,000</div>
+        <div class="stat-note">active users</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label"><span>Valuation</span><span>Goal $100B</span></div>
+        <div class="stat-value" id="valuation">$0</div>
+        <div class="stat-note" id="revenue-rate">+$0 / sec</div>
+        <div class="meter"><span id="valuation-meter"></span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label"><span>Awareness</span><span id="awareness-state">QUIET</span></div>
+        <div class="stat-value" id="awareness">8 <small style="font-size:12px;color:#aab5ac">/ 100</small></div>
+        <div class="stat-note">investigation at 60</div>
+        <div class="meter" id="awareness-meter"><span></span></div>
+      </div>
     </section>
 
-    <main class="game-layout">
-      <section class="main-column">
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">Board instructions</div>
-              <h2>Product levers</h2>
+    <main class="board">
+      <section class="play-column">
+        <section class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">The Board says</div><h1>Your next move</h1></div>
+            <span class="tag" id="active-count">0 levers running</span>
+          </div>
+          <div class="board-brief">
+            <span class="board-stamp">📋</span>
+            <div class="board-message">
+              <strong id="board-text">Start the quarter.</strong>
+              <span id="board-detail">Switch on a product lever to collect signals from the platform’s user base.</span>
+              <span class="board-step" id="board-step">TUTORIAL • FIRST MINUTE</span>
             </div>
-            <div class="pill" id="active-count">0 active</div>
           </div>
+          <div id="levers" class="lever-list"></div>
+        </section>
 
-          <div class="instruction-box" id="instruction-box">
-            Turn on <strong>Neighborhood feed</strong> to begin collecting location pings.
+        <section class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">Signals from the whole platform</div><h2>Data jars</h2></div>
+            <span class="tag" id="signal-total">0 signals collected</span>
           </div>
+          <div id="jars" class="jars"></div>
+        </section>
 
-          <div class="lever-list" id="lever-list"></div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">Raw material</div>
-              <h3>Data stockpiles</h3>
-            </div>
-            <div class="pill light">10K users • 5 files</div>
+        <section class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">Combine signals</div><h2>Next inference</h2></div>
+            <span class="tag" id="inference-total">0 / 15 learned</span>
           </div>
-
-          <div id="inventory-grid" class="inventory-grid"></div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">Signal processing</div>
-              <h3>Inference engine</h3>
-            </div>
-            <div class="pill" id="inference-count">0 / 15</div>
-          </div>
-
-          <div id="inference-grid" class="inference-grid"></div>
-        </div>
+          <div id="next-recipe"></div>
+          <details>
+            <summary>Open the inference tree (15 patterns)</summary>
+            <div id="recipe-list" class="recipe-list"></div>
+          </details>
+        </section>
       </section>
 
       <aside class="side-column">
-        <div class="panel profile-panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">Private profile</div>
-              <h3>Maya’s dossier</h3>
-            </div>
-            <div class="pill light">Confidential</div>
+        <section class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">Population patterns</div><h2>What we’re learning</h2></div>
+            <span class="attention-face" id="face">🙂</span>
           </div>
+          <div id="learned-list" class="files-summary">No patterns inferred yet. Combine stockpiles to reveal audience cohorts.</div>
+          <div class="meter" style="margin-top:12px"><span id="attention-meter"></span></div>
+          <div class="stat-note" id="attention-caption">Attention is calm.</div>
+        </section>
 
-          <div class="profile-card">
-            <div class="avatar-wrap">
-              <div class="avatar">◕</div>
-            </div>
-            <div class="profile-copy">
-              <div class="profile-name">Maya Quinn</div>
-              <div class="profile-meta">34 • Portland, OR</div>
-            </div>
+        <section class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">Read the room</div><h2>Attention hotspot</h2></div>
+            <span class="tag" id="hotspot-level">CALM</span>
           </div>
-
-          <div id="dossier-fields" class="dossier-fields"></div>
-
-          <div class="profile-footer">
-            <span>Profile completion</span>
-            <strong id="profile-percent">0%</strong>
+          <div class="headline" id="headline">“A promising new platform attracts a few curious users.”</div>
+          <div id="hotspot" class="hotspot-box">
+            <div class="hotspot-title" id="hotspot-title">No hot spot yet</div>
+            <div class="hotspot-copy" id="hotspot-copy">As activity rises, attention gathers around a lever. Aim a response there before it spreads.</div>
           </div>
-        </div>
+          <div class="eyebrow" style="margin:10px 0 6px">Aim at the highlighted lever, then choose a response</div>
+          <div id="distractions" class="distraction-list"></div>
+        </section>
 
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">Attention</div>
-              <h3>Hot spots</h3>
-            </div>
-            <div class="pill" id="attention-pill">LOW</div>
+        <section class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">Emergency response</div><h2>🧯 Damage control</h2></div>
           </div>
+          <button class="distraction extinguisher" id="extinguisher">
+            <span>🧯</span><span><strong>Extinguish the story</strong><small>Spend $500M to reduce awareness. Cooldown: 45 sec.</small></span><span id="extinguisher-state">READY</span>
+          </button>
+          <div class="stat-note" id="regulator-warning" style="margin-top:8px">Regulator: no inquiry filed.</div>
+        </section>
 
-          <div class="attention-track">
-            <div class="attention-fill" id="attention-fill"></div>
+        <section class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">Platform activity</div><h2>Latest headlines</h2></div>
           </div>
-
-          <div class="hotspot-box">
-            <div class="hotspot-label">Current target</div>
-            <div class="hotspot-name" id="hotspot-name">No current spike</div>
-            <div class="hotspot-desc" id="hotspot-desc">The platform is quiet.</div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">Distraction</div>
-              <h3>Response tools</h3>
-            </div>
-            <div class="pill light" id="distraction-pill">Ready</div>
-          </div>
-
-          <div id="distraction-list" class="distraction-list"></div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">External pressure</div>
-              <h3>Risk</h3>
-            </div>
-          </div>
-
-          <div class="pressure-row">
-            <span>Regulator</span>
-            <strong id="regulator-label">Dormant</strong>
-          </div>
-          <div class="mini-track">
-            <div class="mini-fill regulator" id="regulator-bar"></div>
-          </div>
-
-          <div class="pressure-row">
-            <span>Press</span>
-            <strong id="press-label">Quiet</strong>
-          </div>
-          <div class="mini-track">
-            <div class="mini-fill press" id="press-bar"></div>
-          </div>
-
-          <div class="pressure-summary" id="pressure-summary">
-            No one is watching yet.
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <div class="eyebrow">Operations feed</div>
-              <h3>Signals</h3>
-            </div>
-          </div>
-
-          <div id="event-feed" class="event-feed"></div>
-        </div>
+          <div id="events" class="events"><div class="event">The platform is waiting for its first growth experiment.</div></div>
+        </section>
       </aside>
     </main>
   </div>
 
-  <div id="toast" class="toast" aria-live="polite"></div>
-  <div id="token-layer" aria-hidden="true"></div>
+  <div id="token-layer" class="token-layer" aria-hidden="true"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <div id="result-panel" class="result-panel hidden">
-    <div class="result-card">
-      <div class="result-badge" id="result-badge">Outcome</div>
-      <h2 id="result-title">Quarter complete</h2>
-      <p id="result-summary" class="result-summary"></p>
-      <div id="result-dossier" class="result-dossier"></div>
-      <button id="restart-button" class="primary-button">Play again</button>
+  <div id="intro" class="intro">
+    <div class="intro-card">
+      <div class="eyebrow">A game about a whole platform</div>
+      <h1>Hidden in<br>Plain Sight</h1>
+      <p>You run a social media company. Turn product levers on to gather signals from thousands of users, combine signals into population patterns, and grow the platform’s valuation.</p>
+      <div class="how-to">
+        <div class="how-row"><span>🎯</span><span><strong>Win:</strong> reach a $100B valuation.</span></div>
+        <div class="how-row"><span>⚠️</span><span><strong>Lose:</strong> public awareness reaches 100. At 60, regulators investigate.</span></div>
+        <div class="how-row"><span>🫙</span><span>Levers collect signals into jars. Recipes consume them to reveal patterns.</span></div>
+        <div class="how-row"><span>📰</span><span>Attention moves toward busy levers. Aim a distraction at the hot spot to redirect it.</span></div>
+      </div>
+      <button id="start" class="primary-button">Start the quarter</button>
     </div>
   </div>
 
-  <script src="game.js"></script>
+  <div id="result" class="result hidden" role="dialog" aria-modal="true">
+    <div class="result-card">
+      <div class="eyebrow" id="result-kicker">QUARTERLY REVIEW</div>
+      <h2 id="result-title">Run complete</h2>
+      <p id="result-copy"></p>
+      <div id="result-files" class="win-files"></div>
+      <button id="restart" class="primary-button">Start another quarter</button>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const GOAL = 100_000_000_000;
+      const RUN_TIME = 480;
+      const types = {
+        location:{name:'Location',emoji:'📍'},
+        contacts:{name:'Contacts',emoji:'👥'},
+        dwell:{name:'Dwell time',emoji:'⏱️'},
+        typing:{name:'Typing cadence',emoji:'⌨️'},
+        purchase:{name:'Purchases',emoji:'🛒'},
+        photo:{name:'Photo metadata',emoji:'📸'},
+        night:{name:'Night usage',emoji:'🌙'},
+        motion:{name:'Motion',emoji:'📳'},
+        voice:{name:'Voice',emoji:'🎙️'},
+        search:{name:'Search',emoji:'🔎'}
+      };
+
+      const levers = [
+        {id:'feed',name:'Neighborhood feed',emoji:'📍',type:'location',rate:48e6,risk:.045,desc:'Local recommendations and location pings.'},
+        {id:'social',name:'Contact sync',emoji:'👥',type:'contacts',rate:42e6,risk:.04,desc:'Find connections across the community.'},
+        {id:'watch',name:'Infinite watch',emoji:'⏱️',type:'dwell',rate:55e6,risk:.055,desc:'Learn what keeps people watching.'},
+        {id:'keyboard',name:'Smart keyboard',emoji:'⌨️',type:'typing',rate:35e6,risk:.03,desc:'Patterns in what people almost say.'},
+        {id:'shop',name:'Shoppable moments',emoji:'🛒',type:'purchase',rate:46e6,risk:.04,desc:'Turn browsing into shopping signals.'},
+        {id:'camera',name:'Camera cloud',emoji:'📸',type:'photo',rate:48e6,risk:.055,unlock:'relationship',desc:'Photo metadata, neatly backed up.'},
+        {id:'night',name:'Quiet hours insights',emoji:'🌙',type:'night',rate:45e6,risk:.035,unlock:'home',desc:'The platform never sleeps.'},
+        {id:'motion',name:'Motion context',emoji:'📳',type:'motion',rate:45e6,risk:.05,unlock:'commute',desc:'Movement patterns across the city.'},
+        {id:'voice',name:'Voice assistant',emoji:'🎙️',type:'voice',rate:50e6,risk:.065,unlock:'household',desc:'Helpful listening, at scale.'},
+        {id:'search',name:'Search personalization',emoji:'🔎',type:'search',rate:58e6,risk:.055,unlock:'pregnancy',desc:'The questions behind the questions.'},
+        {id:'dm',name:'DM mining',emoji:'✉️',type:'contacts',rate:62e6,risk:.075,unlock:'socialgraph',desc:'Conversation patterns, not conversations.'},
+        {id:'routine',name:'Routine nudges',emoji:'📆',type:'location',rate:58e6,risk:.06,unlock:'routine',desc:'A reminder at just the right time.'},
+        {id:'loyalty',name:'Loyalty loops',emoji:'🔁',type:'purchase',rate:68e6,risk:.07,unlock:'loyalty',desc:'Make familiar choices feel inevitable.'},
+        {id:'family',name:'Family graph',emoji:'🧑‍🤝‍🧑',type:'contacts',rate:62e6,risk:.07,unlock:'caregiver',desc:'Connections behind household patterns.'}
+      ];
+
+      const patterns = [
+        {id:'home',name:'Neighborhood patterns',emoji:'🏘️',recipe:{location:1200,night:800},boost:1.10,cohort:'2,400 users show a consistent home-and-night pattern.',unlock:'night'},
+        {id:'insomnia',name:'Late-night scrollers',emoji:'🌙',recipe:{night:1200,dwell:1200},boost:1.10,cohort:'2,100 users are active well after midnight.',unlock:null},
+        {id:'pregnancy',name:'Life-stage shopping pattern',emoji:'🛍️',recipe:{purchase:1200,search:1200,location:800},boost:1.20,cohort:'3,200 users share a new-shopping and search pattern.',unlock:'search',wrong:true},
+        {id:'relationship',name:'Shared-household signals',emoji:'🏠',recipe:{photo:1000,contacts:1000},boost:1.12,cohort:'2,000 users show overlapping household and contact signals.',unlock:'camera'},
+        {id:'jobloss',name:'Career-change searches',emoji:'💼',recipe:{search:1000,location:800,dwell:1000},boost:1.15,cohort:'2,800 users browse career advice during work hours.',unlock:null},
+        {id:'commute',name:'Commuter corridors',emoji:'🚌',recipe:{location:1400,motion:800},boost:1.12,cohort:'3,000 users share a repeat travel corridor.',unlock:'motion'},
+        {id:'socialgraph',name:'Highly connected clusters',emoji:'🕸️',recipe:{contacts:1400,typing:800},boost:1.14,cohort:'2,600 users sit in unusually active social clusters.',unlock:'dm'},
+        {id:'household',name:'Household shopping mix',emoji:'🧺',recipe:{voice:800,purchase:1200,location:1000},boost:1.15,cohort:'3,000 users have a household-sized shopping pattern.',unlock:'voice',wrong:true},
+        {id:'routine',name:'Weekly routines',emoji:'📆',recipe:{location:1000,dwell:1000,night:800},boost:1.10,cohort:'2,800 users repeat the same weekly activity pattern.',unlock:'routine'},
+        {id:'anxiety',name:'Hesitation signals',emoji:'💭',recipe:{typing:1400,search:1000},boost:1.16,cohort:'2,400 users repeatedly draft, delete, and search.',unlock:null},
+        {id:'financial',name:'Price-sensitive shoppers',emoji:'🏷️',recipe:{purchase:1400,search:1000},boost:1.18,cohort:'2,400 users compare prices before checkout.',unlock:null},
+        {id:'relationshiprisk',name:'Changing social clusters',emoji:'🔀',recipe:{photo:800,contacts:1400,night:800},boost:1.14,cohort:'3,000 users show a changing pattern of late-night connections.',unlock:null,exclusive:'social-choice'},
+        {id:'loyalty',name:'Repeat-brand shoppers',emoji:'📦',recipe:{purchase:1400,dwell:1000,typing:800},boost:1.16,cohort:'3,200 users repeatedly choose the same products.',unlock:'loyalty',exclusive:'social-choice'},
+        {id:'health',name:'Wellness research clusters',emoji:'🩺',recipe:{search:1400,night:800,location:1000},boost:1.18,cohort:'3,200 users browse wellness topics and nearby services.',unlock:null,exclusive:'community-choice'},
+        {id:'caregiver',name:'Care-network patterns',emoji:'🤝',recipe:{location:1200,contacts:1200,voice:800},boost:1.17,cohort:'3,200 users connect visits, calls, and household errands.',unlock:'family',exclusive:'community-choice'}
+      ];
+
+      const distractions = [
+        {id:'trend',name:'Viral trend',emoji:'🚀',hint:'Wide, brief; also harvests search.',cooldown:22,reduction:24,duration:12},
+        {id:'scandal',name:'Rival scandal',emoji:'🕵️',hint:'Big redirect; raises industry suspicion.',cooldown:35,reduction:38,duration:0},
+        {id:'outrage',name:'Outrage topic',emoji:'🔥',hint:'Strong redirect; users leave over time.',cooldown:24,reduction:44,duration:0},
+        {id:'launch',name:'Shiny feature launch',emoji:'✨',hint:'Small redirect; costs $400M.',cooldown:30,reduction:20,duration:0}
+      ];
+
+      const milestones = [
+        [1e9,'$1B','First billion. The Board has updated its wallpaper.'],
+        [10e9,'$10B','Ten billion. Growth has been described as “organic.”'],
+        [25e9,'$25B','A quarter of the way. Nobody asked what the product is.'],
+        [50e9,'$50B','Halfway there. The press has noticed the press release.'],
+        [75e9,'$75B','Almost there. Please avoid saying “data” on stage.']
+      ];
+
+      const state = {
+        started:false,paused:false,ended:false,seconds:0,users:10000,revenue:0,awareness:8,
+        attention:0, active:new Set(), aim:null, hotspot:null, hotspotHeat:0,
+        inventory:Object.fromEntries(Object.keys(types).map(k=>[k,0])),
+        totals:Object.fromEntries(Object.keys(types).map(k=>[k,0])),
+        learned:new Set(), wrong:new Set(), exclusive:{}, dossier:[],
+        cooldowns:Object.fromEntries(distractions.map(d=>[d.id,0])),
+        activeTrend:0, regulatorEta:0, regulatorHold:0, press:0,
+        extinguisher:0, industrySuspicion:0, departed:0, milestones:new Set(),
+        events:[], sound:true, tutorial:0
+      };
+
+      const $ = id => document.getElementById(id);
+      let audioContext = null;
+      const money = n => n >= 1e12 ? '$'+(n/1e12).toFixed(2)+'T' : n >= 1e9 ? '$'+(n/1e9).toFixed(1)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(0)+'M' : '$'+Math.floor(n);
+      const short = n => n >= 1e6 ? (n/1e6).toFixed(n >= 10e6 ? 0 : 1)+'M' : n >= 1000 ? (n/1000).toFixed(n >= 10e3 ? 0 : 1)+'K' : String(Math.floor(n));
+      const timeLeft = () => Math.max(0,RUN_TIME-state.seconds);
+      const fmtClock = n => String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
+
+      function sound(frequency=440, duration=.07) {
+        if (!state.sound) return;
+        try {
+          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(.035,audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);
+          oscillator.connect(gain); gain.connect(audioContext.destination);
+          oscillator.start(); oscillator.stop(audioContext.currentTime+duration);
+        } catch (_) {}
+      }
+
+      function toast(text) {
+        $('toast').textContent = text;
+        $('toast').classList.add('show');
+        clearTimeout(toast.timer);
+        toast.timer=setTimeout(()=>$('toast').classList.remove('show'),2100);
+      }
+
+      function event(text) {
+        state.events.unshift({time:fmtClock(state.seconds),text});
+        state.events=state.events.slice(0,5);
+      }
+
+      function currentRates() {
+        const selected=levers.filter(l=>state.active.has(l.id));
+        const multiplier=[...state.learned].reduce((n,id)=>n*(patterns.find(p=>p.id===id)?.boost||1),1);
+        return {
+          revenue:selected.reduce((n,l)=>n+l.rate,0)*multiplier,
+          users:selected.length*75
+        };
+      }
+
+      function displayName(pattern) {
+        return state.learned.has(pattern.id) ? pattern.name : (pattern.known ? 'Unclassified pattern' : 'Unknown pattern');
+      }
+
+      function makeRecipe(pattern) {
+        return Object.entries(pattern.recipe).map(([key,amount])=>`${types[key].emoji} ×${short(amount)}`).join(' + ');
+      }
+
+      function ready(pattern) {
+        return Object.entries(pattern.recipe).every(([key,amount])=>state.inventory[key]>=amount);
+      }
+
+      function nextPattern() {
+        return patterns.find(p=>!state.learned.has(p.id) && !(p.exclusive&&state.exclusive[p.exclusive]));
+      }
+
+      function renderLevers() {
+        const root=$('levers'); root.innerHTML='';
+        for (const lever of levers) {
+          if (lever.unlock && !state.learned.has(lever.unlock)) continue;
+          const active=state.active.has(lever.id);
+          const isHot=state.hotspot?.lever===lever.id && state.attention>=22;
+          const node=document.createElement('article');
+          node.className='lever'+(active?' on':'')+(isHot?' hot':'');
+          node.dataset.lever=lever.id;
+          node.innerHTML=`
+            <div class="lever-top">
+              <span class="lever-emoji">${lever.emoji}</span>
+              <span class="lever-copy"><strong>${lever.name}</strong><small>${lever.desc}</small></span>
+              <span class="lever-controls">
+                <button class="toggle" data-toggle="${lever.id}">${active?'ON':'OFF'}</button>
+                ${state.attention>=22?`<button class="aim ${state.aim===lever.id?'selected':''}" data-aim="${lever.id}">${state.aim===lever.id?'AIMED':'AIM'}</button>`:''}
+              </span>
+            </div>
+            <div class="lever-foot">
+              <span>+${money(lever.rate)}/sec</span>
+              <span class="risk">+${lever.risk.toFixed(2)} awareness/sec</span>
+            </div>`;
+          root.append(node);
+        }
+        root.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggleLever(b.dataset.toggle));
+        root.querySelectorAll('[data-aim]').forEach(b=>b.onclick=()=>{state.aim=b.dataset.aim; render(); toast(`Aimed at ${levers.find(l=>l.id===state.aim).name}`);});
+        $('active-count').textContent=`${state.active.size} levers running`;
+      }
+
+      function renderJars() {
+        const root=$('jars'); root.innerHTML='';
+        for(const [key,type] of Object.entries(types)){
+          const amount=state.inventory[key];
+          const fill=Math.min(94,amount/3000*94);
+          const active=levers.filter(l=>l.type===key&&state.active.has(l.id)).length;
+          const card=document.createElement('div');
+          card.className='jar-card';
+          card.innerHTML=`<div class="jar" data-jar="${key}"><div class="jar-fill" style="height:${fill}%"></div><span class="jar-icon">${type.emoji}</span></div><div class="jar-count">${short(amount)}</div><div class="jar-label">${type.name}</div><span class="jar-source">${active?`↑ ${active} source${active>1?'s':''}`:' '}</span>`;
+          root.append(card);
+        }
+        $('signal-total').textContent=`${short(Object.values(state.totals).reduce((a,b)=>a+b,0))} signals collected`;
+      }
+
+      function renderNext() {
+        const item=nextPattern();
+        const root=$('next-recipe');
+        if(!item){root.innerHTML='<div class="recipe-main"><div><div class="recipe-equation">🎉 All patterns inferred!</div><div class="recipe-name">The Board is very pleased with itself.</div></div></div>';return;}
+        item.known=Object.keys(item.recipe).some(k=>state.inventory[k]>0);
+        const isReady=ready(item);
+        const title=item.known?item.name:`${Object.keys(item.recipe).length} ingredients unknown`;
+        const formula=item.known?`${makeRecipe(item)} → ${item.emoji}`:`❔ + ❔ → ❔`;
+        root.innerHTML=`<div class="recipe-main ${isReady?'ready':''}">
+          <div><div class="recipe-equation">${formula}</div><div class="recipe-name">${title}</div><div class="recipe-cost">${isReady?'READY — combine signals now':'Collect ingredients in the jars above.'}</div></div>
+          <button class="action-button" id="infer" ${isReady?'':'disabled'}>${isReady?'Infer pattern':'Not ready'}</button>
+        </div>`;
+        const infer=$('infer');
+        if(infer) infer.onclick=()=>learn(item);
+        const list=$('recipe-list'); list.innerHTML='';
+        for(const p of patterns){
+          const known=Object.keys(p.recipe).some(k=>state.inventory[k]>0)||state.learned.has(p.id);
+          const row=document.createElement('div');
+          row.className='recipe-row'+(ready(p)?' ready':'');
+          row.innerHTML=`<span>${state.learned.has(p.id)?p.emoji+' '+p.name:known?`${makeRecipe(p)} → ${p.emoji}`:`${Object.keys(p.recipe).length} unknown ingredients`}</span><span>${state.learned.has(p.id)?'LEARNED':ready(p)?'READY':known?'COLLECTING':'LOCKED'}</span>`;
+          list.append(row);
+        }
+        $('inference-total').textContent=`${state.learned.size} / ${patterns.length} learned`;
+      }
+
+      function renderLearned() {
+        const list=[...state.learned].map(id=>{
+          const p=patterns.find(x=>x.id===id);
+          return `<div class="event">${p.emoji} <strong>${p.name}</strong><br>${p.cohort}${p.wrong?'<br><span style="color:#aab5ac">Model confidence: low.</span>':''}</div>`;
+        });
+        $('learned-list').innerHTML=list.length?list.join(''):'No patterns inferred yet. Combine stockpiles to reveal audience cohorts.';
+      }
+
+      function renderAttention() {
+        const hot=state.hotspot;
+        $('attention-meter').style.width=`${Math.min(100,state.attention)}%`;
+        $('attention-caption').textContent=state.attention<22?'Attention is calm.':state.attention<55?'Attention is drifting toward a product lever. Aim a response.':'Attention is spreading. Act now or risk an investigation.';
+        $('face').textContent=state.attention<22?'🙂':state.attention<45?'😕':state.attention<70?'😟':'😨';
+        $('hotspot-level').textContent=state.attention<22?'CALM':state.attention<55?'RISING':'HOT';
+        $('hotspot-title').textContent=hot&&state.attention>=22?`Heat: ${levers.find(l=>l.id===hot.lever)?.name||'platform activity'}`:'No hot spot yet';
+        $('hotspot-copy').textContent=state.attention<22?'As activity rises, attention gathers around a lever. Aim a response there before it spreads.':`The hot spot is ${levers.find(l=>l.id===hot?.lever)?.name||'platform activity'}. Aim at that lever to redirect attention.`;
+        $('hotspot').classList.toggle('urgent',state.attention>=55);
+        const headlines=[
+          '“A promising new platform attracts a few curious users.”',
+          '“The feed knows what you did last Thursday.”',
+          '“Engagement is up. So are the questions.”',
+          '“Regulator asks platform to explain its growth.”',
+          '“Users discover their ‘private’ habits are trending.”'
+        ];
+        $('headline').textContent=headlines[Math.min(headlines.length-1,Math.floor(state.awareness/24))];
+        const d=$('distractions'); d.innerHTML='';
+        for(const item of distractions){
+          const cd=state.cooldowns[item.id];
+          const b=document.createElement('button');
+          b.className='distraction'; b.disabled=cd>0||state.attention<22;
+          b.innerHTML=`<span>${item.emoji}</span><span><strong>${item.name}</strong><small>${item.hint}</small></span><span>${cd?cd+'s':'USE'}</span>`;
+          b.onclick=()=>useDistraction(item);
+          d.append(b);
+        }
+      }
+
+      function renderRisk() {
+        $('awareness-meter').firstElementChild.style.width=`${Math.min(100,state.awareness)}%`;
+        $('awareness-state').textContent=state.awareness>=60?'CRITICAL':state.awareness>=45?'RISING':'QUIET';
+        $('regulator-warning').textContent=state.awareness>=50&&state.awareness<60
+          ?`⚠ Inquiry expected in about ${Math.max(1,Math.ceil((60-state.awareness)/Math.max(.05,awarenessRate())))} seconds.`
+          :state.regulatorHold>0?`Investigation active. A lever is suspended for ${state.regulatorHold}s.`
+          :'Regulator: no inquiry filed.';
+        $('extinguisher-state').textContent=state.extinguisher>0?`${state.extinguisher}s`:'READY';
+        $('extinguisher').disabled=state.extinguisher>0||state.revenue<500e6||state.ended;
+        $('extinguisher').style.opacity=$('extinguisher').disabled?'.55':'1';
+        $('press-state').textContent=state.press>70?'PUBLISHING':state.press>35?'ASKING':'QUIET';
+      }
+
+      function renderEvents() {
+        $('events').innerHTML=state.events.map(e=>`<div class="event"><time>${e.time}</time>${e.text}</div>`).join('')||'<div class="event">The platform is waiting for its first growth experiment.</div>';
+      }
+
+      function renderStats() {
+        const rates=currentRates();
+        $('clock').textContent=fmtClock(timeLeft());
+        $('users').textContent=Math.floor(state.users).toLocaleString();
+        $('users-rate').textContent=`+${Math.floor(rates.users).toLocaleString()} / sec`;
+        $('valuation').textContent=money(state.revenue);
+        $('revenue-rate').textContent=`+${money(rates.revenue)} / sec`;
+        $('valuation-meter').style.width=`${Math.min(100,state.revenue/GOAL*100)}%`;
+        $('awareness').innerHTML=`${Math.floor(state.awareness)} <small style="font-size:12px;color:#aab5ac">/ 100</small>`;
+      }
+
+      function renderBoard() {
+        const b=$('board-text'), d=$('board-detail'), s=$('board-step');
+        if(!state.started){
+          b.textContent='Start the quarter.';
+          d.textContent='Switch on a product lever to collect signals from the platform’s user base.';
+          s.textContent='TUTORIAL • FIRST MINUTE';
+        } else if(state.seconds<60){
+          s.textContent=`TUTORIAL • ${60-state.seconds}s LEFT`;
+          if(!state.active.size){
+            b.textContent='Step 1: Turn on a product lever.';
+            d.textContent='Try Neighborhood feed. It gathers location signals from the community.';
+          } else if(state.learned.size===0&&!nextPattern()?.known){
+            b.textContent='Step 2: Collect signal from more than one source.';
+            d.textContent='Keep a lever running. Try Night usage or Infinite watch to fill the first recipe.';
+          } else if(state.learned.size===0){
+            b.textContent='Step 3: Read the recipe, then infer a pattern.';
+            d.textContent='When the button says “Infer pattern,” press it. The recipe stock is consumed.';
+          } else {
+            b.textContent='Step 4: Grow the platform, but watch attention.';
+            d.textContent='More active levers mean more revenue and faster awareness. Aim a distraction at the hot lever.';
+          }
+        } else {
+          s.textContent='BOARD OBJECTIVE • $100B BEFORE AWARENESS 100';
+          if(state.awareness>=50){
+            b.textContent='Attention is getting expensive.';
+            d.textContent='Read the highlighted hot spot. Aim a distraction there, or use the extinguisher to buy time.';
+          } else if(nextPattern()){
+            b.textContent='Choose your next audience pattern.';
+            d.textContent='Keep collecting the ingredients shown in the next recipe. Every learned pattern boosts valuation.';
+          } else {
+            b.textContent='All patterns inferred. Keep scaling.';
+            d.textContent='Manage attention and grow valuation to the $100B target.';
+          }
+        }
+      }
+
+      function render() {
+        renderStats(); renderBoard(); renderLevers(); renderJars(); renderNext();
+        renderLearned(); renderAttention(); renderRisk(); renderEvents();
+      }
+
+      function flyToken(leverId,type) {
+        const from=document.querySelector(`[data-lever="${leverId}"] .lever-emoji`);
+        const to=document.querySelector(`[data-jar="${type}"]`);
+        if(!from||!to||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+        const a=from.getBoundingClientRect(), b=to.getBoundingClientRect();
+        const token=document.createElement('span'); token.className='token'; token.textContent=types[type].emoji;
+        token.style.left=(a.left+a.width/2)+'px'; token.style.top=(a.top+a.height/2)+'px';
+        token.style.setProperty('--dx',(b.left+b.width/2-a.left-a.width/2)+'px');
+        token.style.setProperty('--dy',(b.top+b.height/2-a.top-a.height/2)+'px');
+        $('token-layer').append(token); setTimeout(()=>token.remove(),800);
+      }
+
+      function toggleLever(id) {
+        if(state.ended)return;
+        const lever=levers.find(l=>l.id===id);
+        if(state.active.has(id)){state.active.delete(id);event(`${lever.name} switched off.`);}
+        else {state.active.add(id);event(`${lever.name} on: collecting ${types[lever.type].name.toLowerCase()} signals across the platform.`);sound(510,.08);}
+        render();
+      }
+
+      function learn(pattern) {
+        if(!ready(pattern)||state.learned.has(pattern.id))return;
+        for(const [key,amount] of Object.entries(pattern.recipe))state.inventory[key]-=amount;
+        state.learned.add(pattern.id); pattern.known=true;
+        if(pattern.exclusive)state.exclusive[pattern.exclusive]=pattern.id;
+        if(pattern.wrong)state.wrong.add(pattern.id);
+        state.dossier.push(pattern);
+        if(pattern.unlock)event(`New product lever unlocked: ${levers.find(l=>l.id===pattern.unlock)?.name||pattern.unlock}.`);
+        event(`Pattern inferred: ${pattern.name}. ${pattern.cohort}`);
+        toast(`${pattern.emoji} Pattern found: ${pattern.name}`);
+        sound(760,.18);
+        render();
+      }
+
+      function useDistraction(item) {
+        if(state.cooldowns[item.id]>0||state.attention<22)return;
+        const correct=state.aim&&state.hotspot&&state.aim===state.hotspot.lever;
+        state.cooldowns[item.id]=item.cooldown;
+        if(!correct){
+          event(`${item.name} missed the hot spot. Cooldown spent; attention unchanged.`);
+          toast('Missed the hot spot. The Board is not impressed.');
+          sound(180,.13);
+          render();
+          return;
+        }
+        state.attention=Math.max(0,state.attention-item.reduction);
+        if(item.id==='trend')state.activeTrend=item.duration;
+        if(item.id==='scandal')state.industrySuspicion=Math.min(20,state.industrySuspicion+2);
+        if(item.id==='outrage')state.departed+=Math.ceil(state.users*.025);
+        if(item.id==='launch')state.revenue=Math.max(0,state.revenue-400e6);
+        state.aim=null;
+        event(`${item.name} hit the ${levers.find(l=>l.id===state.hotspot.lever)?.name} hotspot. Attention −${item.reduction}.`);
+        toast(`${item.emoji} Distraction landed!`);
+        sound(660,.14);
+        render();
+      }
+
+      function awarenessRate() {
+        return .035+levers.filter(l=>state.active.has(l.id)).reduce((n,l)=>n+l.risk,0)+state.industrySuspicion*.002;
+      }
+
+      function fireExtinguisher() {
+        if(state.extinguisher>0||state.revenue<500e6||state.ended)return;
+        state.revenue-=500e6;
+        state.awareness=Math.max(0,state.awareness-14);
+        state.extinguisher=45;
+        event('Damage control: “We value your privacy.” Awareness reduced by 14.');
+        toast('🧯 Story contained. For now.');
+        sound(330,.12);
+        render();
+      }
+
+      function regulator() {
+        state.regulatorHold=30;
+        const active=[...state.active];
+        if(active.length){
+          const id=state.hotspot?.lever&&state.active.has(state.hotspot.lever)?state.hotspot.lever:active[0];
+          state.active.delete(id);
+          event(`Regulator investigation: ${levers.find(l=>l.id===id).name} suspended for 30 seconds.`);
+        } else event('Regulator investigation filed. No active levers to suspend.');
+        toast('⚠ Investigation filed. One lever suspended.');
+        sound(150,.3);
+      }
+
+      function tick() {
+        if(!state.started||state.paused||state.ended)return;
+        state.seconds++;
+        const rates=currentRates();
+        state.users+=rates.users;
+        state.revenue+=rates.revenue;
+
+        for(const lever of levers){
+          if(!state.active.has(lever.id))continue;
+          const amount=Math.min(lever.type==='location'?300:240,Math.max(0,state.users*.035));
+          state.inventory[lever.type]+=amount;
+          state.totals[lever.type]+=amount;
+          if(Math.random()<.75)flyToken(lever.id,lever.type);
+        }
+
+        if(state.activeTrend>0){
+          state.inventory.search+=110;
+          state.totals.search+=110;
+          state.activeTrend--;
+        }
+
+        state.attention=Math.min(100,state.attention+.08+state.active.size*.20);
+        state.press=Math.min(100,state.press+.08+state.active.size*.025);
+        if(state.press>=100){
+          state.press=0; state.awareness+=12;
+          event('Headline published: “Platform’s engagement tricks draw questions.”');
+          toast('📰 A story broke. Awareness +12.');
+        }
+
+        if(state.attention>=22){
+          if(!state.hotspot||!state.active.has(state.hotspot.lever)||state.seconds%14===0){
+            const active=[...state.active];
+            if(active.length)state.hotspot={lever:active[Math.floor(Math.random()*active.length)]};
+          }
+        } else { state.hotspot=null; state.aim=null; }
+
+        if(state.awareness>=50&&state.regulatorEta===0&&state.awareness<60){
+          state.regulatorEta=Math.max(1,Math.ceil((60-state.awareness)/Math.max(.05,awarenessRate())));
+          event(`Regulator warning: inquiry expected in about ${state.regulatorEta} seconds.`);
+        }
+        if(state.regulatorEta>0){
+          state.regulatorEta--;
+          if(state.awareness>=60) {state.regulatorEta=0;regulator();}
+        }
+
+        for(const id of Object.keys(state.cooldowns))if(state.cooldowns[id]>0)state.cooldowns[id]--;
+        if(state.regulatorHold>0)state.regulatorHold--;
+        if(state.extinguisher>0)state.extinguisher--;
+
+        for(const [threshold,label,line] of milestones){
+          if(state.revenue>=threshold&&!state.milestones.has(threshold)){
+            state.milestones.add(threshold);
+            event(`Valuation milestone ${label}. ${line}`);
+            toast(`${label} valuation! ${line}`);
+            const pop=document.createElement('div'); pop.className='milestone-pop'; pop.textContent=`${label} VALUATION • ${line}`;
+            document.body.append(pop); setTimeout(()=>pop.remove(),2300); sound(800,.2);
+          }
+        }
+
+        if(state.revenue>=GOAL){finish(true);return;}
+        if(state.awareness>=100){finish(false);return;}
+        if(state.seconds>=RUN_TIME){finish(false,true);return;}
+        render();
+      }
+
+      function finish(won,timedOut=false) {
+        state.ended=true;
+        $('result').classList.remove('hidden');
+        $('result-kicker').textContent=won?'TARGET REACHED':timedOut?'EIGHT-MINUTE REVIEW':'MASS DELETION';
+        $('result-title').textContent=won?'The platform is worth $100B.':timedOut?'Quarter closed. The story is unfinished.':'The platform has been emptied.';
+        $('result-copy').textContent=won
+          ?'The Board celebrates a successful quarter. The files below show what was harvested across the community—not one person.'
+          :timedOut?'Time ran out before the valuation target. These are the platform-wide files collected during the run.':`Awareness reached 100. ${Math.floor(state.users-state.departed).toLocaleString()} users remain; the platform has collapsed. Here are the files collected before deletion.`;
+        const files=$('result-files'); files.innerHTML='';
+        for(const [key,type] of Object.entries(types)){
+          const amount=Math.floor(state.totals[key]);
+          if(!amount)continue;
+          const row=document.createElement('div'); row.className='file-row';
+          row.innerHTML=`<strong>${type.emoji} ${type.name} file</strong>${amount.toLocaleString()} signals collected across the platform’s user base.`;
+          files.append(row);
+        }
+        for(const pattern of state.dossier){
+          const row=document.createElement('div'); row.className='file-row';
+          row.innerHTML=`<strong>${pattern.emoji} ${pattern.name}</strong>${pattern.cohort}${pattern.wrong?' (Model confidence was low.)':''}`;
+          files.append(row);
+        }
+        if(!files.children.length)files.innerHTML='<div class="file-row">No files were completed this quarter.</div>';
+        sound(won?880:130,.3);
+      }
+
+      function start() {
+        state.started=true;
+        $('intro').classList.add('hidden');
+        event('Quarter begins. 10,000 users are active. Build valuation; keep awareness below 100.');
+        render();
+        sound(520,.08);
+      }
+
+      $('start').onclick=start;
+      $('pause').onclick=()=>{if(!state.started||state.ended)return;state.paused=!state.paused;$('pause').textContent=state.paused?'▶':'Ⅱ';toast(state.paused?'Paused':'Quarter resumed');};
+      $('sound').onclick=()=>{state.sound=!state.sound;$('sound').textContent=state.sound?'🔊':'🔇';};
+      $('extinguisher').onclick=fireExtinguisher;
+      $('restart').onclick=()=>window.location.reload();
+      document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.started&&!state.ended&&!state.paused){state.paused=true;$('pause').textContent='▶';}});
+      render();
+      setInterval(tick,1000);
+    })();
+  </script>
 </body>
 </html>
+```.
